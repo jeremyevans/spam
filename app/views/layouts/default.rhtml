@@ -21,15 +21,17 @@
 <div id="nav">
 <a href="/" id="banner"><acronym title="$imple Personal Accounting Manager">$PAM</acronym> on Rails</a>
 <br />
-<% accounts = Account.find(:all, :conditions=>"NOT hidden AND account_type IN ('Bank','CCard')", :order=>'name') %>
-<h4>Account Registers</h4>
-<% for account in accounts -%>
-  <a href="/update/register/<%= account.id %>"><%= account.name %></a>
-<% end %>
+<% accounts = Account.unhidden_register_accounts %>
+<% unless accounts.empty? %>
+  <h4>Account Registers</h4>
+  <% for account in accounts -%>
+    <a href="/update/register/<%= account.id %>"><%= account.name %></a>
+  <% end %>
 
-<h4>Reconcile Accounts</h4>
-<% for account in accounts -%>
-  <a href="/update/reconcile/<%= account.id %>"><%= account.name %></a>
+  <h4>Reconcile Accounts</h4>
+  <% for account in accounts -%>
+    <a href="/update/reconcile/<%= account.id %>"><%= account.name %></a>
+  <% end %>
 <% end %>
 
 <h4>Reports</h4>
