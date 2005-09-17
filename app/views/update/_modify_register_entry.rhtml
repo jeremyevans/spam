@@ -1,0 +1,9 @@
+<td><%= text_field('entry', 'date', "size"=>10, "value"=>@entry.date.to_time.strftime("%Y-%m-%d")) %></td>
+<td><%= text_field('entry', 'reference', "size"=>4) %></td>
+<td><%= text_field_with_auto_complete('entity', 'name', {'value'=>@entry.entity.name}, {:skip_style=>true}) %></td>
+<td><select name="entry[account_id]"><option></option><%= options_for_select(@accounts, @entry.other_account.id) %></select></td>
+<td><%= text_field('entry', 'memo', "size"=>30) %></td>
+<td><%= check_box('entry', 'cleared') %></td>
+<td class="money"><%= text_field('entry', 'amount', "size"=>7, 'value'=>@entry.amount) %></td>
+<td class="money"></td>
+<td><%= hidden_field('entry', 'id') %><input name="update" type="submit" value="Update"></td>

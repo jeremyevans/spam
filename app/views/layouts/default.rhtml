@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" >
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<title>$PAM on Rails<%= " - #{@pagetitle}" if @pagetitle %></title>
+<link rel="stylesheet" type="text/css" href="/stylesheets/spam.css" />
+<script type="text/javascript" src="/javascripts/prototype.js"></script>
+<script type="text/javascript" src="/javascripts/controls.js"></script>
+<script type="text/javascript" src="/javascripts/effects.js"></script>
+<script type="text/javascript" src="/javascripts/spam.js"></script>
+</head>
+
+<body>
+<div id="content">
+<h1><%= @pagetitle %></h1>
+<%= content_tag(:h2, flash[:notice]) if flash[:notice] %>
+<%= @content_for_layout %>
+</div>
+
+<div id="nav">
+<a href="/" id="banner"><acronym title="$imple Personal Accounting Manager">$PAM</acronym> on Rails</a>
+<br />
+<% accounts = Account.find(:all, :conditions=>"NOT hidden AND account_type IN ('Bank','CCard')", :order=>'name') %>
+<h4>Account Registers</h4>
+<% for account in accounts -%>
+  <a href="/update/register/<%= account.id %>"><%= account.name %></a>
+<% end %>
+
+<h4>Reconcile Accounts</h4>
+<% for account in accounts -%>
+  <a href="/update/reconcile/<%= account.id %>"><%= account.name %></a>
+<% end %>
+
+<h4>Reports</h4>
+<a href="/reports/balance_sheet">Balance Sheet</a>
+<a href="/reports/income_expense">Income/Expense</a>
+<a href="/reports/net_worth">Net Worth</a>
+
+<h4>Modify Data</h4>
+<a href="/update/list_account">Update Accounts</a>
+<a href="/update/list_entity">Update Entities</a>
+<a href="/update/list_entry">Update Entries</a>
+<br />
+<a href="/update/merge_account">Merge Accounts</a>
+<a href="/update/merge_entity">Merge Entities</a>
+<br />
+<a href="/qif/import">Import QIF File</a>
+
+</div>
+</body></html>

@@ -1,0 +1,17 @@
+<% @pagetitle = "#{@account.name} Register" %>
+<h3 id="results">Showing <%= @show_num_entries == -1 ? 'All' : "#{@show_num_entries} Most Recent" %> Entries</h3>
+<%= form_remote_tag :url=>"/update/add_entry", :complete=>evaluate_remote_response %>
+<table id="register">
+<thead><tr><th>Date</th><th>Num</th><th>Entity</th><th>Other Account</th><th>Memo</th><th><abbr title="Cleared">C</abbr></th><th>Amount</th><th>Balance</th><th>Modify</th></tr></thead>
+<tbody>
+<tr id="new_entry"><%= render(:partial=>'new_register_entry') %></tr>
+<% @account.entries(@show_num_entries).each do |entry| -%>
+  <tr id="entry_<%= entry.id %>"><%= render(:partial=>'register_entry', :locals=>{:entry=>entry}) %></tr>
+<% end %>
+</tbody></table>
+</form>
+<script type="text/javascript">
+new Ajax.EntityAutocompleter('entity_name', 'entity_name_auto_complete', '/update/auto_complete_for_entity_name', {})
+document.forms[0].entry_date.focus();
+</script>
+<%= link_to('Show All', "/update/register/#{@account.id}?show=-1") if @show_num_entries != -1 %>

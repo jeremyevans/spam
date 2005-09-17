@@ -1,0 +1,2 @@
+module QifHelper
+end

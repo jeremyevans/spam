@@ -1,0 +1,10 @@
+<% @pagetitle = "Net Worth" %>
+
+<table>
+<thead><tr><th>Month</th><th>Assets</th><th>Liabilities</th><th>Net Worth</th></tr></thead>
+<tbody>
+<tr><td>Current</td><td class="money"><%= @assets.to_money %></td><td class="money"><%= @liabilities.to_money %></td><td class="money"><%= (@assets- @liabilities).to_money %></td></tr>
+<% @months.each do |month| -%>
+  <tr><td>Start of <%= month.month %></td><td class="money"><%= (@assets -= month[:assets].to_f).to_money %></td><td class="money"><%= (@liabilities -= month[:liabilities].to_f).to_money %></td><td class="money"><%= (@assets- @liabilities).to_money %></td></tr>
+<% end%>
+</tbody></table>

@@ -1,0 +1,12 @@
+<% update_element_function("new_entry", :binding => binding) do %>
+  <%= render(:partial=>'new_register_entry', :locals=>{:time=>entry.date.to_time}) %>
+<% end %>
+<% update_element_function("entry_#{entry.id}", :binding => binding) do %>
+  <%= render(:partial=>'register_entry', :locals=>{:entry=>entry}) %>
+<% end %>
+<% update_element_function("results", :binding => binding) do %>
+  Updated entry
+<% end %>
+ts_resortTable()
+new Ajax.EntityAutocompleter('entity_name', 'entity_name_auto_complete', '/update/auto_complete_for_entity_name', {})
+document.forms[0].entry_date.focus()

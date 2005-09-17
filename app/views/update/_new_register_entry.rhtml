@@ -1,0 +1,9 @@
+<td><%= text_field('entry', 'date', "size"=>10, "value"=>(defined?(time) ? time : Time.new).strftime("%Y-%m-%d")) %></td>
+<td><%= text_field('entry', 'reference', "size"=>4, :autocomplete=>'off', "value"=>session[:next_check_number]) %></td>
+<td><input autocomplete="off" id="entity_name" name="entity[name]" size="30" type="text" value="" /><div class="auto_complete" id="entity_name_auto_complete"></div></td>
+<td><%= select('entry', 'account_id', @accounts, { :include_blank => true }) %></td>
+<td><%= text_field('entry', 'memo', "size"=>30, :autocomplete=>'off', "value"=>'') %></td>
+<td></td>
+<td class="money"><%= text_field('entry', 'amount', "size"=>7, :autocomplete=>'off', "value"=>'') %></td>
+<td class="money"><%= @account.money_balance %></td>
+<td><input type="submit" value="Add"></td>
