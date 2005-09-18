@@ -62,11 +62,12 @@ class UpdateController < ApplicationController
   private
 
   def save_entry
-    other_account = Account.find(params[:entry][:account_id])
+    other_account = Account.find(params[:account][:id])
     @entry[:debit_account_id], @entry[:credit_account_id] = ((params[:entry][:amount].to_f > 0) ? [@account.id, other_account.id] : [other_account.id, @account.id])
     @entry.amount = params[:entry][:amount].to_f.abs
-    entity = Entity.find_by_name(params[:entity][:name])
-    @entry[:entity_id] = Entity.create(params[:entity]).id if params[:entity][:name].length > 0 and not entity
+    entity = Entity.find_by_name(params[:entity][:name]) 
+    entity = Entity.create(params[:entity]) if params[:entity][:name].length > 0 and not entity
+    @entry[:entity_id] = entity.id
     @entry.save()
     @account.reload()
     @entry.main_account = @account
