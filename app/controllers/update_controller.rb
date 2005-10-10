@@ -13,7 +13,7 @@ class UpdateController < ApplicationController
     return update_entry if params['update']
     @entry = Entry.new(params[:entry])
     save_entry
-    session[:next_check_number] = (params[:entry][:check_number] =~ /\d{4}/ ? params[:entry][:check_number].next : '')
+    session[:next_check_number] = ((params[:entry][:reference] =~ /\d{4}/) ? params[:entry][:reference].next : '')
     render(:partial=>'add_entry', :locals=>{:entry=>@entry})
   end
   
