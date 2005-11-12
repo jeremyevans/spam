@@ -52,7 +52,7 @@ class UpdateController < ApplicationController
   def register
     @account = Account.find(params[:id])
     @accounts = Account.for_select
-    @show_num_entries = ((params[:show] and params[:show].to_i != 0) ? params[:show].to_i : 20)
+    @show_num_entries = ((params[:show] and params[:show].to_i != 0) ? params[:show].to_i : 25)
     @show_num_entries = nil if @show_num_entries < 1
     session[:account_id] = @account.id
     session[:entry_id] = nil
