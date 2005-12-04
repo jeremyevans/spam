@@ -117,39 +117,11 @@ function updateOffBy(element) {
 }
 
 Ajax.EntityAutocompleter = Class.create();
-Ajax.EntityAutocompleter.prototype = Object.extend(new Autocompleter.Base(), 
-Object.extend(new Ajax.Base(), {
-  initialize: function(element, update, url, options) {
-      this.base_initialize(element, update, options);
-    this.options.asynchronous  = true;
-    this.options.onComplete    = this.onComplete.bind(this)
-    this.options.method        = 'post';
-    this.options.defaultParams = this.options.parameters || null;
-    this.url                   = url;
-  },
-  
-  getUpdatedChoices: function() {
-    entry = encodeURIComponent(this.element.name) + '=' + 
-      encodeURIComponent(this.getEntry());
-      
-    this.options.parameters = this.options.callback ?
-      this.options.callback(this.element, entry) : entry;
-        
-    if(this.options.defaultParams) 
-      this.options.parameters += '&' + this.options.defaultParams;
-    
-    new Ajax.Request(this.url, this.options);
-  },
-  
-  onComplete: function(request) {
-    this.updateChoices(request.responseText);
-  },
-  
-  select_entry: function() {
+Object.extend(Object.extend(Ajax.EntityAutocompleter.prototype, Ajax.Autocompleter.prototype), { 
+  selectEntry: function() {
     this.active = false;
-    value = Element.collectTextNodesIgnoreClass(this.get_current_entry(), 'informal').unescapeHTML();
-    this.updateElement(value);
+    this.updateElement(this.getCurrentEntry());
     this.element.focus();
-    new Ajax.Request('/update/other_account_for_entry?entity='+value, {asynchronous:true, evalScripts:true, onComplete:function(request){eval(request.responseText)}})
+    new Ajax.Request('/update/other_account_for_entry?entity='+this.element.value.replace(/&/g, '%26'), {asynchronous:true, evalScripts:true, onComplete:function(request){eval(request.responseText)}})
   }
-}));
+});

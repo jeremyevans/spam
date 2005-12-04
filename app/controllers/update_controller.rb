@@ -3,9 +3,6 @@ class UpdateController < ApplicationController
   scaffold :entity, :suffix=>true
   scaffold :entry, :suffix=>true
   auto_complete_for :entity, :name
-  
-  scaffold_merge(Account, true)
-  scaffold_merge(Entity, true)
 
   def add_entry
     @account = Account.find(session[:account_id])

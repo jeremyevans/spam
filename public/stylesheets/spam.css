@@ -55,7 +55,6 @@ div#reconcile {
 div#balance, div#off_by { display: inline; }
 
 div.auto_complete {
-	display: hidden;
 	width: 150px;
 	background: #fff;
 }
