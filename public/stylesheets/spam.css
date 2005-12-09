@@ -85,7 +85,7 @@ h4 { font-size: 14px; }
 
 img { border-width: 0px; }
 
-input { 
+input, select { 
 	border-style: solid;
 	border-color: black;
 	border-width: 1px;
