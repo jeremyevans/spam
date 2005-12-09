@@ -1,9 +1,9 @@
-<% update_element_function("entry_#{other_entry.id}", :binding => binding) do %>
-  <%= render(:partial=>'register_entry', :locals=>{:entry=>other_entry}) %>
-<% end if other_entry %>
 <% update_element_function("new_entry", :binding => binding) do %>
   <%= render(:partial=>(entry ? 'blank_register_entry' : 'new_register_entry'), :locals=>{:entry=>entry}) %>
 <% end %>
+<% update_element_function("entry_#{other_entry.id}", :binding => binding) do %>
+  <%= render(:partial=>'register_entry', :locals=>{:entry=>other_entry}) %>
+<% end if other_entry %>
 ts_resortTable();
 <% update_element_function("entry_#{entry.id}", :binding => binding) do %>
   <%= render(:partial=>'modify_register_entry', :locals=>{:entry=>entry}) %>
