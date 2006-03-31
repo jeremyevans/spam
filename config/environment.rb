@@ -50,6 +50,7 @@ end
 
 # Include your application configuration below
 ActiveRecord::Base.scaffold_convert_text_to_string = true
+ActiveRecord::Base.scaffold_association_list_class = 'scaffold_associations_tree'
 
 class Float
   def to_money
