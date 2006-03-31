@@ -1,9 +1,12 @@
 class Account < ActiveRecord::Base
-  has_many :credit_entries, :class_name=>'Entry', :foreign_key=>'credit_account_id'
-  has_many :debit_entries, :class_name=>'Entry', :foreign_key=>'debit_account_id'
+  has_many :credit_entries, :class_name=>'Entry', :foreign_key=>'credit_account_id', :include=>[:credit_account, :debit_account, :entity], :order=>'date DESC'
+  has_many :debit_entries, :class_name=>'Entry', :foreign_key=>'debit_account_id', :include=>[:credit_account, :debit_account, :entity], :order=>'date DESC'
+  has_many :recent_credit_entries, :class_name=>'Entry', :foreign_key=>'credit_account_id', :include=>[:credit_account, :debit_account, :entity],  :limit=>25, :order=>'date DESC'
+  has_many :recent_debit_entries, :class_name=>'Entry', :foreign_key=>'debit_account_id', :include=>[:credit_account, :debit_account, :entity], :limit=>25, :order=>'date DESC'
   @scaffold_select_order = 'name'
   @scaffold_fields = %w'name account_type description hidden credit_limit'
   @scaffold_column_types = {'description'=>:text}
+  @scaffold_associations = %w'recent_credit_entries recent_debit_entries'
 
   def self.for_select
     find(:all, :order=>'name').collect{|account|[account.scaffold_name, account.id]}
