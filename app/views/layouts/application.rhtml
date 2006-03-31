@@ -5,10 +5,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
 <title>$PAM on Rails<%= " - #{@pagetitle}" if @pagetitle %></title>
 <link rel="stylesheet" type="text/css" href="/stylesheets/spam.css" />
-<script type="text/javascript" src="/javascripts/prototype.js"></script>
-<script type="text/javascript" src="/javascripts/controls.js"></script>
-<script type="text/javascript" src="/javascripts/effects.js"></script>
-<script type="text/javascript" src="/javascripts/spam.js"></script>
+<%= javascript_include_tag :defaults %>
 </head>
 
 <body>
@@ -21,15 +18,14 @@
 <div id="nav">
 <a href="/" id="banner"><acronym title="$imple Personal Accounting Manager">$PAM</acronym> on Rails</a>
 <br />
-<% accounts = Account.unhidden_register_accounts %>
-<% unless accounts.empty? %>
+<% unless @navigation_accounts.empty? %>
   <h4>Account Registers</h4>
-  <% for account in accounts -%>
+  <% for account in @navigation_accounts -%>
     <a href="/update/register/<%= account.id %>"><%= account.name %></a>
   <% end %>
 
   <h4>Reconcile Accounts</h4>
-  <% for account in accounts -%>
+  <% for account in @navigation_accounts -%>
     <a href="/update/reconcile/<%= account.id %>"><%= account.name %></a>
   <% end %>
 <% end %>

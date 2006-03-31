@@ -3,6 +3,7 @@ class Account < ActiveRecord::Base
   has_many :debit_entries, :class_name=>'Entry', :foreign_key=>'debit_account_id'
   @scaffold_select_order = 'name'
   @scaffold_fields = %w'name account_type description hidden credit_limit'
+  @scaffold_column_types = {'description'=>:text}
 
   def self.for_select
     find(:all, :order=>'name').collect{|account|[account.scaffold_name, account.id]}
@@ -24,7 +25,7 @@ class Account < ActiveRecord::Base
   end
 
   def last_entry_for_entity(entity)
-    Entry.find(:first, :include=>[:entity, :credit_account, :debit_account], :conditions=>["? IN (entries.credit_account_id, entries.debit_account_id) AND entries_entity.name = ?", id, entity], :order=>"date DESC, (CASE WHEN reference ~ '^\\\\d{4}$' THEN reference::INTEGER ELSE 0 END) DESC, amount DESC")
+    Entry.find(:first, :include=>[:entity, :credit_account, :debit_account], :conditions=>["? IN (entries.credit_account_id, entries.debit_account_id) AND entities.name = ?", id, entity], :order=>"date DESC, (CASE WHEN reference ~ '^\\\\d{4}$' THEN reference::INTEGER ELSE 0 END) DESC, amount DESC")
   end
 
   def money_balance
