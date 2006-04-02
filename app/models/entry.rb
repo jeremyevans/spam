@@ -4,8 +4,10 @@ class Entry < ActiveRecord::Base
   belongs_to :entity
   
   @scaffold_fields = %w'date reference entity debit_account credit_account amount memo cleared'
-  @scaffold_select_order = 'entries.date, entries_debit_account.name, entries_credit_account.name, entries.amount'
+  @scaffold_select_order = 'entries.date DESC, entities.name, accounts.name, debit_accounts_entries.name, entries.amount'
   @scaffold_include = [:entity, :credit_account, :debit_account]
+  @scaffold_auto_complete_options = {:sql_name=>"date::TEXT || entities.name ||  accounts.name || debit_accounts_entries.name || entries.amount::TEXT"}
+  
   def scaffold_name
     "#{date.strftime('%Y-%m-%d')}-#{entity.name if entity}-#{debit_account.name if debit_account}-#{credit_account.name if credit_account}-#{money_amount}"
   end
