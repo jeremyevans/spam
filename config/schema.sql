@@ -39,6 +39,9 @@ CREATE FUNCTION update_account_balance() RETURNS TRIGGER AS '
             UPDATE accounts SET balance = balance + NEW.amount WHERE id = NEW.debit_account_id;
             UPDATE accounts SET balance = balance - NEW.amount WHERE id = NEW.credit_account_id;
         END IF;
+        IF (TG_OP = ''DELETE'') THEN
+            RETURN OLD;
+        END IF;
         RETURN NEW;
     END;
 ' LANGUAGE plpgsql;
