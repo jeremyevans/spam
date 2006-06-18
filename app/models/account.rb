@@ -7,6 +7,7 @@ class Account < ActiveRecord::Base
   @scaffold_fields = %w'name account_type description hidden credit_limit'
   @scaffold_column_types = {'description'=>:text}
   @scaffold_associations = %w'recent_credit_entries recent_debit_entries'
+  attr_protected :balance
 
   def self.for_select
     find(:all, :order=>'name').collect{|account|[account.scaffold_name, account.id]}
