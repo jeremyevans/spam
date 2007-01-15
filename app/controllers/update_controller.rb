@@ -1,13 +1,11 @@
 class UpdateController < ApplicationController
-  scaffold :account, :suffix=>true
-  scaffold :entity, :suffix=>true
-  scaffold :entry, :suffix=>true
+  scaffold_all_models
   auto_complete_for :entity, :name
 
   def add_entry
     @account = Account.find(session[:account_id])
     @accounts = Account.for_select
-    return update_entry if params['update']
+    return _update_entry if params['update']
     @entry = Entry.new(params[:entry])
     save_entry
     session[:next_check_number] = ((params[:entry][:reference] =~ /\d{4}/) ? params[:entry][:reference].next : '')
@@ -70,7 +68,7 @@ class UpdateController < ApplicationController
     @entry.main_account = @account
   end
 
-  def update_entry
+  def _update_entry
     session[:entry_id] = nil
     @entry = Entry.find(params[:entry][:id])
     @entry.attributes = params[:entry]
