@@ -1,0 +1,5 @@
+page.replace_html('new_entry', render(:partial=>'new_register_entry', :locals=>{:time=>@entry.date.to_time}))
+page.replace_html("entry_#{@entry.id}", render(:partial=>'register_entry', :locals=>{:entry=>@entry}))
+page.replace_html("results", 'Added entry')
+page << entity_autocompleter_and_focus
+page << "ts_resortTable()"

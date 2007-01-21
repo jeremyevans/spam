@@ -1,0 +1,7 @@
+page.replace_html('new_entry', render(:partial=>(@entry ? 'blank_register_entry' : 'new_register_entry'), :locals=>{:entry=>@entry}))
+page.replace_html("entry_#{@other_entry.id}", render(:partial=>'register_entry', :locals=>{:entry=>@other_entry})) if @other_entry
+page << "ts_resortTable()"
+page.replace_html("entry_#{@entry.id}", render(:partial=>'modify_register_entry', :locals=>{:entry=>@entry})) if @entry
+page.replace_html("results", @entry ? 'Modify entry' : 'Add entry')
+page << "new Ajax.#{'Entity' unless @entry}Autocompleter('entity_name', 'entity_name_auto_complete', '/update/auto_complete_for_entity_name', {})"
+page << "document.forms[0].entry_date.focus()"

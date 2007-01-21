@@ -28,12 +28,7 @@ function ts_resortTable() {
     for (j=2;j<table.rows.length;j++) { newRows[j-2] = table.rows[j]; }
 
     newRows.sort(ts_sort);
-
-    // We appendChild rows that already exist to the tbody, so it moves them rather than creating new ones
-    // don't do sortbottom rows
-    for (i=0;i<newRows.length;i++) { if (!newRows[i].className || (newRows[i].className && (newRows[i].className.indexOf('sortbottom') == -1))) table.tBodies[0].appendChild(newRows[i]);}
-    // do sortbottom rows only
-    for (i=0;i<newRows.length;i++) { if (newRows[i].className && (newRows[i].className.indexOf('sortbottom') != -1)) table.tBodies[0].appendChild(newRows[i]);}
+    for (i=0;i<newRows.length;i++) { table.tBodies[0].appendChild(newRows[i]);}
     ts_recalculateBalance();
 }
 
@@ -57,7 +52,13 @@ function ts_sort(a,b) {
     if (x) return x;
     x = ts_sort_currency(a,b,1);
     if (x) return x;
-    return ts_sort_currency(a,b,6);
+    x = ts_sort_currency(a,b,6);
+    if (x) return x;
+    x = ts_sort_default(a,b,2);
+    if (x) return x;
+    x = ts_sort_default(a,b,3);
+    if (x) return x;
+    return  ts_sort_default(a,b,4); 
 }
 
 function ts_recalculateBalance() {

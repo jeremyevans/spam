@@ -1,0 +1,2 @@
+page << "$('account_id').value = '#{@entry.other_account.id}'"
+page << "$('entry_amount').value = '#{@entry.amount}'"

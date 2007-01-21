@@ -6,4 +6,4 @@
 <td><%= entry.cleared ? 'R' : nil %></td>
 <td class="money"><%= entry.money_amount %></td>
 <td class="money"><%= @account.money_balance %> <% @account[:balance] -= entry.amount %></td>
-<td><%= link_to_remote("Modify", :complete=>evaluate_remote_response, :url=>"/update/modify_entry/#{entry.id}") %></td>
+<td><%= link_to_remote("Modify", :url=>"/update/modify_entry/#{entry.id}") %></td>

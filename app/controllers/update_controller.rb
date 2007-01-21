@@ -5,11 +5,10 @@ class UpdateController < ApplicationController
   def add_entry
     @account = Account.find(session[:account_id])
     @accounts = Account.for_select
-    return _update_entry if params['update']
+    return update_register_entry if params['update']
     @entry = Entry.new(params[:entry])
     save_entry
     session[:next_check_number] = ((params[:entry][:reference] =~ /\d{4}/) ? params[:entry][:reference].next : '')
-    render(:partial=>'add_entry', :locals=>{:entry=>@entry})
   end
   
   def clear_entries
@@ -30,14 +29,12 @@ class UpdateController < ApplicationController
       session[:entry_id] = @entry.id
     else session[:entry_id] = nil
     end
-    render(:partial=>'modify_entry', :locals=>{:entry=>@entry, :other_entry=>@other_entry})
   end
 
   def other_account_for_entry
     @account = Account.find(session[:account_id])
     @entry = @account.last_entry_for_entity(params[:entity])
     @entry.main_account = @account
-    render(:partial=>'update_account_and_amount', :locals=>{:entry=>@entry})
   end
 
   def reconcile
@@ -68,11 +65,11 @@ class UpdateController < ApplicationController
     @entry.main_account = @account
   end
 
-  def _update_entry
+  def update_register_entry
     session[:entry_id] = nil
     @entry = Entry.find(params[:entry][:id])
     @entry.attributes = params[:entry]
     save_entry
-    render(:partial=>'update_entry', :locals=>{:entry=>@entry})
+    render(:action=>'update_register_entry')
   end
 end
