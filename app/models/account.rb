@@ -18,18 +18,18 @@ class Account < ActiveRecord::Base
   end
   
   def entries(limit=nil)
-    Entry.find(:all, :include=>[:entity, :credit_account, :debit_account], :conditions=>["? IN (entries.credit_account_id, entries.debit_account_id)", id], :order=>"date DESC, (CASE WHEN reference ~ '^\\\\d{4}$' THEN reference::INTEGER ELSE 0 END) DESC, amount DESC", :limit=>limit).collect do |entry| 
+    Entry.find(:all, :include=>[:entity, :credit_account, :debit_account], :conditions=>["? IN (entries.credit_account_id, entries.debit_account_id)", id], :order=>"date DESC, (CASE WHEN reference ~ E'^\\d{4}$' THEN reference::INTEGER ELSE 0 END) DESC, amount DESC", :limit=>limit).collect do |entry| 
       entry.main_account = self
       entry
     end
   end
 
   def entries_to_reconcile(type)
-    Entry.find(:all, :include=>:entity, :conditions=>["entries.#{type}_account_id = ? AND NOT cleared", id], :order=>"date DESC, (CASE WHEN reference ~ '^\\\\d{4}$' THEN reference::INTEGER ELSE 0 END) DESC, amount DESC")
+    Entry.find(:all, :include=>:entity, :conditions=>["entries.#{type}_account_id = ? AND NOT cleared", id], :order=>"date DESC, (CASE WHEN reference ~ E'^\\d{4}$' THEN reference::INTEGER ELSE 0 END) DESC, amount DESC")
   end
 
   def last_entry_for_entity(entity)
-    Entry.find(:first, :include=>[:entity, :credit_account, :debit_account], :conditions=>["? IN (entries.credit_account_id, entries.debit_account_id) AND entities.name = ?", id, entity], :order=>"date DESC, (CASE WHEN reference ~ '^\\\\d{4}$' THEN reference::INTEGER ELSE 0 END) DESC, amount DESC")
+    Entry.find(:first, :include=>[:entity, :credit_account, :debit_account], :conditions=>["? IN (entries.credit_account_id, entries.debit_account_id) AND entities.name = ?", id, entity], :order=>"date DESC, (CASE WHEN reference ~ E'^\\d{4}$' THEN reference::INTEGER ELSE 0 END) DESC, amount DESC")
   end
 
   def money_balance
@@ -38,7 +38,8 @@ class Account < ActiveRecord::Base
 
   def next_check_number
     return '' if account_type != 'Bank'
-    self.class.count_by_sql(["SELECT reference::int + 1 AS reference FROM entries WHERE ? in (debit_account_id, credit_account_id) AND reference ~ '^\\\\d{4}$' ORDER BY reference DESC LIMIT 1;", id]).to_s
+    number = self.class.count_by_sql(["SELECT reference::int + 1 AS reference FROM entries WHERE ? in (debit_account_id, credit_account_id) AND reference ~ E'^\\d{4}$' ORDER BY reference DESC LIMIT 1;", id])
+    (number > 0 ? number : '').to_s
   end
 
   def scaffold_name

@@ -6,10 +6,10 @@ class Entry < ActiveRecord::Base
   @scaffold_fields = %w'date reference entity credit_account debit_account amount memo cleared'
   @scaffold_select_order = 'entries.date DESC, entities.name, accounts.name, debit_accounts_entries.name, entries.amount'
   @scaffold_include = [:entity, :credit_account, :debit_account]
-  @scaffold_auto_complete_options = {:sql_name=>"date::TEXT || entities.name ||  accounts.name || debit_accounts_entries.name || entries.amount::TEXT"}
+  @scaffold_auto_complete_options = {:sql_name=>"reference || date::TEXT || entities.name ||  accounts.name || debit_accounts_entries.name || entries.amount::TEXT"}
   
   def scaffold_name
-    "#{date.strftime('%Y-%m-%d')}-#{entity.name if entity}-#{debit_account.name if debit_account}-#{credit_account.name if credit_account}-#{money_amount}"
+    "#{date.strftime('%Y-%m-%d')}-#{reference}-#{entity.name if entity}-#{debit_account.name if debit_account}-#{credit_account.name if credit_account}-#{money_amount}"
   end
   
   @other_account = nil
