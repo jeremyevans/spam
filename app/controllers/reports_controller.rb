@@ -22,7 +22,7 @@ class ReportsController < ApplicationController
   end
   
   def net_worth
-    account = Account.find_by_sql("SELECT SUM(CASE WHEN account_type = 'Bank' THEN balance ELSE 0 END) AS assets, SUM(CASE WHEN account_type = 'CCard' THEN balance ELSE 0 END) AS liabilities FROM accounts")[0]
+    account = Account.find_by_sql("SELECT SUM(CASE WHEN account_type = 'Bank' THEN balance ELSE 0 END) AS assets, -SUM(CASE WHEN account_type = 'CCard' THEN balance ELSE 0 END) AS liabilities FROM accounts")[0]
     @assets, @liabilities = account[:assets].to_f, account[:liabilities].to_f
     income_expense
   end
