@@ -26,4 +26,18 @@ class ReportsController < ApplicationController
     @assets, @liabilities = account[:assets].to_f, account[:liabilities].to_f
     income_expense
   end
+  
+  def earning_spending
+      sql =<<-SQL
+      SELECT accounts.account_type, accounts.name, #{(0...12).to_a.collect{|i| "\nSUM(CASE WHEN extract(month from 
+      age(((CURRENT_DATE + 1) - (extract(day from CURRENT_DATE)::integer)), 
+      ((entries.date + 1) - (extract(day from entries.date)::integer)))) != #{i} THEN 0 WHEN debit_account_id = accounts.id THEN amount ELSE -amount END)"}.join(",")}
+      FROM accounts 
+      LEFT JOIN entries ON debit_account_id = accounts.id OR credit_account_id = accounts.id
+      WHERE entries.amount IS NOT NULL AND (accounts.account_type = 'Income' OR accounts.account_type = 'Expense') AND age(((CURRENT_DATE + 1) - (extract(day from CURRENT_DATE)::integer)), ((entries.date + 1) - (extract(day from entries.date)::integer))) < '1 year'::interval
+      GROUP BY accounts.account_type, accounts.name
+      ORDER BY account_type DESC, name
+      SQL
+      @accounts = Account.connection.execute(sql)
+  end
 end
