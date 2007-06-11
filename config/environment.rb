@@ -37,6 +37,7 @@ Rails::Initializer.run do |config|
   # config.active_record.schema_format = :ruby
 
   # See Rails::Configuration for more options
+  config.action_controller.default_charset = 'ISO-8859-1'
 end
 
 # Add new inflection rules using the following format 
