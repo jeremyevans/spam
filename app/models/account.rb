@@ -25,7 +25,7 @@ class Account < ActiveRecord::Base
   end
 
   def entries_to_reconcile(type)
-    Entry.find(:all, :include=>:entity, :conditions=>["entries.#{type}_account_id = ? AND NOT cleared", id], :order=>"date DESC, reference DESC, amount DESC")
+    Entry.find(:all, :include=>:entity, :conditions=>["entries.#{type}_account_id = ? AND NOT cleared", id], :order=>"date, reference, amount DESC")
   end
 
   def last_entry_for_entity(entity)
