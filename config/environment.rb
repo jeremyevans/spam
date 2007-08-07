@@ -40,16 +40,7 @@ Rails::Initializer.run do |config|
   config.action_controller.default_charset = 'ISO-8859-1'
 end
 
-# Add new inflection rules using the following format 
-# (all these examples are active by default):
-# Inflector.inflections do |inflect|
-#   inflect.plural /^(ox)$/i, '\1en'
-#   inflect.singular /^(ox)en/i, '\1'
-#   inflect.irregular 'person', 'people'
-#   inflect.uncountable %w( fish sheep )
-# end
-
-# Include your application configuration below
+ActionController::Base.param_parsers.delete(Mime::XML)
 ActiveRecord::Base.scaffold_convert_text_to_string = true
 ActiveRecord::Base.scaffold_association_list_class = 'scaffold_associations_tree'
 ActiveRecord::Base.scaffold_auto_complete_default_options.merge!({:sql_name=>'name', :text_field_options=>{:size=>80}, :search_operator=>'ILIKE', :results_limit=>15, :phrase_modifier=>:to_s})
