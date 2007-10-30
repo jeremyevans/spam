@@ -1,4 +1,5 @@
 class Account < ActiveRecord::Base
+  include ValuesSummingTo
   has_many :credit_entries, :class_name=>'Entry', :foreign_key=>'credit_account_id', :include=>[:credit_account, :debit_account, :entity], :order=>'date DESC'
   has_many :debit_entries, :class_name=>'Entry', :foreign_key=>'debit_account_id', :include=>[:credit_account, :debit_account, :entity], :order=>'date DESC'
   has_many :recent_credit_entries, :class_name=>'Entry', :foreign_key=>'credit_account_id', :include=>[:credit_account, :debit_account, :entity],  :limit=>25, :order=>'date DESC'
@@ -16,16 +17,34 @@ class Account < ActiveRecord::Base
   def self.unhidden_register_accounts 
     find(:all, :conditions=>"NOT hidden AND account_type IN ('Bank','CCard')", :order=>'name') 
   end
+
+  def cents(dollars)
+    (dollars * 100).to_i
+  end
   
-  def entries(limit=nil)
-    Entry.find(:all, :include=>[:entity, :credit_account, :debit_account], :conditions=>["? IN (entries.credit_account_id, entries.debit_account_id)", id], :order=>"date DESC, reference DESC, amount DESC", :limit=>limit).collect do |entry| 
+  def entries(limit=nil, conds=nil)
+    Entry.find(:all, :include=>[:entity, :credit_account, :debit_account], :conditions=>["#{conds} (? IN (entries.credit_account_id, entries.debit_account_id))", id], :order=>"date DESC, reference DESC, amount DESC", :limit=>limit).collect do |entry| 
       entry.main_account = self
       entry
     end
   end
 
-  def entries_to_reconcile(type)
-    Entry.find(:all, :include=>:entity, :conditions=>["entries.#{type}_account_id = ? AND NOT cleared", id], :order=>"date, reference, amount DESC")
+  def entries_reconciling_to(reconciled_balance, max_seconds = nil)
+    entries = entries_to_reconcile
+    int_value_dict = {}
+    entries.each{|entry| (int_value_dict[cents(entry.amount)] ||= []) << entry}
+    int_values = entries.collect{|entry| cents(entry.amount)}
+    if comb = find_values_summing_to(int_values, cents(reconciled_balance) - cents(unreconciled_balance), max_seconds)
+      return comb.collect{|value| int_value_dict[value].shift}
+    end
+  end
+
+  def entries_to_reconcile(type=nil)
+    if type
+      Entry.find(:all, :include=>:entity, :conditions=>["entries.#{type}_account_id = ? AND NOT cleared", id], :order=>"date, reference, amount DESC")
+    else
+      entries(nil, 'NOT cleared AND')
+    end
   end
 
   def last_entry_for_entity(entity)
@@ -48,6 +67,6 @@ class Account < ActiveRecord::Base
   end
 
   def unreconciled_balance
-    (balance - connection.select_one("SELECT SUM((CASE WHEN credit_account_id = #{id} THEN -1 * amount ELSE amount END)) FROM entries WHERE #{id} IN (debit_account_id, credit_account_id) AND NOT cleared")['sum'].to_f).to_money
+    balance - connection.select_one("SELECT SUM((CASE WHEN credit_account_id = #{id} THEN -1 * amount ELSE amount END)) FROM entries WHERE #{id} IN (debit_account_id, credit_account_id) AND NOT cleared")['sum'].to_f
   end
 end

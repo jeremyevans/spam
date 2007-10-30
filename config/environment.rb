@@ -44,6 +44,7 @@ ActionController::Base.param_parsers.delete(Mime::XML)
 ActiveRecord::Base.scaffold_convert_text_to_string = true
 ActiveRecord::Base.scaffold_association_list_class = 'scaffold_associations_tree'
 ActiveRecord::Base.scaffold_auto_complete_default_options.merge!({:sql_name=>'name', :text_field_options=>{:size=>80}, :search_operator=>'ILIKE', :results_limit=>15, :phrase_modifier=>:to_s})
+require 'values_summing_to'
 
 class BigDecimal
   def to_money

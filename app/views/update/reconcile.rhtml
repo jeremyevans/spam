@@ -1,10 +1,10 @@
 <% @pagetitle = "Reconciling #{@account.name}" %>
 <form method="post" action="/update/clear_entries/<%= @account.id %>">
 <table><tbody>
-<tr><td>Unreconciled Balance</td><td id="balance"  class="money"><%= @account.unreconciled_balance %></td></tr>
+<tr><td>Unreconciled Balance</td><td id="balance"  class="money"><%= @account.unreconciled_balance.to_money %></td></tr>
 <tr><td>Reconciling Changes</td><td id="reconcile_changes" class="money">$0.00</td></tr>
 <tr><td>Reconcile To</td><td><input id="reconcile_to" type="text" size="8" onChange="updatedReconcileTo();" value="0.00" /></td></tr>
-<tr><td>Off By</td><td id="off_by" class="money"><%= @account.unreconciled_balance  %></td></tr>
+<tr><td>Off By</td><td id="off_by" class="money"><%= @account.unreconciled_balance.to_money %></td></tr>
 <tr><td colspan="2" class="centered"><input type="Submit" value="Clear Entries" /></td></tr>
 </tbody></table>
 <%= render(:partial=>'reconcile_table', :locals=>{:account=>@account, :type=>'debit'}) %>
