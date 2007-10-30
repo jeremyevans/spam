@@ -4,9 +4,9 @@
 <table id="register">
 <thead><tr><th>Date</th><th>Num</th><th>Entity</th><th>Other Account</th><th>Memo</th><th><abbr title="Cleared">C</abbr></th><th>Amount</th><th>Balance</th><th>Modify</th></tr></thead>
 <tbody>
-<tr id="new_entry"><%= render(:partial=>'new_register_entry') %></tr>
+<tr id="new_entry"><%= render(:partial=>(@entry ? 'blank_register_entry' : 'new_register_entry')) %></tr>
 <% @account.entries(@show_num_entries).each do |entry| -%>
-  <tr id="entry_<%= entry.id %>"><%= render(:partial=>'register_entry', :locals=>{:entry=>entry}) %></tr>
+  <tr id="entry_<%= entry.id %>"><%= render(:partial=>(@entry && entry.id == @entry.id ? 'modify_register_entry' : 'register_entry'), :locals=>{:entry=>entry}) %></tr>
 <% end %>
 </tbody></table>
 </form>

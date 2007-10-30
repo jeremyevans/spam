@@ -6,4 +6,4 @@
 <td></td>
 <td class="money"></td>
 <td class="money"><%= @account.money_balance %></td>
-<td><%= link_to_remote("Add", :url=>"/update/modify_entry") %></td>
+<td><%= link_to_remote("Add", {:url=>"/update/modify_entry"}, {:href=>"/update/register/#{@account.id}"}) %></td>

@@ -9,6 +9,10 @@ class UpdateController < ApplicationController
     @entry = Entry.new(params[:entry])
     save_entry
     session[:next_check_number] = ((params[:entry][:reference] =~ /\d{4}/) ? params[:entry][:reference].next : '')
+    respond_to do |format|
+      format.html{redirect_to :action=>'register', :id=>@account.id}
+      format.js
+    end
   end
   
   def clear_entries
@@ -28,6 +32,10 @@ class UpdateController < ApplicationController
       @entry.main_account = @account
       session[:entry_id] = @entry.id
     else session[:entry_id] = nil
+    end
+    respond_to do |format|
+      format.html{@show_num_entries = 35; render :action=>'register'}
+      format.js
     end
   end
 
@@ -70,6 +78,9 @@ class UpdateController < ApplicationController
     @entry = Entry.find(params[:entry][:id])
     @entry.attributes = params[:entry]
     save_entry
-    render(:action=>'update_register_entry')
+    respond_to do |format|
+      format.html{redirect_to :action=>'register', :id=>@account.id}
+      format.js{render(:action=>'update_register_entry')}
+    end
   end
 end
