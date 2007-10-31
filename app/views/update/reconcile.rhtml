@@ -1,6 +1,6 @@
 <% @pagetitle = "Reconciling #{@account.name}" %>
 <h3 id="results"></h3>
-<%= form_remote_tag :url=>"/update/clear_entries/#{@account.id}" %>
+<%= form_remote_tag :url=>{:action=>"clear_entries", :id=>@account.id} %>
 <table id="reconcile"><tbody>
 <tr><td>Unreconciled Balance</td><td id="balance"  class="money"><%= @account.unreconciled_balance.to_money %></td></tr>
 <tr><td>Reconciling Changes</td><td id="reconcile_changes" class="money"><%= @reconcile_changes || '$0.00' %></td></tr>

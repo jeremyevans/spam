@@ -1,6 +1,6 @@
 <% @pagetitle = "#{@account.name} Register" %>
 <h3 id="results">Showing <%= @show_num_entries == -1 ? 'All' : "#{@show_num_entries} Most Recent" %> Entries</h3>
-<%= form_remote_tag :url=>"/update/add_entry" %>
+<%= form_remote_tag :url=>{:action=>"add_entry"} %>
 <table id="register">
 <thead><tr><th>Date</th><th>Num</th><th>Entity</th><th>Other Account</th><th>Memo</th><th><abbr title="Cleared">C</abbr></th><th>Amount</th><th>Balance</th><th>Modify</th></tr></thead>
 <tbody>
@@ -13,4 +13,4 @@
 <script type="text/javascript">
 <%= entity_autocompleter_and_focus %>
 </script>
-<%= link_to('Show All', "/update/register/#{@account.id}?show=-1") if @show_num_entries != -1 %>
+<%= link_to('Show 100', :action=>'register', :id=>@account.id, :show=>100) if @show_num_entries != 100 %>

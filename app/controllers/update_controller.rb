@@ -34,7 +34,7 @@ class UpdateController < ApplicationController
     return auto_reconcile if params[:auto_reconcile]
     Entry.update_all("cleared = TRUE", "id IN (#{params[:entries].keys.collect{|i|i.to_i}.join(',')})")
     respond_to do |format|
-      format.html{redirect_to "/update/reconcile/#{params[:id]}"}
+      format.html{redirect_to :action=>"reconcile", :id=>params[:id]}
       format.js
     end
   end
