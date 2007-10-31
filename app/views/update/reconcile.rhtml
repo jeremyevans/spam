@@ -6,7 +6,7 @@
 <tr><td>Reconciling Changes</td><td id="reconcile_changes" class="money"><%= @reconcile_changes || '$0.00' %></td></tr>
 <tr><td>Reconcile To</td><td><input id="reconcile_to" name="reconcile_to" type="text" size="8" onchange="updatedReconcileTo();" value="<%= @reconcile_to || '$0.00' %>" /></td></tr>
 <tr><td>Off By</td><td id="off_by" class="money"><%= (@account.unreconciled_balance + (@reconcile_changes || 0) - (@reconcile_to || 0)).to_money %></td></tr>
-<tr><td colspan="2" class="centered"><input name="auto_reconcile" type="submit" value="Auto-Reconcile" /><input type="submit" value="Clear Entries" /></td></tr>
+<tr><td colspan="2" class="centered"><input name="auto_reconcile" type="submit" value="Auto-Reconcile" /><input name="clear_entries" type="submit" value="Clear Entries" /></td></tr>
 </tbody></table>
 <%= render(:partial=>'reconcile_table', :locals=>{:account=>@account, :type=>'debit'}) %>
 <%= render(:partial=>'reconcile_table', :locals=>{:account=>@account, :type=>'credit'}) %>
