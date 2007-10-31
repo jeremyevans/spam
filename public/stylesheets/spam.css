@@ -109,6 +109,8 @@ table thead, table tbody, table tr, table th, table td {
 
 table input, table select { font-size: 12px; }
 
+table#reconcile input { margin: 2px; }
+
 .centered { text-align: center; }
 
 .email { 

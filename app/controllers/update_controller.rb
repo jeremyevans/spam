@@ -1,3 +1,4 @@
+require 'set'
 class UpdateController < ApplicationController
   scaffold_all_models
   auto_complete_for :entity, :name
@@ -15,9 +16,27 @@ class UpdateController < ApplicationController
     end
   end
   
+  def auto_reconcile
+    @reconcile_to = params[:reconcile_to].to_f
+    @account = Account.find(params[:id])
+    @entries = @account.entries_reconciling_to(@reconcile_to, params[:entries].keys.collect{|i|i.to_i}, 15)
+    if @entries
+      @reconcile_changes = @reconcile_to - @account.unreconciled_balance if @entries
+      @entries = Set.new(@entries.collect(&:id))
+    end
+    respond_to do |format|
+      format.html{render :action=>"reconcile"}
+      format.js{render :action=>'auto_reconcile'}
+    end
+  end
+  
   def clear_entries
-    Entry.update_all("cleared = TRUE", "id IN (#{params[:entries].keys.collect{|i|i.to_i.to_s}.join(',')})")
-    redirect_to "/update/reconcile/#{params[:id]}"
+    return auto_reconcile if params[:auto_reconcile]
+    Entry.update_all("cleared = TRUE", "id IN (#{params[:entries].keys.collect{|i|i.to_i}.join(',')})")
+    respond_to do |format|
+      format.html{redirect_to "/update/reconcile/#{params[:id]}"}
+      format.js
+    end
   end
   
   def modify_entry

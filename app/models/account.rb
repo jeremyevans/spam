@@ -29,13 +29,23 @@ class Account < ActiveRecord::Base
     end
   end
 
-  def entries_reconciling_to(reconciled_balance, max_seconds = nil)
+  def entries_reconciling_to(reconciled_balance, definite_entries = nil, max_seconds = nil)
     entries = entries_to_reconcile
+    if definite_entries
+      definite_entries, entries = entries.partition{|entry| definite_entries.include?(entry.id)}
+      definite_sum = sum(definite_entries.collect(&:amount))
+    else
+      definite_sum = 0
+    end
     int_value_dict = {}
     entries.each{|entry| (int_value_dict[cents(entry.amount)] ||= []) << entry}
     int_values = entries.collect{|entry| cents(entry.amount)}
-    if comb = find_values_summing_to(int_values, cents(reconciled_balance) - cents(unreconciled_balance), max_seconds)
-      return comb.collect{|value| int_value_dict[value].shift}
+    if comb = find_values_summing_to(int_values, cents(reconciled_balance) - cents(unreconciled_balance) - cents(definite_sum), max_seconds)
+      if definite_entries
+        return comb.collect{|value| int_value_dict[value].shift} + definite_entries
+      else
+        return comb.collect{|value| int_value_dict[value].shift}
+      end
     end
   end
 

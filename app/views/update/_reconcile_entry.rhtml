@@ -1,7 +1,7 @@
 <tr>
-<td><input id="<%= "#{type}_#{entry.id}" %>" name="entries[<%= entry.id %>]" onClick="updateOffBy(this);" type="checkbox" value="1" /></td>
+  <td><input id="<%= "#{type}_#{entry.id}" %>" name="entries[<%= entry.id %>]" <%= 'checked="checked"' if @entries && @entries.include?(entry.id) %> onclick="updateOffBy(this);" type="checkbox" value="1" /></td>
 <td><%= entry.date %></td>
 <td><%= entry.reference %></td>
-<td class="name"><%= entry.entity.name if entry.entity %></td>
+<td class="name"><%=h(entry.entity.name) if entry.entity %></td>
 <td class="money" id="amount_<%= entry.id %>"><%= entry.money_amount %></td>
 </tr>

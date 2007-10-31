@@ -35,7 +35,7 @@ module ValuesSummingTo
   end
 
   def find_values_summing_to(values, want, max_seconds = nil)
-    values.each{|value| return value if value == want}
+    values.each{|value| return [value] if value == want}
     start_time = Time.now if max_seconds
     all_values_summing_to(values, want, Proc.new{return nil if max_seconds && Time.now - start_time > max_seconds}){|comb| return comb}
   end

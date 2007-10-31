@@ -1,6 +1,6 @@
 <td><%= entry.date %></td>
 <td><%= entry.reference %></td>
-<td><%= entry.entity.name if entry.entity %></td>
+<td><%=h(entry.entity.name) if entry.entity %></td>
 <td><%= entry.other_account.name %></td>
 <td><%= entry.memo %></td>
 <td><%= entry.cleared ? 'R' : nil %></td>
