@@ -35,7 +35,7 @@ class UpdateController < ApplicationController
     Entry.update_all("cleared = TRUE", "id IN (#{params[:entries].keys.collect{|i|i.to_i}.join(',')})")
     respond_to do |format|
       format.html{redirect_to :action=>"reconcile", :id=>params[:id]}
-      format.js
+      format.js{@account = Account.find(params[:id]); render}
     end
   end
   
