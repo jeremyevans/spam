@@ -31,7 +31,7 @@ class UpdateController < ApplicationController
   end
   
   def clear_entries
-    return auto_reconcile if params[:auto_reconcile]
+    return auto_reconcile if params[:auto_reconcile] && !request.xhr?
     Entry.update_all("cleared = TRUE", "id IN (#{params[:entries].keys.collect{|i|i.to_i}.join(',')})")
     respond_to do |format|
       format.html{redirect_to :action=>"reconcile", :id=>params[:id]}
