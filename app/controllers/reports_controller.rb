@@ -19,7 +19,8 @@ class ReportsController < ApplicationController
     GROUP BY EXTRACT(YEAR FROM entries.date)::text || to_char(-1*EXTRACT(MONTH FROM entries.date), '00')
     ORDER BY month DESC
     SQL
-    @months = Entry.find_by_sql(sql)[0...-1]
+    @months = Entry.find_by_sql(sql)
+    @months.pop if @months.length > 12
   end
   
   def net_worth
@@ -39,7 +40,7 @@ class ReportsController < ApplicationController
       sql =<<-SQL
       SELECT accounts.account_type_id, accounts.name, #{(0...12).to_a.collect{|i| "\nSUM(CASE WHEN extract(month from 
       age((('#{max_date}'::date + 1) - (extract(day from '#{max_date}'::date)::integer)), 
-      ((entries.date + 1) - (extract(day from entries.date)::integer)))) != #{i} THEN 0 WHEN debit_account_id = accounts.id THEN amount ELSE -amount END)"}.join(",")}
+      ((entries.date + 1) - (extract(day from entries.date)::integer)))) != #{i} THEN 0 WHEN debit_account_id = accounts.id THEN -amount ELSE amount END)"}.join(",")}
       FROM accounts 
       INNER JOIN entries ON debit_account_id = accounts.id OR credit_account_id = accounts.id
       WHERE (accounts.account_type_id IN (3,4)) AND age((('#{max_date}'::date + 1) - (extract(day from '#{max_date}'::date)::integer)), ((entries.date + 1) - (extract(day from entries.date)::integer))) < '1 year'::interval AND accounts.user_id = #{session[:user_id]}
