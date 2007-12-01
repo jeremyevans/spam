@@ -1,7 +1,7 @@
 <% @pagetitle = "Earning/Spending" %>
 
 <table class="sparse">
-<thead><tr><th>Account</th><th>This Month</th><th>Last Month</th><%= (2...12).to_a.collect{|i| content_tag(:th, (Time.now - i.months).strftime('%B %Y'))} %></tr></thead>
+<thead><tr><th>Account</th><%= (0...12).to_a.collect{|i| content_tag(:th, (@max_date << i).strftime('%B %Y'))} %></tr></thead>
 <tbody>
 <% @accounts.each do |account| -%>
   <tr><td><%= account[1] %></td><%= (0...12).to_a.collect{|i| content_tag(:td, account[2+i], :class=>'money')} %></tr>

@@ -19,56 +19,41 @@ CREATE TABLE users (
     num_register_entries INTEGER DEFAULT 35 NOT NULL
 ) WITHOUT OIDS;
 
-CREATE TABLE accounts (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
-    user_id INTEGER REFERENCES users (id) NOT NULL,
-    account_type_id INTEGER REFERENCES account_types (id) NOT NULL,
-    balance DECIMAL(10,2) DEFAULT 0 NOT NULL,
-    description TEXT,
-    hidden BOOLEAN DEFAULT FALSE
-) WITHOUT OIDS;
+INSERT INTO users (id, name, salt, password) VALUES (1, 'default',  '', '');
+SELECT setval('users_id_seq', 1);
 
-CREATE TABLE entities (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users (id) NOT NULL,
-    name TEXT NOT NULL
-) WITHOUT OIDS;
+ALTER TABLE accounts ADD account_type_id INTEGER REFERENCES account_types (id);
+UPDATE accounts SET account_type_id = 1 WHERE account_type = 'Bank';
+UPDATE accounts SET account_type_id = 2 WHERE account_type = 'CCard';
+UPDATE accounts SET account_type_id = 3 WHERE account_type = 'Income';
+UPDATE accounts SET account_type_id = 4 WHERE account_type = 'Expense';
+ALTER TABLE accounts DROP account_type;
+UPDATE accounts SET description = (CASE 
+    WHEN description IS NULL THEN 'Credit Limit: ' || credit_limit::text 
+    ELSE description || E'\nCredit Limit: ' || credit_limit::text 
+    END) WHERE credit_limit IS NOT NULL;
+ALTER TABLE accounts DROP credit_limit;
+ALTER TABLE accounts ALTER account_type_id SET NOT NULL;
 
-CREATE TABLE entries (
-    id SERIAL PRIMARY KEY,
-    debit_account_id INTEGER REFERENCES accounts(id) NOT NULL,
-    credit_account_id INTEGER REFERENCES accounts(id) NOT NULL,
-    entity_id INTEGER REFERENCES entities(id),
-    user_id INTEGER REFERENCES users (id) NOT NULL,
-    reference TEXT,
-    date DATE DEFAULT CURRENT_DATE,
-    amount DECIMAL(10,2) CHECK (amount > 0) NOT NULL,
-    cleared BOOLEAN DEFAULT FALSE,
-    memo TEXT
-    CHECK (debit_account_id != credit_account_id)
-) WITHOUT OIDS;
+ALTER TABLE accounts ADD user_id INTEGER REFERENCES users (id);
+UPDATE accounts SET user_id = 1;
+ALTER TABLE accounts ALTER user_id SET NOT NULL;
 
+ALTER TABLE entities ADD user_id INTEGER REFERENCES users (id);
+UPDATE entities SET user_id = 1;
+ALTER TABLE entities ALTER user_id SET NOT NULL;
+
+ALTER TABLE entries ADD user_id INTEGER REFERENCES users (id);
+UPDATE entries SET user_id = 1;
+ALTER TABLE entries ALTER user_id SET NOT NULL;
+
+DROP INDEX accounts_namei;
+DROP INDEX accounts_name_key;
+DROP INDEX entities_namei;
+DROP INDEX entities_name_key;
 CREATE UNIQUE INDEX accounts_namei ON accounts (user_id, lower(name));
 CREATE UNIQUE INDEX entities_namei ON entities (user_id, lower(name));
 CREATE INDEX entries_user_date ON entries (user_id, date);
-
-CREATE FUNCTION update_account_balance() RETURNS TRIGGER AS '
-    BEGIN
-        IF (TG_OP = ''DELETE'' OR TG_OP = ''UPDATE'') THEN 
-            UPDATE accounts SET balance = balance - OLD.amount WHERE id = OLD.debit_account_id;
-            UPDATE accounts SET balance = balance + OLD.amount WHERE id = OLD.credit_account_id;
-        END IF;
-        IF (TG_OP = ''INSERT'' OR TG_OP = ''UPDATE'') THEN
-            UPDATE accounts SET balance = balance + NEW.amount WHERE id = NEW.debit_account_id;
-            UPDATE accounts SET balance = balance - NEW.amount WHERE id = NEW.credit_account_id;
-        END IF;
-        IF (TG_OP = ''DELETE'') THEN
-            RETURN OLD;
-        END IF;
-        RETURN NEW;
-    END;
-' LANGUAGE plpgsql;
 
 CREATE FUNCTION check_entity_and_accounts() RETURNS TRIGGER AS '
     DECLARE
@@ -98,9 +83,6 @@ CREATE FUNCTION no_updating_user_id() RETURNS TRIGGER AS '
         RETURN NEW;
     END;
 ' LANGUAGE plpgsql;
-
-CREATE TRIGGER update_account_balance BEFORE INSERT OR UPDATE OR DELETE ON entries
-    FOR EACH ROW EXECUTE PROCEDURE update_account_balance();
 
 CREATE TRIGGER check_entity_and_accounts BEFORE INSERT ON entries
     FOR EACH ROW EXECUTE PROCEDURE check_entity_and_accounts();
