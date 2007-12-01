@@ -47,10 +47,11 @@ ALTER TABLE entries ADD user_id INTEGER REFERENCES users (id);
 UPDATE entries SET user_id = 1;
 ALTER TABLE entries ALTER user_id SET NOT NULL;
 
+ALTER TABLE accounts DROP CONSTRAINT accounts_name_key;
+ALTER TABLE entities DROP CONSTRAINT entities_name_key;
+
 DROP INDEX accounts_namei;
-DROP INDEX accounts_name_key;
 DROP INDEX entities_namei;
-DROP INDEX entities_name_key;
 CREATE UNIQUE INDEX accounts_namei ON accounts (user_id, lower(name));
 CREATE UNIQUE INDEX entities_namei ON entities (user_id, lower(name));
 CREATE INDEX entries_user_date ON entries (user_id, date);
