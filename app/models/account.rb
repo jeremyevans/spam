@@ -75,8 +75,8 @@ class Account < ActiveRecord::Base
   end
 
   def next_check_number
-    return '' if account_type != 'Bank'
-    return '' unless entry = Entry.find(:first, :conditions=>["? in (debit_account_id, credit_account_id) AND reference ~ E'^\\\\d{4}$' AND user_id = ?", id, user_id], :order=>'reference DESC')
+    return '' if account_type_id != 1
+    return '' unless entry = Entry.find(:first, :conditions=>["? in (debit_account_id, credit_account_id) AND reference ~ E'^\\\\d+$' AND user_id = ?", id, user_id], :order=>'reference DESC')
     return '' unless entry.reference.to_i > 0
     (entry.reference.to_i+1).to_s
   end

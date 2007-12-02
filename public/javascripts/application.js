@@ -123,6 +123,6 @@ Object.extend(Object.extend(Ajax.EntityAutocompleter.prototype, Ajax.Autocomplet
     this.active = false;
     this.updateElement(this.getCurrentEntry());
     this.element.focus();
-    new Ajax.Request('/update/other_account_for_entry?entity='+this.element.value.replace(/&/g, '%26'), {asynchronous:true, evalScripts:true, onComplete:function(request){eval(request.responseText)}})
+    new Ajax.Request('/update/other_account_for_entry/' + $('register_account_id').value + '?entity='+this.element.value.replace(/&/g, '%26'), {asynchronous:true, evalScripts:true, onComplete:function(request){eval(request.responseText)}})
   }
 });

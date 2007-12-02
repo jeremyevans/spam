@@ -6,4 +6,4 @@
 <td><%= entry.cleared ? 'R' : nil %></td>
 <td class="money"><%= entry.money_amount %></td>
 <td class="money"><%= @account.money_balance %> <% @account[:balance] -= entry.amount %></td>
-<td><%= link_to_remote("Modify", {:url=>"/update/modify_entry/#{entry.id}"}, {:href=>"/update/modify_entry/#{entry.id}"}) %></td>
+<td><%= link_to("Modify", "/update/modify_entry/#{entry.id}", :onclick=>"new Ajax.Request('/update/modify_entry/#{entry.id}?selected_entry_id=' + $('selected_entry_id').value + '&amp;register_account_id=' + $('register_account_id').value, {asynchronous:true, evalScripts:true}); return false;") %></td>

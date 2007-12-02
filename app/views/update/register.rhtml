@@ -1,6 +1,8 @@
 <% @pagetitle = "#{@account.name} Register" %>
 <h3 id="results">Showing <%= @show_num_entries == -1 ? 'All' : "#{@show_num_entries} Most Recent" %> Entries</h3>
 <%= form_remote_tag :url=>{:action=>"add_entry"} %>
+<%= hidden_field_tag('selected_entry_id', @entry_id) %>
+<%= hidden_field_tag('register_account_id', @account.id) %>
 <table id="register">
 <thead><tr><th>Date</th><th>Num</th><th>Entity</th><th>Other Account</th><th>Memo</th><th><abbr title="Cleared">C</abbr></th><th>Amount</th><th>Balance</th><th>Modify</th></tr></thead>
 <tbody>

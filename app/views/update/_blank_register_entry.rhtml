@@ -6,4 +6,4 @@
 <td></td>
 <td class="money"></td>
 <td class="money"><%= @account.money_balance %></td>
-<td><%= link_to_remote("Add", {:url=>"/update/modify_entry"}, {:href=>"/update/register/#{@account.id}"}) %></td>
+<td><%= link_to("Add", "/update/register/#{@account.id}", :onclick=>"new Ajax.Request('/update/modify_entry?selected_entry_id=' + $('selected_entry_id').value + '&amp;register_account_id=' + $('register_account_id').value, {asynchronous:true, evalScripts:true}); return false;") %></td>

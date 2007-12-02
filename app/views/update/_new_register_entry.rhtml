@@ -1,5 +1,5 @@
 <td><%= text_field('entry', 'date', "size"=>10, "value"=>((defined?(time) && time) ? time : Time.new).strftime("%Y-%m-%d")) %></td>
-<td><%= text_field('entry', 'reference', "size"=>4, :autocomplete=>'off', "value"=>session[:next_check_number]) %></td>
+<td><%= text_field('entry', 'reference', "size"=>4, :autocomplete=>'off', "value"=>@check_number) %></td>
 <td><input autocomplete="off" id="entity_name" name="entity[name]" size="30" type="text" value="" /><div class="auto_complete" id="entity_name_auto_complete"></div></td>
 <td><select name="account[id]" id="account_id"><option></option><%= options_for_select(@accounts) %></select></td>
 <td><%= text_field('entry', 'memo', "size"=>30, :autocomplete=>'off', "value"=>'') %></td>

@@ -1,3 +1,4 @@
+page << "$('selected_entry_id').value = '#{@selected_entry_id}'"
 page.replace_html('new_entry', render(:partial=>(@entry ? 'blank_register_entry' : 'new_register_entry'), :locals=>{:entry=>@entry}))
 page.replace_html("entry_#{@other_entry.id}", render(:partial=>'register_entry', :locals=>{:entry=>@other_entry})) if @other_entry
 page << "ts_resortTable()"
