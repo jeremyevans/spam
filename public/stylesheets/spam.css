@@ -46,7 +46,7 @@ div#nav {
 }
 div#nav a {	display: block; }
 
-div#reconcile {
+div#debit_entries {
 	float: left;
 	border-width: 1px;
 	text-align: center;
