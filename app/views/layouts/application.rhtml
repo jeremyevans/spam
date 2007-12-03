@@ -41,8 +41,11 @@
 <a href="/update/manage_account">Manage Accounts</a>
 <a href="/update/manage_entity">Manage Entities</a>
 <a href="/update/manage_entry">Manage Entries</a>
-<br />
-<%= button_to('Logout', :controller=>'login', :action=>'logout') if session[:user_id] %>
-
+<% if session[:user_id] %>
+  <br />
+  <a href="/login/change_password">Change Password</a>
+  <br />
+  <%= button_to('Logout', :controller=>'login', :action=>'logout')  %>
+<% end %>
 </div>
 </body></html>
