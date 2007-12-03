@@ -1,9 +1,13 @@
 <% @pagetitle = "Earning/Spending" %>
 
-<table class="sparse">
-<thead><tr><th>Account</th><%= (0...12).to_a.collect{|i| content_tag(:th, (@max_date << i).strftime('%B %Y'))} %></tr></thead>
-<tbody>
-<% @accounts.each do |account| -%>
-  <tr><td><%= account[1] %></td><%= (0...12).to_a.collect{|i| content_tag(:td, account[2+i], :class=>'money')} %></tr>
-<% end%>
-</tbody></table>
+<% if @max_date %>
+  <table class="sparse">
+  <thead><tr><th>Account</th><%= (0...12).to_a.collect{|i| content_tag(:th, (@max_date << i).strftime('%B %Y'))} %></tr></thead>
+  <tbody>
+  <% @accounts.each do |account| -%>
+    <tr><td><%= account[1] %></td><%= (0...12).to_a.collect{|i| content_tag(:td, account[2+i], :class=>'money')} %></tr>
+  <% end%>
+  </tbody></table>
+<% else %>
+  <p>This report isn't ready yet, because no entries have been entered.</p>
+<% end %>

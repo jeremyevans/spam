@@ -31,12 +31,10 @@ class ReportsController < ApplicationController
   
   def earning_spending
     @accounts = []
-    @max_date = Date.today
     Entry.transaction do
       sql = "SELECT MAX(date) FROM entries WHERE user_id = #{session[:user_id]}"
       dates = Entry.connection.execute(sql)
-      return unless dates.rows.length > 0
-      max_date = dates[0][0]
+      return unless max_date = dates[0][0]
       sql =<<-SQL
       SELECT accounts.account_type_id, accounts.name, #{(0...12).to_a.collect{|i| "\nSUM(CASE WHEN extract(month from 
       age((('#{max_date}'::date + 1) - (extract(day from '#{max_date}'::date)::integer)), 
