@@ -1,7 +1,7 @@
 page.replace_html('off_by', @account.unreconciled_balance.to_money)
 page.replace_html('reconcile_changes', '$0.00')
-page.replace_html('reconcile_to', '$0.00')
+page << "$('reconcile_to').value = '$0.00'"
 page.replace_html('balance', @account.unreconciled_balance.to_money)
-page.replace('debit_entries', render(:partial=>'reconcile_table', :locals=>{:account=>@account, :type=>'debit'}))
-page.replace('credit_entries', render(:partial=>'reconcile_table', :locals=>{:account=>@account, :type=>'credit'}))
+page.replace_html('debit_entries', render(:partial=>'reconcile_table', :locals=>{:account=>@account, :type=>'debit'}))
+page.replace_html('credit_entries', render(:partial=>'reconcile_table', :locals=>{:account=>@account, :type=>'credit'}))
 page.replace_html('results', 'Cleared Entries')

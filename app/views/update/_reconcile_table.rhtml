@@ -1,4 +1,3 @@
-<div id="<%= "#{type}_entries" %>">
 <table>
 <caption><%= type.capitalize %> Entries</caption>
 <thead><tr><th><abbr title="Cleared">C</abbr></th><th>Date</th><th>Num</th><th>Entity</th><th>Amount</th></tr></thead><tbody>
@@ -6,4 +5,3 @@
   <%= render(:partial=>'reconcile_entry', :locals=>{:entry=>entry, :type=>type}) %>
 <% end %>
 </tbody></table>
-</div>

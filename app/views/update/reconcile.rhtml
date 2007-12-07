@@ -11,9 +11,11 @@
   <input name="clear_entries" type="submit" value="Clear Entries" onclick="<%= remote_function(:url=>{:action=>"clear_entries", :id=>@account.id}, :with=>'Form.serialize(this.form)') %>; return false;" />
 </td></tr>
 </tbody></table>
+<div id="debit_entries">
 <%= render(:partial=>'reconcile_table', :locals=>{:account=>@account, :type=>'debit'}) %>
+</div><div id="credit_entries">
 <%= render(:partial=>'reconcile_table', :locals=>{:account=>@account, :type=>'credit'}) %>
-</form>
+</div></form>
 <script type="text/javascript">
 document.forms[0].reconcile_to.select();
 document.forms[0].reconcile_to.focus();

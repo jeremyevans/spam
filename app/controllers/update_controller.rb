@@ -36,7 +36,7 @@ class UpdateController < ApplicationController
     end
     respond_to do |format|
       format.html{render :action=>"reconcile"}
-      format.js{render :action=>'auto_reconcile'}
+      format.js
     end
   end
   
