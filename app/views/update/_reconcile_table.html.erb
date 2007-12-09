@@ -1,7 +1,5 @@
 <table>
 <caption><%= type.capitalize %> Entries</caption>
 <thead><tr><th><abbr title="Cleared">C</abbr></th><th>Date</th><th>Num</th><th>Entity</th><th>Amount</th></tr></thead><tbody>
-<% account.send("entries_to_reconcile", type).each do |entry| -%>
-  <%= render(:partial=>'reconcile_entry', :locals=>{:entry=>entry, :type=>type}) %>
-<% end %>
+<%= render(:partial=>'reconcile_entry.html.erb', :collection=>@account.send("entries_to_reconcile", type)) %>
 </tbody></table>

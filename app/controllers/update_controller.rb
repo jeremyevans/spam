@@ -1,4 +1,3 @@
-require 'set'
 class UpdateController < ApplicationController
   scaffold_all_models :only=>[:account, :entity, :entry]
   before_filter :require_login
@@ -74,6 +73,9 @@ class UpdateController < ApplicationController
     @account = find_account_with_user_id(params[:id])
     @entry = @account.last_entry_for_entity(params[:entity])
     @entry.main_account = @account
+    respond_to do |format|
+      format.js
+    end
   end
 
   def reconcile
