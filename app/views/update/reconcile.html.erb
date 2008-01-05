@@ -12,9 +12,9 @@
 </td></tr>
 </tbody></table>
 <div id="debit_entries">
-<%= render(:partial=>'reconcile_table.html.erb', :locals=>{:type=>'debit'}) %>
+<%= render(:partial=>'reconcile_table.html.erb', :locals=>{:entry_type=>'debit'}) %>
 </div><div id="credit_entries">
-<%= render(:partial=>'reconcile_table.html.erb', :locals=>{:type=>'credit'}) %>
+<%= render(:partial=>'reconcile_table.html.erb', :locals=>{:entry_type=>'credit'}) %>
 </div></form>
 <script type="text/javascript">
 document.forms[0].reconcile_to.select();

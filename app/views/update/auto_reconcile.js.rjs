@@ -1,8 +1,8 @@
 if @entries
   page.replace_html('off_by', '$0.00')
   page.replace_html('reconcile_changes', @reconcile_changes.to_money)
-  page.replace_html('debit_entries', render(:partial=>'reconcile_table.html.erb', :locals=>{:type=>'debit'}))
-  page.replace_html('credit_entries', render(:partial=>'reconcile_table.html.erb', :locals=>{:type=>'credit'}))
+  page.replace_html('debit_entries', render(:partial=>'reconcile_table.html.erb', :locals=>{:entry_type=>'debit'}))
+  page.replace_html('credit_entries', render(:partial=>'reconcile_table.html.erb', :locals=>{:entry_type=>'credit'}))
   page.replace_html('results', 'Auto Reconciled Account')
 else
   page.replace_html('results', 'Unable to Auto Reconcile')
