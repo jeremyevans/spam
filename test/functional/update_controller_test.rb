@@ -11,8 +11,5 @@ class UpdateControllerTest < Test::Unit::TestCase
     @response   = ActionController::TestResponse.new
   end
 
-  # Replace this with your real tests.
-  def test_truth
-    assert true
-  end
+  test_scaffold_all_models :only=>[Account, Entity, Entry]
 end

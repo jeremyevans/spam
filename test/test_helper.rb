@@ -1,28 +1,22 @@
 ENV["RAILS_ENV"] = "test"
 require File.expand_path(File.dirname(__FILE__) + "/../config/environment")
 require 'test_help'
+require File.dirname(__FILE__) + '/../vendor/plugins/scaffolding_extensions/test/scaffolding_extensions_test'
 
 class Test::Unit::TestCase
-  # Transactional fixtures accelerate your tests by wrapping each test method
-  # in a transaction that's rolled back on completion.  This ensures that the
-  # test database remains unchanged so your fixtures don't have to be reloaded
-  # between every test method.  Fewer database queries means faster tests.
-  #
-  # Read Mike Clark's excellent walkthrough at
-  #   http://clarkware.com/cgi/blosxom/2005/10/24#Rails10FastTesting
-  #
-  # Every Active Record database supports transactions except MyISAM tables
-  # in MySQL.  Turn off transactional fixtures in this case; however, if you
-  # don't care one way or the other, switching from MyISAM to InnoDB tables
-  # is recommended.
   self.use_transactional_fixtures = true
-
-  # Instantiated fixtures are slow, but give you @david where otherwise you
-  # would need people(:david).  If you don't want to migrate your existing
-  # test cases which use the @david style and don't mind the speed hit (each
-  # instantiated fixtures translates to a database query per test method),
-  # then set this back to true.
   self.use_instantiated_fixtures  = false
 
-  # Add more helper methods to be used by all tests here...
+  # Test that getting all display actions for the scaffold returns success
+  def scaffold_test(model, options = {})
+    klass = @controller.class
+    methods = options[:only] ? klass.scaffold_normalize_options(options[:only]) : ScaffoldingExtensions::DEFAULT_METHODS
+    methods -= klass.scaffold_normalize_options(options[:except]) if options[:except]
+    methods.each do |action|
+      assert_nothing_raised("Error requesting scaffolded action #{action} for model #{model.name}") do
+        get "#{action}_#{model.scaffold_name}", {}, {:user_id=>1}
+      end
+      assert_response :success, "Response for scaffolded action #{action} for model #{model.name} not :success"
+    end
+  end
 end

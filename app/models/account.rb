@@ -6,10 +6,10 @@ class Account < ActiveRecord::Base
   has_many :recent_credit_entries, :class_name=>'Entry', :foreign_key=>'credit_account_id', :include=>[:credit_account, :debit_account, :entity],  :limit=>25, :order=>'date DESC'
   has_many :recent_debit_entries, :class_name=>'Entry', :foreign_key=>'debit_account_id', :include=>[:credit_account, :debit_account, :entity], :limit=>25, :order=>'date DESC'
   @scaffold_select_order = 'accounts.name'
-  @scaffold_fields = %w'name account_type hidden description'
-  @scaffold_column_types = {'description'=>:text}
-  @scaffold_column_options_hash = {'description'=>{:size=>'50x6'}}
-  @scaffold_associations = %w'recent_credit_entries recent_debit_entries'
+  @scaffold_fields = [:name, :account_type, :hidden, :description]
+  @scaffold_column_types = {:description=>:text}
+  @scaffold_column_options_hash = {:description=>{:cols=>'50', :rows=>'4'}}
+  @scaffold_associations = [:recent_credit_entries, :recent_debit_entries]
   @scaffold_session_value = :user_id
   attr_protected :balance, :user_id
   

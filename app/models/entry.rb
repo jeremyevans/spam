@@ -3,7 +3,7 @@ class Entry < ActiveRecord::Base
   belongs_to :debit_account, :class_name=>'Account', :foreign_key=>'debit_account_id'
   belongs_to :entity
   
-  @scaffold_fields = %w'date reference entity credit_account debit_account amount memo cleared'
+  @scaffold_fields = [:date, :reference, :entity, :credit_account, :debit_account, :amount, :memo, :cleared]
   @scaffold_select_order = 'entries.date DESC, entities.name, accounts.name, debit_accounts_entries.name, entries.amount'
   @scaffold_include = [:entity, :credit_account, :debit_account]
   @scaffold_auto_complete_options = {:sql_name=>"reference || date::TEXT || entities.name ||  accounts.name || debit_accounts_entries.name || entries.amount::TEXT"}

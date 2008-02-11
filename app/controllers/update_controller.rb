@@ -1,5 +1,5 @@
 class UpdateController < ApplicationController
-  scaffold_all_models :only=>[:account, :entity, :entry]
+  scaffold_all_models :only=>[Account, Entity, Entry]
   before_filter :require_login
 
   def add_entry
