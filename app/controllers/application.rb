@@ -4,7 +4,12 @@ class ApplicationController < ActionController::Base
   before_filter :get_navigation_accounts
   
   private
+    def demo_mode?
+      DEMO_MODE == true
+    end
+
     def get_navigation_accounts
+      session[:user_id] = 1 if demo_mode?
       @navigation_accounts = Account.unhidden_register_accounts(session[:user_id]) if session[:user_id]
     end
     

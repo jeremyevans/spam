@@ -3,6 +3,7 @@ class LoginController < ApplicationController
   before_filter :require_login, :except=>['index', 'login']
   
   def update_password
+    return redirect_to(:action=>'index') if demo_mode?
     page = 'change_password'
     flash[:notice] = if params[:password] && params[:password2]
       if params[:password].length < 6
@@ -26,6 +27,7 @@ class LoginController < ApplicationController
   end
   
   def login
+    return redirect_to(:action=>'index') if demo_mode?
     flash[:notice] = unless session[:user_id] = User.login_user_id(params[:username], params[:password])
       'Incorrect username or password.'
     else
