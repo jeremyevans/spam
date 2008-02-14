@@ -20,7 +20,6 @@ class Entry < ActiveRecord::Base
     "#{date.strftime('%Y-%m-%d')}-#{reference}-#{entity.name if entity}-#{debit_account.name if debit_account}-#{credit_account.name if credit_account}-#{money_amount}"
   end
   
-  @other_account = nil
   attr_accessor :other_account
   
   def income

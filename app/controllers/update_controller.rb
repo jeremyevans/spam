@@ -19,7 +19,7 @@ class UpdateController < ApplicationController
   def auto_complete_for_entity_name
     @items = Entity.find(:all, :conditions=>["user_id = ? AND name ILIKE ?", session[:user_id], "%#{params[:entity][:name]}%"], :limit=>10, :order=>'name')
     if @items.length > 0
-      render :inline => "<%= auto_complete_result @items, 'name' %>"
+      render :text => "<ul>#{@items.collect{|x| "<li>#{x.name}</li>"}.join("\n")}</ul>", :layout=>false
     else
       render :nothing=>true
     end
