@@ -8,6 +8,7 @@ Rails::Initializer.run do |config|
 end
 
 ActionController::Base.param_parsers.delete(Mime::XML)
+require 'scaffolding_extensions'
 ActiveRecord::Base::SCAFFOLD_OPTIONS[:text_to_string] = true
 ActiveRecord::Base::SCAFFOLD_OPTIONS[:association_list_class] = 'scaffold_associations_tree'
 ActiveRecord::Base::SCAFFOLD_OPTIONS[:auto_complete].merge!(:sql_name=>'name', :search_operator=>'ILIKE', :results_limit=>15, :phrase_modifier=>:to_s)
