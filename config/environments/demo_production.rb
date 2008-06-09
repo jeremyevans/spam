@@ -17,3 +17,5 @@ config.action_controller.perform_caching             = true
 # config.action_mailer.raise_delivery_errors = false
 
 DEMO_MODE = true
+
+DB = Sequel.postgres('spamdemo', :user=>'guest', :host=>'/tmp')

@@ -17,7 +17,7 @@ class UpdateController < ApplicationController
   end
   
   def auto_complete_for_entity_name
-    @items = Entity.find(:all, :conditions=>["user_id = ? AND name ILIKE ?", session[:user_id], "%#{params[:entity][:name]}%"], :limit=>10, :order=>'name')
+    @items = Entity.filter(:user_id=>session[:user_id]).filter(:name.ilike("%#{params[:entity][:name]}%")).order(:name).limit(10).all
     if @items.length > 0
       render :text => "<ul>#{@items.collect{|x| "<li>#{x.name}</li>"}.join("\n")}</ul>", :layout=>false
     else
@@ -41,7 +41,7 @@ class UpdateController < ApplicationController
   
   def clear_entries
     return auto_reconcile if params[:auto_reconcile] && !request.xhr?
-    Entry.update_all("cleared = TRUE", "user_id = #{session[:user_id]} AND id IN (#{params[:entries].keys.collect{|i|i.to_i}.join(',')})")
+    Entry.filter(:user_id=>session[:user_id], :id=>params[:entries].keys.collect{|i|i.to_i}).update(:cleared => true)
     respond_to do |format|
       format.html{redirect_to :action=>"reconcile", :id=>params[:id]}
       format.js{@account = find_account_with_user_id(params[:id]); render}
@@ -63,7 +63,7 @@ class UpdateController < ApplicationController
     else @selected_entry_id = nil
     end
     respond_to do |format|
-      format.html{@show_num_entries = User.find(session[:user_id]).num_register_entries; render :action=>'register'}
+      format.html{@show_num_entries = User[session[:user_id]].num_register_entries; render :action=>'register'}
       format.js
     end
   end
@@ -85,7 +85,7 @@ class UpdateController < ApplicationController
   def register
     @account = find_account_with_user_id(params[:id])
     @accounts = Account.for_select(session[:user_id])
-    @show_num_entries = ((params[:show] and params[:show].to_i != 0) ? params[:show].to_i : User.find(session[:user_id]).num_register_entries)
+    @show_num_entries = ((params[:show] and params[:show].to_i != 0) ? params[:show].to_i : User[session[:user_id]].num_register_entries)
     @show_num_entries = nil if @show_num_entries < 1
     @check_number = @account.next_check_number
   end
@@ -104,21 +104,21 @@ class UpdateController < ApplicationController
     other_account = find_account_with_user_id(params[:account][:id])
     @entry[:debit_account_id], @entry[:credit_account_id] = ((params[:entry][:amount].to_f > 0) ? [@account.id, other_account.id] : [other_account.id, @account.id])
     @entry.amount = params[:entry][:amount].to_f.abs
-    entity = Entity.find(:first, :conditions=>['name = ? AND user_id = ?', params[:entity][:name], session[:user_id]]) 
+    entity = Entity.filter(:name=>params[:entity][:name], :user_id=>session[:user_id]).first
     if params[:entity][:name].length > 0 and not entity
       entity = Entity.new(params[:entity])
       entity.user_id = session[:user_id]
-      entity.save!
+      entity.save
     end
     @entry[:entity_id] = entity.id
-    @entry.save!
+    @entry.save
     @account.reload()
     @entry.main_account = @account
   end
 
   def update_register_entry
-    @entry = find_entry_with_user_id(params[:entry][:id])
-    @entry.attributes = params[:entry]
+    @entry = find_entry_with_user_id(params[:entry].delete(:id))
+    @entry.set_with_params(params[:entry])
     save_entry
     respond_to do |format|
       format.html{redirect_to :action=>'register', :id=>@account.id}

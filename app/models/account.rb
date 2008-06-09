@@ -1,30 +1,28 @@
-class Account < ActiveRecord::Base
+class Account < Sequel::Model
   include ValuesSummingTo
-  belongs_to :account_type
-  has_many :credit_entries, :class_name=>'Entry', :foreign_key=>'credit_account_id', :include=>[:credit_account, :debit_account, :entity], :order=>'date DESC'
-  has_many :debit_entries, :class_name=>'Entry', :foreign_key=>'debit_account_id', :include=>[:credit_account, :debit_account, :entity], :order=>'date DESC'
-  has_many :recent_credit_entries, :class_name=>'Entry', :foreign_key=>'credit_account_id', :include=>[:credit_account, :debit_account, :entity],  :limit=>25, :order=>'date DESC'
-  has_many :recent_debit_entries, :class_name=>'Entry', :foreign_key=>'debit_account_id', :include=>[:credit_account, :debit_account, :entity], :limit=>25, :order=>'date DESC'
-  @scaffold_select_order = 'accounts.name'
+  many_to_one :account_type
+  one_to_many :credit_entries, :class_name=>'Entry', :key=>:credit_account_id, :eager=>[:credit_account, :debit_account, :entity], :order=>:date.desc
+  one_to_many :debit_entries, :class_name=>'Entry', :key=>:debit_account_id, :eager=>[:credit_account, :debit_account, :entity], :order=>:date.desc
+  one_to_many(:recent_credit_entries, :class_name=>'Entry', :key=>:credit_account_id, :eager=>[:credit_account, :debit_account, :entity], :order=>:date.desc){|ds| ds.limit(25)}
+  one_to_many(:recent_debit_entries, :class_name=>'Entry', :key=>:debit_account_id, :eager=>[:credit_account, :debit_account, :entity], :order=>:date.desc){|ds| ds.limit(25)}
+  @scaffold_select_order = :name
   @scaffold_fields = [:name, :account_type, :hidden, :description]
   @scaffold_column_types = {:description=>:text}
   @scaffold_column_options_hash = {:description=>{:cols=>'50', :rows=>'4'}}
   @scaffold_associations = [:recent_credit_entries, :recent_debit_entries]
   @scaffold_session_value = :user_id
-  attr_protected :balance, :user_id
   
   def self.find_with_user_id(user_id, id)
-    account = find(id)
-    raise ActiveRecord::RecordNotFound unless account.user_id == user_id
+    raise Sequel::Error unless account = self[id] and account.user_id == user_id
     account
   end
   
   def self.for_select(user_id)
-    find(:all, :order=>'name', :conditions=>['user_id = ?', user_id]).collect{|account|[account.scaffold_name, account.id]}
+    filter(:user_id=>user_id).order(:name).all.collect{|account|[account.scaffold_name, account.id]}
   end
   
   def self.unhidden_register_accounts(user_id)
-    find(:all, :conditions=>["NOT hidden AND account_type_id IN (1,2) AND user_id = ?", user_id], :order=>'name') 
+    filter(~:hidden & {:account_type_id=>[1,2], :user_id=>user_id}).order(:name).all
   end
 
   def cents(dollars)
@@ -32,7 +30,10 @@ class Account < ActiveRecord::Base
   end
   
   def entries(limit=nil, conds=nil)
-    Entry.find(:all, :include=>[:entity, :credit_account, :debit_account], :conditions=>["accounts.user_id = ? AND #{conds} (? IN (entries.credit_account_id, entries.debit_account_id))", user_id, id], :order=>"date DESC, reference DESC, amount DESC", :limit=>limit).collect do |entry| 
+    ds = Entry
+    ds = ds.filter(conds) if conds
+    ds = ds.limit(limit) if limit
+    ds.eager(:entity, :credit_account, :debit_account).filter(:user_id=>user_id, id=>[:credit_account_id, :debit_account_id]).order(:date.desc, :reference.desc, :amount.desc).all.collect do |entry|
       entry.main_account = self
       entry
     end
@@ -42,7 +43,7 @@ class Account < ActiveRecord::Base
     entries = entries_to_reconcile
     if definite_entries
       definite_entries, entries = entries.partition{|entry| definite_entries.include?(entry.id)}
-      definite_sum = sum(definite_entries.collect(&:amount))
+      definite_sum = sum(definite_entries.collect{|x| x.amount})
     else
       definite_sum = 0
     end
@@ -60,14 +61,14 @@ class Account < ActiveRecord::Base
 
   def entries_to_reconcile(type=nil)
     if type
-      Entry.find(:all, :include=>:entity, :conditions=>["entries.#{type}_account_id = ? AND NOT cleared AND entries.user_id = ?", id, user_id], :order=>"date, reference, amount DESC")
+      Entry.eager(:entity).filter(:"#{type}_account_id"=>id, :user_id=>user_id).filter(~:cleared).order(:date, :reference, :amount.desc)
     else
-      entries(nil, 'NOT cleared AND')
+      entries(nil, ~:cleared)
     end
   end
 
   def last_entry_for_entity(entity)
-    Entry.find(:first, :include=>[:entity, :credit_account, :debit_account], :conditions=>["? IN (entries.credit_account_id, entries.debit_account_id) AND entities.name = ? AND accounts.user_id = ?", id, entity, user_id], :order=>"date DESC, reference DESC, amount DESC")
+    Entry.eager_graph(:entity).filter(id=>[:credit_account_id, :debit_account_id], :entity__name=>entity, :entries__user_id=>user_id).order(:date.desc, :reference.desc, :amount.desc).first
   end
 
   def money_balance
@@ -76,7 +77,7 @@ class Account < ActiveRecord::Base
 
   def next_check_number
     return '' if account_type_id != 1
-    return '' unless entry = Entry.find(:first, :conditions=>["? in (debit_account_id, credit_account_id) AND reference ~ E'^\\\\d+$' AND user_id = ?", id, user_id], :order=>'reference DESC')
+    return '' unless entry = Entry.filter({id=>[:credit_account_id, :debit_account_id], :user_id=>user_id} & "reference ~ E'^\\\\d+$'".lit).order(:reference.desc).first
     return '' unless entry.reference.to_i > 0
     (entry.reference.to_i+1).to_s
   end
@@ -86,6 +87,6 @@ class Account < ActiveRecord::Base
   end
 
   def unreconciled_balance
-    balance - connection.select_one("SELECT SUM((CASE WHEN credit_account_id = #{id} THEN -1 * amount ELSE amount END)) FROM entries WHERE #{id} IN (debit_account_id, credit_account_id) AND NOT cleared AND user_id = #{user_id}")['sum'].to_f
+    balance - Entry.filter(id=>[:credit_account_id, :debit_account_id], :user_id=>user_id).filter(~:cleared).get(:sum["CASE WHEN credit_account_id = #{id} THEN -1 * amount ELSE amount END".lit]).to_f
   end
 end

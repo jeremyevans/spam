@@ -1,2 +1,2 @@
-class AccountType < ActiveRecord::Base
+class AccountType < Sequel::Model
 end

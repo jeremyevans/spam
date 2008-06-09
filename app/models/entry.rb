@@ -1,17 +1,16 @@
-class Entry < ActiveRecord::Base
-  belongs_to :credit_account, :class_name=>'Account', :foreign_key=>'credit_account_id'
-  belongs_to :debit_account, :class_name=>'Account', :foreign_key=>'debit_account_id'
-  belongs_to :entity
+class Entry < Sequel::Model
+  many_to_one :credit_account, :class_name=>'Account', :key=>:credit_account_id
+  many_to_one :debit_account, :class_name=>'Account', :key=>:debit_account_id
+  many_to_one :entity
   
   @scaffold_fields = [:date, :reference, :entity, :credit_account, :debit_account, :amount, :memo, :cleared]
-  @scaffold_select_order = 'entries.date DESC, entities.name, accounts.name, debit_accounts_entries.name, entries.amount'
+  @scaffold_select_order = [:date.desc, :reference.desc, :amount.desc]
   @scaffold_include = [:entity, :credit_account, :debit_account]
   @scaffold_auto_complete_options = {:sql_name=>"reference || date::TEXT || entities.name ||  accounts.name || debit_accounts_entries.name || entries.amount::TEXT"}
   @scaffold_session_value = :user_id
-  attr_protected :user_id
   
   def self.find_with_user_id(user_id, id)
-    entry = find(id)
+    entry = self[id]
     raise ActiveRecord::RecordNotFound unless entry.user_id == user_id
     entry
   end
