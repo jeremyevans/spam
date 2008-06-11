@@ -9,10 +9,8 @@ class Entry < Sequel::Model
   @scaffold_auto_complete_options = {:sql_name=>"reference || date::TEXT || entities.name ||  accounts.name || debit_accounts_entries.name || entries.amount::TEXT"}
   @scaffold_session_value = :user_id
   
-  def self.find_with_user_id(user_id, id)
-    entry = self[id]
-    raise ActiveRecord::RecordNotFound unless entry.user_id == user_id
-    entry
+  def self.user(user_id)
+    filter(:user_id=>user_id)
   end
   
   def scaffold_name

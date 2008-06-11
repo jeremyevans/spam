@@ -8,9 +8,10 @@ $:.unshift "/home/jeremy/sequel/sequel_core/lib"
 require 'sequel'
 
 DB = Sequel.postgres('spamtest', :user=>'guest', :host=>'/tmp')
-DB[:entries].delete
-DB[:entities].filter(:id > 3).delete
-DB[:accounts].filter(:id > 4).delete
+Entries = DB[:entries].filter(:user_id => 1)
+Entries.delete
+DB[:entities].filter(:id > 4).delete
+DB[:accounts].filter(:id > 6).delete
 HOST = 'www'
 PORT = 8989
 
@@ -110,7 +111,7 @@ describe "$PAM register page" do
   it "should add entries the non-Ajax way" do
     res = post('/update/add_entry', "register_account_id"=>'1', "entry[date]"=>'2008-06-06', 'entry[reference]'=>'DEP', 'entity[name]'=>'Employer', 'account[id]'=>'3', 'entry[memo]'=>'Check', 'entry[amount]'=>'1000')
     res['Location'].should == http_url('/update/register/1')
-    entry = DB[:entries].first
+    entry = Entries.first
     remove_id(entry).should == {:date=>'2008-06-06'.to_date, :reference=>'DEP', :entity_id=>1, :credit_account_id=>3, :debit_account_id=>1, :memo=>'Check', :amount=>'1000'.to_d, :cleared=>false, :user_id=>1}
 
     p = page('/update/register/1')
@@ -125,7 +126,7 @@ describe "$PAM register page" do
   end
 
   it "should modify entries the non-Ajax way" do
-    entry = DB[:entries].first
+    entry = Entries.first
     p = page("/update/modify_entry/#{entry[:id]}?register_account_id=1")
     tr = (p/"form table tbody tr")
     tr.length.should == 2
@@ -140,7 +141,7 @@ describe "$PAM register page" do
 
     res = post('/update/add_entry', "update"=>"Update", "register_account_id"=>'1', "entry[date]"=>'2008-06-07', 'entry[reference]'=>'1000', 'entity[name]'=>'Card', 'account[id]'=>'2', 'entry[memo]'=>'Payment', 'entry[amount]'=>'-1000', 'entry[cleared]'=>'1', 'entry[id]'=>entry[:id].to_s)
     res['Location'].should == http_url('/update/register/1')
-    entry2 = DB[:entries][:id => entry[:id]]
+    entry2 = Entries[:id => entry[:id]]
     entry2.should == {:date=>'2008-06-07'.to_date, :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>'1000'.to_d, :cleared=>true, :user_id=>1, :id=>entry[:id]}
 
     p = page('/update/register/1')
@@ -154,18 +155,18 @@ describe "$PAM register page" do
   end
 
   it "should add entries the Ajax way" do
-    DB[:entries].delete
+    Entries.delete
     res = post_xhr('/update/add_entry', "register_account_id"=>'1', "entry[date]"=>'2008-06-06', 'entry[reference]'=>'DEP', 'entity[name]'=>'Employer', 'account[id]'=>'3', 'entry[memo]'=>'Check', 'entry[amount]'=>'1000')
     res['Content-Type'].should =~ /javascript/
-    entry = DB[:entries].first
+    entry = Entries.first
     remove_id(entry).should == {:date=>'2008-06-06'.to_date, :reference=>'DEP', :entity_id=>1, :credit_account_id=>3, :debit_account_id=>1, :memo=>'Check', :amount=>'1000'.to_d, :cleared=>false, :user_id=>1}
   end
 
   it "should modify entries the Ajax way" do
-    entry = DB[:entries].first
+    entry = Entries.first
     res = post_xhr('/update/add_entry', "update"=>"Update", "selected_entry_id"=>entry[:id].to_s, "register_account_id"=>'1', "entry[date]"=>'2008-06-07', 'entry[reference]'=>'1000', 'entity[name]'=>'Card', 'account[id]'=>'2', 'entry[memo]'=>'Payment', 'entry[amount]'=>'-1000', 'entry[cleared]'=>'0', 'entry[id]'=>entry[:id].to_s)
     res['Content-Type'].should =~ /javascript/
-    entry2 = DB[:entries][:id => entry[:id]]
+    entry2 = Entries[:id => entry[:id]]
     entry2.should == {:date=>'2008-06-07'.to_date, :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>'1000'.to_d, :cleared=>false, :user_id=>1, :id=>entry[:id]}
   end
 end
@@ -194,42 +195,42 @@ describe "$PAM reconcile page" do
     td = tables.last/"tbody tr td"
     td.mapit.should == '/2008-06-07/1000/Card/$1000.00'.split('/')
     cb = td.first.at(:input)
-    cb[:name].should == "entries[#{DB[:entries].first[:id]}]"
+    cb[:name].should == "entries[#{Entries.first[:id]}]"
     cb[:value].should == "1"
   end
 
   it "should auto reconcile the non-Ajax way" do
-    entry = DB[:entries].first
+    entry = Entries.first
     entry[:cleared].should == false
     res = post('/update/clear_entries/1', "auto_reconcile"=>"Auto-Reconcile", "reconcile_to"=>"-1000.00", "entries[#{entry[:id]}]"=>"1")
     Hpricot(res.body).at("input#credit_#{entry[:id]}")[:checked].should == 'checked'
   end
 
   it "should clear entries the non-Ajax way" do
-    entry = DB[:entries].first
+    entry = Entries.first
     entry[:cleared].should == false
     res = post('/update/clear_entries/1', "clear_entries"=>"Clear Entries", "reconcile_to"=>"-1000.00", "entries[#{entry[:id]}]"=>"1")
     res['Location'].should == http_url('/update/reconcile/1')
-    DB[:entries].first[:cleared].should == true
+    Entries.first[:cleared].should == true
     p = page('/update/reconcile/1')
     p.at("input#credit_#{entry[:id]}").should == nil
     (p.at(:table)/:td).mapit.should == "Unreconciled Balance/$-1000.00/Reconciling Changes/$0.00/Reconcile To//Off By/$-1000.00/\n  \n  \n".split('/')
   end
 
   it "should auto reconcile the Ajax way" do
-    DB[:entries].update(:cleared=>false)
-    entry = DB[:entries].first
+    Entries.update(:cleared=>false)
+    entry = Entries.first
     entry[:cleared].should == false
     res = post_xhr('/update/auto_reconcile/1', "auto_reconcile"=>"Auto-Reconcile", "reconcile_to"=>"-1000.00", "entries[#{entry[:id]}]"=>"1")
     res['Content-Type'].should =~ /javascript/
   end
 
   it "should clear entries the Ajax way" do
-    entry = DB[:entries].first
+    entry = Entries.first
     entry[:cleared].should == false
     res = post_xhr('/update/clear_entries/1', "auto_reconcile"=>"Auto-Reconcile", "reconcile_to"=>"-1000.00", "entries[#{entry[:id]}]"=>"1")
     res['Content-Type'].should =~ /javascript/
-    DB[:entries].first[:cleared].should == true
+    Entries.first[:cleared].should == true
   end
 end
 

@@ -7,6 +7,10 @@ class Entity < Sequel::Model
   @scaffold_auto_complete_options = {}
   @scaffold_session_value = :user_id
   
+  def self.user(user_id)
+    filter(:user_id=>user_id).order(:name)
+  end
+
   def scaffold_name
     name[0..30]
   end

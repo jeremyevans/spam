@@ -12,17 +12,15 @@ class Account < Sequel::Model
   @scaffold_associations = [:recent_credit_entries, :recent_debit_entries]
   @scaffold_session_value = :user_id
   
-  def self.find_with_user_id(user_id, id)
-    raise Sequel::Error unless account = self[id] and account.user_id == user_id
-    account
+  def_dataset_method(:for_select) do
+    all.collect{|account|[account.scaffold_name, account.id]}
   end
   
-  def self.for_select(user_id)
-    filter(:user_id=>user_id).order(:name).all.collect{|account|[account.scaffold_name, account.id]}
-  end
-  
-  def self.unhidden_register_accounts(user_id)
-    filter(~:hidden & {:account_type_id=>[1,2], :user_id=>user_id}).order(:name).all
+  subset(:register_accounts, :account_type_id=>[1,2])
+  subset(:unhidden, ~:hidden)
+
+  def self.user(user_id)
+    filter(:user_id=>user_id).order(:name)
   end
 
   def cents(dollars)
@@ -87,6 +85,6 @@ class Account < Sequel::Model
   end
 
   def unreconciled_balance
-    balance - Entry.filter(id=>[:credit_account_id, :debit_account_id], :user_id=>user_id).filter(~:cleared).get(:sum["CASE WHEN credit_account_id = #{id} THEN -1 * amount ELSE amount END".lit]).to_f
+    balance - Entry.filter(id=>[:credit_account_id, :debit_account_id], :user_id=>user_id).filter(~:cleared).get(:sum[{{:credit_account_id => id}=>:amount * -1}.case(:amount)]).to_f
   end
 end
