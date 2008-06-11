@@ -169,6 +169,11 @@ describe "$PAM register page" do
     entry2 = Entries[:id => entry[:id]]
     entry2.should == {:date=>'2008-06-07'.to_date, :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>'1000'.to_d, :cleared=>false, :user_id=>1, :id=>entry[:id]}
   end
+
+  it "should auto complete entity names" do
+    (Hpricot(post('/update/auto_complete_for_entity_name', 'entity[name]'=>'%').body)/:li).mapit.should == %w'Card Employer Restaurant'
+    (Hpricot(post('/update/auto_complete_for_entity_name', 'entity[name]'=>'z').body)/:li).length.should == 0
+  end
 end
 
 describe "$PAM reconcile page" do
