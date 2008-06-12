@@ -7,9 +7,9 @@ class ReportsController < ApplicationController
   
   def income_expense
     negative_map = {:income=>true, :expense=>false, :assets=>true, :liabilities=>false}
-    @months = accounts_entries_ds.select((:entries__date.extract(:year).cast_as(:text).sql_string + :to_char[:entries__date.extract(:month) * -1, '00']).as(:month),
+    @months = accounts_entries_ds.select((:entries__date.extract(:year).cast_string + :to_char[:entries__date.extract(:month) * -1, '00']).as(:month),
       *{3=>:income, 4=>:expense, 1=>:assets, 2=>:liabilities}.collect{|i, aliaz|:sum[[[~{:account_type_id=>i},0], [debit_cond, :amount * (negative_map[aliaz] ? -1 : 1)]].case(:amount * (negative_map[aliaz] ? 1 : -1))].as(aliaz)}).
-      filter(:entries__date > '1 year 1 month'.cast_as(:interval) * -1 + userEntry.select(:max[:date])).
+      filter(:entries__date > '1 year 1 month'.cast(:interval) * -1 + userEntry.select(:max[:date])).
       group(:month).order(:month.desc).all
     @months.pop if @months.length > 12
   end
@@ -24,12 +24,12 @@ class ReportsController < ApplicationController
     @accounts = []
     DB.transaction do
       return unless @max_date = userEntry.get(:max[:date])
-      md = @max_date.to_s.cast_as(:date)
-      age = :age[(md + 1) - md.extract(:day).cast_as(:integer), (:entries__date + 1) - :entries__date.extract(:day).cast_as(:integer)]
+      md = @max_date.to_s.cast(:date)
+      age = :age[(md + 1) - md.extract(:day).cast_numeric, (:entries__date + 1) - :entries__date.extract(:day).cast_numeric]
       @accounts = accounts_entries_ds.select(:accounts__account_type_id, :accounts__name,
         *(0..12).to_a.collect{|i| :sum[[[~{age.extract(:month) => i}, 0], [debit_cond, :amount * -1]].case(:amount)].as(:"month_#{i}")}).
         filter(:accounts__account_type_id=>[3,4]).
-        filter(age < '1 year'.cast_as(:interval)).
+        filter(age < '1 year'.cast(:interval)).
         group(:accounts__account_type_id, :accounts__name).order(:account_type_id.desc, :name).all
     end
   end
