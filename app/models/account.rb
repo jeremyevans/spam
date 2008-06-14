@@ -3,8 +3,8 @@ class Account < Sequel::Model
   many_to_one :account_type
   one_to_many :credit_entries, :class_name=>'Entry', :key=>:credit_account_id, :eager=>[:credit_account, :debit_account, :entity], :order=>:date.desc
   one_to_many :debit_entries, :class_name=>'Entry', :key=>:debit_account_id, :eager=>[:credit_account, :debit_account, :entity], :order=>:date.desc
-  one_to_many(:recent_credit_entries, :class_name=>'Entry', :key=>:credit_account_id, :eager=>[:credit_account, :debit_account, :entity], :order=>:date.desc){|ds| ds.limit(25)}
-  one_to_many(:recent_debit_entries, :class_name=>'Entry', :key=>:debit_account_id, :eager=>[:credit_account, :debit_account, :entity], :order=>:date.desc){|ds| ds.limit(25)}
+  one_to_many :recent_credit_entries, :class_name=>'Entry', :key=>:credit_account_id, :eager=>[:credit_account, :debit_account, :entity], :order=>:date.desc, :limit=>25
+  one_to_many :recent_debit_entries, :class_name=>'Entry', :key=>:debit_account_id, :eager=>[:credit_account, :debit_account, :entity], :order=>:date.desc, :limit=>25
   @scaffold_select_order = :name
   @scaffold_fields = [:name, :account_type, :hidden, :description]
   @scaffold_column_types = {:description=>:text}
@@ -66,7 +66,7 @@ class Account < Sequel::Model
   end
 
   def last_entry_for_entity(entity)
-    Entry.eager_graph(:entity).filter(id=>[:credit_account_id, :debit_account_id], :entity__name=>entity, :entries__user_id=>user_id).order(:date.desc, :reference.desc, :amount.desc).first
+    Entry.eager_graph(:entity).filter(id=>[:credit_account_id, :debit_account_id], :entity__name=>entity, :entries__user_id=>user_id).order(:date.desc, :reference.desc, :amount.desc).limit(1).all.first
   end
 
   def money_balance
