@@ -71,7 +71,7 @@ class UpdateController < ApplicationController
   def other_account_for_entry
     return render(:nothing=>true) unless params[:entity]
     @account = user_account(params[:id])
-    @entry = @account.last_entry_for_entity(params[:entity])
+    return render(:nothing=>true) unless @entry = @account.last_entry_for_entity(params[:entity])
     @entry.main_account = @account
     respond_to do |format|
       format.js
