@@ -28,10 +28,10 @@ class Account < Sequel::Model
   end
   
   def entries(limit=nil, conds=nil)
-    ds = Entry
+    ds = Entry.with_account(id)
     ds = ds.filter(conds) if conds
     ds = ds.limit(limit) if limit
-    ds.eager(:entity, :credit_account, :debit_account).filter(:user_id=>user_id, id=>[:credit_account_id, :debit_account_id]).order(:date.desc, :reference.desc, :amount.desc).all.collect do |entry|
+    ds.eager(:entity, :credit_account, :debit_account).order(:date.desc, :reference.desc, :amount.desc).all.collect do |entry|
       entry.main_account = self
       entry
     end
@@ -66,7 +66,7 @@ class Account < Sequel::Model
   end
 
   def last_entry_for_entity(entity)
-    Entry.eager_graph(:entity).filter(id=>[:credit_account_id, :debit_account_id], :entity__name=>entity, :entries__user_id=>user_id).order(:date.desc, :reference.desc, :amount.desc).limit(1).all.first
+    Entity[:name=>entity, :user_id=>user_id].entries_dataset.with_account(id).order(:date.desc, :reference.desc, :amount.desc).first
   end
 
   def money_balance
@@ -75,7 +75,7 @@ class Account < Sequel::Model
 
   def next_check_number
     return '' if account_type_id != 1
-    return '' unless entry = Entry.filter({id=>[:credit_account_id, :debit_account_id], :user_id=>user_id} & "reference ~ E'^\\\\d+$'".lit).order(:reference.desc).first
+    return '' unless entry = Entry.with_account(id).filter("reference ~ E'^\\\\d+$'".lit).order(:reference.desc).first
     return '' unless entry.reference.to_i > 0
     (entry.reference.to_i+1).to_s
   end
@@ -85,6 +85,6 @@ class Account < Sequel::Model
   end
 
   def unreconciled_balance
-    balance - Entry.filter(id=>[:credit_account_id, :debit_account_id], :user_id=>user_id).filter(~:cleared).get(:sum[{{:credit_account_id => id}=>:amount * -1}.case(:amount)]).to_f
+    balance - Entry.with_account(id).filter(~:cleared).get(:sum[{{:credit_account_id => id}=>:amount * -1}.case(:amount)]).to_f
   end
 end

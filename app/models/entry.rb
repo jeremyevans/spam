@@ -12,6 +12,10 @@ class Entry < Sequel::Model
   def self.user(user_id)
     filter(:user_id=>user_id)
   end
+
+  def_dataset_method(:with_account) do |account_id|
+    filter(account_id=>[:credit_account_id, :debit_account_id])
+  end
   
   def scaffold_name
     "#{date.strftime('%Y-%m-%d')}-#{reference}-#{entity.name if entity}-#{debit_account.name if debit_account}-#{credit_account.name if credit_account}-#{money_amount}"
