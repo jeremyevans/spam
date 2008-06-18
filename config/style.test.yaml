@@ -3,6 +3,6 @@
 :port: 8989
 :unsupervised: 1
 :logfile: log/style-test.log
-:pidfile: log/test.pid
+:pidfile: log/style-test.pid
 :adapter_config:
   :environment: test
