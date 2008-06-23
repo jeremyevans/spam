@@ -23,18 +23,6 @@ class Entry < Sequel::Model
   
   attr_accessor :other_account
   
-  def income
-    self[:income].to_money
-  end
-  
-  def expense
-    self[:expense].to_money
-  end
-  
-  def profit
-    (self[:income].to_f - self[:expense].to_f).to_money
-  end
-  
   def money_amount
     amount.to_money
   end

@@ -8,10 +8,26 @@ $:.unshift "/home/jeremy/sequel/sequel_core/lib"
 require 'sequel'
 
 DB = Sequel.postgres('spamtest', :user=>'guest', :host=>'/tmp')
+[:entries, :entities, :accounts, :account_types, :users].each{|x| DB[x].delete}
+DB[:users] << {:password=>"be358e142bf770bbd5aeb563b868c3c13a833c14", :salt=>"daaaeef2b3502ebd0a65698cc994ee767589ca1c", :name=>"default", :num_register_entries=>35, :id=>1}
+DB[:users] << {:password=>"                                        ", :salt=>"                                        ", :name=>"test", :num_register_entries=>35, :id=>2}
+DB[:account_types] << {:name=>"Asset", :id=>1}
+DB[:account_types] << {:name=>"Liability", :id=>2}
+DB[:account_types] << {:name=>"Income", :id=>3}
+DB[:account_types] << {:name=>"Expense", :id=>4}
+DB[:accounts] << {:user_id=>2, :balance=>0, :account_type_id=>1, :name=>"Test", :hidden=>false, :description=>"", :id=>5}
+DB[:accounts] << {:user_id=>2, :balance=>0, :account_type_id=>2, :name=>"Test Liability", :hidden=>false, :description=>"", :id=>6}
+DB[:accounts] << {:user_id=>1, :balance=>0, :account_type_id=>2, :name=>"Credit Card", :hidden=>false, :description=>"", :id=>2}
+DB[:accounts] << {:user_id=>1, :balance=>0, :account_type_id=>1, :name=>"Checking", :hidden=>false, :description=>"", :id=>1}
+DB[:accounts] << {:user_id=>1, :balance=>0, :account_type_id=>4, :name=>"Food", :hidden=>false, :description=>"", :id=>4}
+DB[:accounts] << {:user_id=>1, :balance=>0, :account_type_id=>3, :name=>"Salary", :hidden=>false, :description=>"", :id=>3}
+DB[:entities] << {:user_id=>1, :name=>"Restaurant", :id=>2}
+DB[:entities] << {:user_id=>1, :name=>"Employer", :id=>1}
+DB[:entities] << {:user_id=>1, :name=>"Card", :id=>3}
+DB[:entities] << {:user_id=>2, :name=>"Test", :id=>4}
+DB[:entries] << {:credit_account_id=>6, :reference=>"", :user_id=>2, :entity_id=>4, :cleared=>false, :amount=>100, :memo=>"", :date=>'2008-06-11', :debit_account_id=>5, :id=>1}
 Entries = DB[:entries].filter(:user_id => 1)
-Entries.delete
-DB[:entities].filter(:id > 4).delete
-DB[:accounts].filter(:id > 6).delete
+
 HOST = 'www'
 PORT = 8989
 

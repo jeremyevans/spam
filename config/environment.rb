@@ -17,23 +17,6 @@ Sequel::Model::SCAFFOLD_OPTIONS[:text_to_string] = true
 Sequel::Model::SCAFFOLD_OPTIONS[:association_list_class] = 'scaffold_associations_tree'
 Sequel::Model::SCAFFOLD_OPTIONS[:auto_complete].merge!(:sql_name=>'name', :search_operator=>'ILIKE', :results_limit=>15, :phrase_modifier=>:to_s)
 require 'values_summing_to'
+require 'to_money'
 require 'set'
 require 'digest/sha1'
-
-class BigDecimal
-  def to_money
-    "$%.02f" % self
-  end
-end
-
-class Float
-  def to_money
-    "$%.02f" % self
-  end
-end
-
-class String
-  def to_money
-    to_f.to_money
-  end
-end

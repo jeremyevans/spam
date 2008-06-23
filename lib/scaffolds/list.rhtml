@@ -1,9 +1,0 @@
-<h1>Choose <%= @scaffold_singular_name %></h1>
-<form action="<%= url_for(:action=>"edit#{@scaffold_suffix}") %>" method="post">
-<select name="id">
-<option></option>
-<%= options_from_collection_for_select(instance_variable_get("@#{@scaffold_plural_name}"), 'id', 'scaffold_name') %>
-</select>
-<input type="submit" value="Submit" />
-</form><br />
-<%= link_to "New #{@scaffold_singular_name}", :action => "new#{@scaffold_suffix}" %>
