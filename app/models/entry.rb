@@ -6,8 +6,9 @@ class Entry < Sequel::Model
   @scaffold_fields = [:date, :reference, :entity, :credit_account, :debit_account, :amount, :memo, :cleared]
   @scaffold_select_order = [:date.desc, :reference.desc, :amount.desc]
   @scaffold_include = [:entity, :credit_account, :debit_account]
-  @scaffold_auto_complete_options = {:sql_name=>"reference || date::TEXT || entities.name ||  accounts.name || debit_accounts_entries.name || entries.amount::TEXT"}
+  @scaffold_auto_complete_options = {:sql_name=>"reference || date::TEXT || entity.name ||  debit_account.name || credit_account.name || entries.amount::TEXT"}
   @scaffold_session_value = :user_id
+  @scaffold_use_eager_graph = true
   
   def self.user(user_id)
     filter(:user_id=>user_id)
