@@ -68,7 +68,7 @@ class Account < Sequel::Model
 
   def next_check_number
     return '' if account_type_id != 1
-    return '' unless entry = Entry.with_account(id).filter("reference ~ E'^\\\\d+$'".lit).order(:reference.desc).first
+    return '' unless entry = Entry.with_account(id).filter(:reference.like(/^\d+$/)).order(:reference.desc).first
     return '' unless entry.reference.to_i > 0
     (entry.reference.to_i+1).to_s
   end
