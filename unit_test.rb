@@ -6,6 +6,7 @@ require 'sequel'
 DB = Sequel.postgres('spamtest', :user=>'guest', :host=>'/tmp')
 require 'lib/values_summing_to'
 require 'lib/to_money'
+require 'digest/sha1'
 Dir['app/models/*.rb'].each{|f| require(f)}
 [:entries, :entities, :accounts, :account_types, :users].each{|x| DB[x].delete}
 DB[:users] << {:password=>"be358e142bf770bbd5aeb563b868c3c13a833c14", :salt=>"daaaeef2b3502ebd0a65698cc994ee767589ca1c", :name=>"default", :num_register_entries=>35, :id=>1}
@@ -72,14 +73,7 @@ describe Account do
     @account.entries.first.amount.should == -50
     @account.entries.last.amount.should == 100
     Entry.delete
-    @account.entries.should == []
-  end
-
-  specify "#entries should accept a limit and filter argument" do
-    @account.entries(1).length.should == 1
-    @account.entries(1).first.amount.should == -50
-    @account.entries(nil, :debit_account_id=>@account.id).length.should == 1
-    @account.entries(nil, :debit_account_id=>@account.id).first.amount.should == 100
+    @account.entries(true).should == []
   end
 
   specify "#entries_reconciling_to should return all unreconciled entries reconciling to a given amount" do

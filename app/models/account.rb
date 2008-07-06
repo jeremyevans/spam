@@ -1,10 +1,11 @@
 class Account < Sequel::Model
   include ValuesSummingTo
   many_to_one :account_type
-  one_to_many :credit_entries, :class_name=>'Entry', :key=>:credit_account_id, :eager=>[:credit_account, :debit_account, :entity], :order=>:date.desc
-  one_to_many :debit_entries, :class_name=>'Entry', :key=>:debit_account_id, :eager=>[:credit_account, :debit_account, :entity], :order=>:date.desc
-  one_to_many :recent_credit_entries, :class_name=>'Entry', :key=>:credit_account_id, :eager=>[:credit_account, :debit_account, :entity], :order=>:date.desc, :limit=>25
-  one_to_many :recent_debit_entries, :class_name=>'Entry', :key=>:debit_account_id, :eager=>[:credit_account, :debit_account, :entity], :order=>:date.desc, :limit=>25
+  one_to_many :entries, :read_only=>true, :order=>[:date.desc, :reference.desc, :amount.desc], :dataset=>proc{Entry.with_account(id)}, :eager=>[:entity, :credit_account, :debit_account], :after_load=>:set_main_account, :reciprocal=>nil
+  one_to_many :credit_entries, :class_name=>'Entry', :key=>:credit_account_id, :eager=>[:debit_account, :entity], :order=>:date.desc
+  one_to_many :debit_entries, :class_name=>'Entry', :key=>:debit_account_id, :eager=>[:credit_account, :entity], :order=>:date.desc
+  one_to_many :recent_credit_entries, :class_name=>'Entry', :key=>:credit_account_id, :eager=>[:debit_account, :entity], :order=>:date.desc, :limit=>25
+  one_to_many :recent_debit_entries, :class_name=>'Entry', :key=>:debit_account_id, :eager=>[:credit_account, :entity], :order=>:date.desc, :limit=>25
   @scaffold_select_order = :name
   @scaffold_fields = [:name, :account_type, :hidden, :description]
   @scaffold_column_types = {:description=>:text}
@@ -27,16 +28,6 @@ class Account < Sequel::Model
     (dollars * 100).to_i
   end
   
-  def entries(limit=nil, conds=nil)
-    ds = Entry.with_account(id)
-    ds = ds.filter(conds) if conds
-    ds = ds.limit(limit) if limit
-    ds.eager(:entity, :credit_account, :debit_account).order(:date.desc, :reference.desc, :amount.desc).all.collect do |entry|
-      entry.main_account = self
-      entry
-    end
-  end
-
   def entries_reconciling_to(reconciled_balance, definite_entries = [], max_seconds = nil)
     entries = entries_to_reconcile
     definite_entries, entries = entries.partition{|entry| definite_entries.include?(entry.id)}
@@ -53,7 +44,7 @@ class Account < Sequel::Model
     if type
       Entry.eager(:entity).filter(:"#{type}_account_id"=>id).filter(~:cleared).order(:date, :reference, :amount.desc).all
     else
-      entries(nil, ~:cleared)
+      entries_dataset.filter(~:cleared).all{|x| x.main_account = self}
     end
   end
 
@@ -79,5 +70,11 @@ class Account < Sequel::Model
 
   def unreconciled_balance
     balance - Entry.with_account(id).filter(~:cleared).get(:sum[{{:credit_account_id => id}=>:amount * -1}.case(:amount)]).to_f
+  end
+
+  private
+
+  def set_main_account(entries)
+    entries.each{|e| e.main_account = self}
   end
 end

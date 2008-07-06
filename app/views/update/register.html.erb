@@ -7,7 +7,7 @@
 <thead><tr><th>Date</th><th>Num</th><th>Entity</th><th>Other Account</th><th>Memo</th><th><abbr title="Cleared">C</abbr></th><th>Amount</th><th>Balance</th><th>Modify</th></tr></thead>
 <tbody>
 <tr id="new_entry"><%= render(:partial=>"#{@entry ? 'blank' : 'new'}_register_entry.html.erb") %></tr>
-<% @account.entries(@show_num_entries).each do |entry| -%>
+<% @account.entries_dataset.limit(@show_num_entries).all{|x| x.main_account = @account}.each do |entry| -%>
   <tr id="entry_<%= entry.id %>"><%= render(:partial=>"#{'modify_' if @entry && entry.id == @entry.id}register_entry.html.erb" , :locals=>{:entry=>entry}) %></tr>
 <% end %>
 </tbody></table>

@@ -1,7 +1,7 @@
 class Entry < Sequel::Model
-  many_to_one :credit_account, :class_name=>'Account', :key=>:credit_account_id
-  many_to_one :debit_account, :class_name=>'Account', :key=>:debit_account_id
-  many_to_one :entity
+  many_to_one :credit_account, :class_name=>'Account', :key=>:credit_account_id, :reciprocal=>:credit_entries
+  many_to_one :debit_account, :class_name=>'Account', :key=>:debit_account_id, :reciprocal=>:debit_entries
+  many_to_one :entity, :reciprocal=>:entries
   
   @scaffold_fields = [:date, :reference, :entity, :credit_account, :debit_account, :amount, :memo, :cleared]
   @scaffold_select_order = [:date.desc, :reference.desc, :amount.desc]
