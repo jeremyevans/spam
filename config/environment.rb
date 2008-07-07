@@ -1,8 +1,7 @@
 RAILS_GEM_VERSION = '2.1.0'
 require File.join(File.dirname(__FILE__), 'boot')
 
-$:.unshift "/home/jeremy/sequel/sequel/lib"
-$:.unshift "/home/jeremy/sequel/sequel_core/lib"
+$:.unshift "/home/jeremy/sequel/lib"
 require 'sequel'
 
 Rails::Initializer.run do |config|
