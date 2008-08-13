@@ -3,8 +3,7 @@ require 'rubygems'
 require 'hpricot'
 require 'open-uri'
 require 'net/http'
-$:.unshift "/home/jeremy/sequel/sequel/lib"
-$:.unshift "/home/jeremy/sequel/sequel_core/lib"
+$:.unshift "/home/jeremy/sequel/lib"
 require 'sequel'
 
 DB = Sequel.postgres('spamtest', :user=>'guest', :host=>'/tmp')

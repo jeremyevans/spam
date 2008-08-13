@@ -1,7 +1,6 @@
 #!/usr/local/bin/spec
 require 'rubygems'
-$:.unshift('/home/jeremy/sequel/sequel/lib')
-$:.unshift('/home/jeremy/sequel/sequel_core/lib')
+$:.unshift('/home/jeremy/sequel/lib')
 require 'sequel'
 DB = Sequel.postgres('spamtest', :user=>'guest', :host=>'/tmp')
 require 'lib/values_summing_to'
