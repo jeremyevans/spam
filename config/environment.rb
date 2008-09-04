@@ -3,6 +3,7 @@ require File.join(File.dirname(__FILE__), 'boot')
 
 $:.unshift "/home/jeremy/sequel/lib"
 require 'sequel'
+Sequel::Model.typecast_on_assignment = false
 
 Rails::Initializer.run do |config|
   config.frameworks -= [ :active_record, :active_resource, :action_mailer ]
