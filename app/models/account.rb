@@ -1,5 +1,4 @@
 class Account < Sequel::Model
-  include ValuesSummingTo
   many_to_one :account_type
   one_to_many :entries, :read_only=>true, :order=>[:date.desc, :reference.desc, :amount.desc], :dataset=>proc{Entry.with_account(id)}, :eager=>[:entity, :credit_account, :debit_account], :after_load=>:set_main_account, :reciprocal=>nil
   one_to_many :credit_entries, :class_name=>'Entry', :key=>:credit_account_id, :eager=>[:debit_account, :entity], :order=>:date.desc
@@ -31,12 +30,12 @@ class Account < Sequel::Model
   def entries_reconciling_to(reconciled_balance, definite_entries = [], max_seconds = nil)
     entries = entries_to_reconcile
     definite_entries, entries = entries.partition{|entry| definite_entries.include?(entry.id)}
-    definite_sum = sum(definite_entries.collect{|x| x.amount})
+    definite_sum = definite_entries.inject(0){|x, y| x + y.amount}
     int_value_dict = {}
     entries.each{|entry| (int_value_dict[cents(entry.amount)] ||= []) << entry}
     int_values = entries.collect{|entry| cents(entry.amount)}
-    if comb = find_values_summing_to(int_values, cents(reconciled_balance) - cents(unreconciled_balance) - cents(definite_sum), max_seconds)
-      return comb.collect{|value| int_value_dict[value].shift} + (definite_entries || [])
+    if subset = SubsetSum.subset_sum(int_values, cents(reconciled_balance) - cents(unreconciled_balance) - cents(definite_sum), max_seconds)
+      return subset.collect{|value| int_value_dict[value].shift} + (definite_entries || [])
     end
   end
 

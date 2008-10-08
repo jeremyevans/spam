@@ -28,10 +28,17 @@ class UpdateController < ApplicationController
   def auto_reconcile
     @reconcile_to = params[:reconcile_to].to_f
     @account = user_account(params[:id])
-    @entries = @account.entries_reconciling_to(@reconcile_to, (params[:entries] || {}).keys.collect{|i|i.to_i}, 15)
-    if @entries
-      @reconcile_changes = @reconcile_to - @account.unreconciled_balance if @entries
-      @entries = Set.new(@entries.collect{|x| x.id})
+    begin
+      @entries = @account.entries_reconciling_to(@reconcile_to, (params[:entries] || {}).keys.collect{|i|i.to_i}, 15)
+      if @entries
+        @reconcile_changes = @reconcile_to - @account.unreconciled_balance if @entries
+        @entries = Set.new(@entries.collect{|x| x.id})
+        @error_message = "Autoreconciled account"
+      else
+        @error_message = "No combination of entries reconciles to #{@reconcile_to}"
+      end
+    rescue SubsetSum::TimeoutError
+      @error_message = "Timeout while attempting to auto reconcile"
     end
     respond_to do |format|
       format.html{render :action=>"reconcile"}

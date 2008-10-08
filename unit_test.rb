@@ -3,7 +3,7 @@ require 'rubygems'
 $:.unshift('/home/jeremy/sequel/lib')
 require 'sequel'
 DB = Sequel.postgres('spamtest', :user=>'guest', :host=>'/tmp')
-require 'lib/values_summing_to'
+require 'subset_sum'
 require 'lib/to_money'
 require 'digest/sha1'
 Dir['app/models/*.rb'].each{|f| require(f)}

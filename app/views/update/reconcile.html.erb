@@ -1,5 +1,5 @@
 <% @pagetitle = "Reconciling #{@account.name}" %>
-<h3 id="results"></h3>
+<h3 id="results"><%= @error_message %></h3>
 <%= form_tag :action=>"clear_entries", :id=>@account.id %>
 <table id="reconcile"><tbody>
 <tr><td>Unreconciled Balance</td><td id="balance"  class="money"><%= @account.unreconciled_balance.to_money %></td></tr>
