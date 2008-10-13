@@ -15,4 +15,4 @@ config.action_mailer.raise_delivery_errors = false
 
 DEMO_MODE = true
 
-DB = Sequel.postgres('spamdemo', :user=>'guest', :host=>'/tmp', :loggers=>[Logger.new('log/demo_development.log')])
+DB = Sequel.postgres('spamdemo', :user=>'guest', :loggers=>[Logger.new('log/demo_development.log')])

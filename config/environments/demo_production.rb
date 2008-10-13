@@ -18,4 +18,4 @@ config.action_controller.perform_caching             = true
 
 DEMO_MODE = true
 
-DB = Sequel.postgres('spamdemo', :user=>'guest', :host=>'/tmp')
+DB = Sequel.postgres('spamdemo', :user=>'guest')
