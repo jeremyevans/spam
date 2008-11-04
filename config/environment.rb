@@ -1,7 +1,7 @@
 RAILS_GEM_VERSION = '2.1.0'
 require File.join(File.dirname(__FILE__), 'boot')
 
-$:.unshift "/home/jeremy/sequel/lib"
+$:.unshift "/data/code/sequel/lib"
 require 'sequel'
 Sequel::Model.typecast_on_assignment = false
 
