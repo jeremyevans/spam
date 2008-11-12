@@ -123,6 +123,7 @@ class UpdateController < ApplicationController
     @entry = user_entry(params[:entry].delete(:id))
     @entry.set_with_params(params[:entry])
     save_entry
+    @entry.reload
     respond_to do |format|
       format.html{redirect_to :action=>'register', :id=>@account.id}
       format.js{render(:action=>'update_register_entry')}
