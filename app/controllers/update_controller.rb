@@ -124,6 +124,7 @@ class UpdateController < ApplicationController
     @entry.set_with_params(params[:entry])
     save_entry
     @entry.reload
+    @entry.main_account = @account
     respond_to do |format|
       format.html{redirect_to :action=>'register', :id=>@account.id}
       format.js{render(:action=>'update_register_entry')}
