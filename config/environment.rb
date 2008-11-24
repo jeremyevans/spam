@@ -1,4 +1,4 @@
-RAILS_GEM_VERSION = '2.1.0'
+RAILS_GEM_VERSION = '2.2.2'
 require File.join(File.dirname(__FILE__), 'boot')
 
 $:.unshift "/data/code/sequel/lib"
@@ -12,10 +12,6 @@ Rails::Initializer.run do |config|
 end
 
 ActionController::Base.param_parsers.delete(Mime::XML)
-require 'scaffolding_extensions'
-Sequel::Model::SCAFFOLD_OPTIONS[:text_to_string] = true
-Sequel::Model::SCAFFOLD_OPTIONS[:association_list_class] = 'scaffold_associations_tree'
-Sequel::Model::SCAFFOLD_OPTIONS[:auto_complete].merge!(:sql_name=>'name', :search_operator=>'ILIKE', :results_limit=>15, :phrase_modifier=>:to_s)
 require 'to_money'
 require 'set'
 require 'digest/sha1'
