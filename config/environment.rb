@@ -3,7 +3,7 @@ require File.join(File.dirname(__FILE__), 'boot')
 
 $:.unshift "/data/code/sequel/lib"
 require 'sequel'
-Sequel::Model.typecast_on_assignment = false
+Sequel::Model.raise_on_typecast_failure = false
 
 Rails::Initializer.run do |config|
   config.frameworks -= [ :active_record, :active_resource, :action_mailer ]
@@ -16,3 +16,8 @@ require 'to_money'
 require 'set'
 require 'digest/sha1'
 require 'subset_sum'
+DB.extend(Module.new do
+  def typecast_value(column_type, value)
+    column_type == :integer ? value.to_i : super
+  end
+end)
