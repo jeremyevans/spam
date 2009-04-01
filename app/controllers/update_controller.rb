@@ -121,7 +121,7 @@ class UpdateController < ApplicationController
 
   def update_register_entry
     @entry = user_entry(params[:entry].delete(:id))
-    @entry.set_with_params(params[:entry])
+    @entry.set(params[:entry])
     save_entry
     @entry.reload
     @entry.main_account = @account

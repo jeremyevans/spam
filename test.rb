@@ -151,7 +151,7 @@ describe "$PAM register page" do
     fields = tr/"td"/"input, select"
     fields.maptype.should == %w'input input input select input input input input input input'
     fields.mapname.should == %w'entry[date] entry[reference] entity[name] account[id] entry[memo] entry[cleared] entry[cleared] entry[amount] entry[id] update'
-    fields.mapvalue.should == ['2008-06-06', 'DEP', 'Employer', nil, 'Check', '1', '0', '1000.0', entry[:id].to_s, 'Update']
+    fields.mapvalue.should == ['2008-06-06', 'DEP', 'Employer', nil, 'Check', '0', '1', '1000.0', entry[:id].to_s, 'Update']
     (fields/:option)[4][:selected].should == 'selected'
 
     res = post('/update/add_entry', "update"=>"Update", "register_account_id"=>'1', "entry[date]"=>'2008-06-07', 'entry[reference]'=>'1000', 'entity[name]'=>'Card', 'account[id]'=>'2', 'entry[memo]'=>'Payment', 'entry[amount]'=>'-1000', 'entry[cleared]'=>'1', 'entry[id]'=>entry[:id].to_s)

@@ -1,4 +1,4 @@
-<td><%= text_field('entry', 'date', "size"=>10, "value"=>@entry.date.to_time.strftime("%Y-%m-%d")) %></td>
+<td><%= text_field('entry', 'date', "size"=>10, "value"=>@entry.date.strftime("%Y-%m-%d")) %></td>
 <td><%= text_field('entry', 'reference', "size"=>4) %></td>
 <td><input autocomplete="off" id="entity_name" name="entity[name]" size="30" type="text" value="<%= @entry.entity.name if @entry.entity %>" /><div class="auto_complete" id="entity_name_auto_complete"></div></td>
 <td><select name="account[id]"><option></option><%= options_for_select(@accounts, @entry.other_account.id) %></select></td>
