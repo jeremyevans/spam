@@ -3,7 +3,7 @@ require 'rubygems'
 require 'hpricot'
 require 'open-uri'
 require 'net/http'
-$:.unshift "/home/jeremy/sequel/lib"
+$:.unshift "/data/code/sequel/lib"
 require 'sequel'
 
 DB = Sequel.postgres('spamtest', :user=>'guest', :host=>'/tmp')
@@ -127,7 +127,7 @@ describe "$PAM register page" do
     res = post('/update/add_entry', "register_account_id"=>'1', "entry[date]"=>'2008-06-06', 'entry[reference]'=>'DEP', 'entity[name]'=>'Employer', 'account[id]'=>'3', 'entry[memo]'=>'Check', 'entry[amount]'=>'1000')
     res['Location'].should == http_url('/update/register/1')
     entry = Entries.first
-    remove_id(entry).should == {:date=>'2008-06-06'.to_date, :reference=>'DEP', :entity_id=>1, :credit_account_id=>3, :debit_account_id=>1, :memo=>'Check', :amount=>'1000'.to_d, :cleared=>false, :user_id=>1}
+    remove_id(entry).should == {:date=>Date.new(2008,06,06), :reference=>'DEP', :entity_id=>1, :credit_account_id=>3, :debit_account_id=>1, :memo=>'Check', :amount=>BigDecimal.new('1000'), :cleared=>false, :user_id=>1}
 
     p = page('/update/register/1')
     tr = (p/"form table tbody tr")
@@ -157,7 +157,7 @@ describe "$PAM register page" do
     res = post('/update/add_entry', "update"=>"Update", "register_account_id"=>'1', "entry[date]"=>'2008-06-07', 'entry[reference]'=>'1000', 'entity[name]'=>'Card', 'account[id]'=>'2', 'entry[memo]'=>'Payment', 'entry[amount]'=>'-1000', 'entry[cleared]'=>'1', 'entry[id]'=>entry[:id].to_s)
     res['Location'].should == http_url('/update/register/1')
     entry2 = Entries[:id => entry[:id]]
-    entry2.should == {:date=>'2008-06-07'.to_date, :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>'1000'.to_d, :cleared=>true, :user_id=>1, :id=>entry[:id]}
+    entry2.should == {:date=>Date.new(2008,06,07), :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal.new('1000'), :cleared=>true, :user_id=>1, :id=>entry[:id]}
 
     p = page('/update/register/1')
     tr = (p/"form table tbody tr")
@@ -174,7 +174,7 @@ describe "$PAM register page" do
     res = post_xhr('/update/add_entry', "register_account_id"=>'1', "entry[date]"=>'2008-06-06', 'entry[reference]'=>'DEP', 'entity[name]'=>'Employer', 'account[id]'=>'3', 'entry[memo]'=>'Check', 'entry[amount]'=>'1000')
     res['Content-Type'].should =~ /javascript/
     entry = Entries.first
-    remove_id(entry).should == {:date=>'2008-06-06'.to_date, :reference=>'DEP', :entity_id=>1, :credit_account_id=>3, :debit_account_id=>1, :memo=>'Check', :amount=>'1000'.to_d, :cleared=>false, :user_id=>1}
+    remove_id(entry).should == {:date=>Date.new(2008,06,06), :reference=>'DEP', :entity_id=>1, :credit_account_id=>3, :debit_account_id=>1, :memo=>'Check', :amount=>BigDecimal.new('1000'), :cleared=>false, :user_id=>1}
   end
 
   it "should modify entries the Ajax way" do
@@ -182,7 +182,7 @@ describe "$PAM register page" do
     res = post_xhr('/update/add_entry', "update"=>"Update", "selected_entry_id"=>entry[:id].to_s, "register_account_id"=>'1', "entry[date]"=>'2008-06-07', 'entry[reference]'=>'1000', 'entity[name]'=>'Card', 'account[id]'=>'2', 'entry[memo]'=>'Payment', 'entry[amount]'=>'-1000', 'entry[cleared]'=>'0', 'entry[id]'=>entry[:id].to_s)
     res['Content-Type'].should =~ /javascript/
     entry2 = Entries[:id => entry[:id]]
-    entry2.should == {:date=>'2008-06-07'.to_date, :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>'1000'.to_d, :cleared=>false, :user_id=>1, :id=>entry[:id]}
+    entry2.should == {:date=>Date.new(2008,06,07), :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal.new('1000'), :cleared=>false, :user_id=>1, :id=>entry[:id]}
   end
 
   it "should auto complete entity names" do
@@ -261,7 +261,7 @@ describe "$PAM reports" do
   end
 
   it "earning spending should be correct" do
-    DB[:entries].insert(:date=>'2008-04-07'.to_date, :reference=>'1001', :entity_id=>2, :credit_account_id=>3, :debit_account_id=>4, :memo=>'Food', :amount=>100, :cleared=>false, :user_id=>1)
+    DB[:entries].insert(:date=>Date.new(2008,04,07), :reference=>'1001', :entity_id=>2, :credit_account_id=>3, :debit_account_id=>4, :memo=>'Food', :amount=>100, :cleared=>false, :user_id=>1)
     cells = (page('/reports/earning_spending').at(:table)/:tr).collect{|x| x.children.collect{|x| x.it}}.flatten
     cells.should == 'Account/June 2008/May 2008/April 2008/March 2008/February 2008/January 2008/December 2007/November 2007/October 2007/September 2007/August 2007/July 2007/Food///$-100.00//////////Salary///$100.00////////// '.split('/')[0...-1]
   end
