@@ -1,5 +1,0 @@
---- 
-:port: 9994
-:number: 2
-:logfile: log/style.log
-:pidfile: log/style.pid

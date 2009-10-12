@@ -1,7 +1,0 @@
---- 
-:port: 9996
-:unsupervised: 1
-:logfile: log/style-demo.log
-:pidfile: log/style-demo.pid
-:adapter_config:
-  :environment: demo_production

@@ -1,7 +1,8 @@
 #!/bin/sh
 WAITTIME=5
 echo -n '' > log/test.log
-style -c config/style.test.yaml start
+echo -n '' > /var/www/logs/unicorn/spam.test.log
+unicorn_rails -c config/unicorn.test.conf -D
 sleep $WAITTIME
 ruby test.rb
-style -c config/style.test.yaml stop
+kill `cat /var/www/tmp/spam.test.pid`

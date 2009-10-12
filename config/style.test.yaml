@@ -1,8 +1,0 @@
---- 
-:bind: 0.0.0.0
-:port: 8989
-:unsupervised: 1
-:logfile: log/style-test.log
-:pidfile: log/style-test.pid
-:adapter_config:
-  :environment: test
