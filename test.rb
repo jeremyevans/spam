@@ -262,8 +262,9 @@ describe "$PAM reports" do
 
   it "earning spending should be correct" do
     DB[:entries].insert(:date=>Date.new(2008,04,07), :reference=>'1001', :entity_id=>2, :credit_account_id=>3, :debit_account_id=>4, :memo=>'Food', :amount=>100, :cleared=>false, :user_id=>1)
-    cells = (page('/reports/earning_spending').at(:table)/:tr).collect{|x| x.children.collect{|x| x.it}}.flatten
-    cells.should == 'Account/June 2008/May 2008/April 2008/March 2008/February 2008/January 2008/December 2007/November 2007/October 2007/September 2007/August 2007/July 2007/Food///$-100.00//////////Salary///$100.00////////// '.split('/')[0...-1]
+    p = page('/reports/earning_spending')
+    (p/:th).collect{|x| x.it}.should == 'Account/June 2008/May 2008/April 2008/March 2008/February 2008/January 2008/December 2007/November 2007/October 2007/September 2007/August 2007/July 2007'.split('/')
+    (p/:td).collect{|x| x.it}.should == 'Food///$-100.00//////////Salary///$100.00////////// '.split('/')[0...-1]
   end
 
   it "income expense should be correct" do

@@ -7,7 +7,7 @@ class User < Sequel::Model
   end
   
   def password=(pass)
-    self.salt = `openssl rand -hex 20`
+    self.salt = `openssl rand -hex 20`.strip
     self[:password] = ::Digest::SHA1.new.update(salt).update(pass).hexdigest
   end
 end

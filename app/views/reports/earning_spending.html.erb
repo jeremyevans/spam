@@ -2,10 +2,14 @@
 
 <% if @max_date %>
   <table class="sparse">
-  <thead><tr><th>Account</th><%= (0...12).to_a.collect{|i| content_tag(:th, (@max_date << i).strftime('%B %Y'))} %></tr></thead>
+  <thead><tr><th>Account</th><% (0...12).each do |i| %>
+    <th><%= (@max_date << i).strftime('%B %Y') %></th>
+  <% end %></tr></thead>
   <tbody>
   <% @accounts.each do |account| -%>
-    <tr><td><%= account[:name] %></td><%= (0...12).to_a.collect{|i| content_tag(:td, (account[:"month_#{i}"].to_money unless account[:"month_#{i}"] == 0), :class=>'money')} %></tr>
+    <tr><td><%= account[:name] %></td><% (0...12).each do |i| %>
+      <td class="money"><%= account[:"month_#{i}"].to_money unless account[:"month_#{i}"] == 0 %></td>
+    <% end %></tr>
   <% end%>
   </tbody></table>
 <% else %>
