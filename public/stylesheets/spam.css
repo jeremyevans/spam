@@ -91,6 +91,7 @@ input, select {
 	border-width: 1px;
 	padding: 2px;
 }
+select { background-color: white; }
 
 p {	padding: .5em 5px; }
 
