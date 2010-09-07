@@ -1,4 +1,4 @@
-RAILS_GEM_VERSION = '2.3.8'
+RAILS_GEM_VERSION = '2.3.9'
 require File.join(File.dirname(__FILE__), 'boot')
 
 $:.unshift "/data/code/sequel/lib"
