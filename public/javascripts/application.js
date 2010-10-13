@@ -176,7 +176,7 @@ function setup_register_form() {
     return false;
   })
 
-  $('a.modify').click(function() {
+  $('a.modify').live('click', function() {
     $.getJSON($(this).attr('href'),
     {selected_entry_id: $('#selected_entry_id').val()},
     function(data){

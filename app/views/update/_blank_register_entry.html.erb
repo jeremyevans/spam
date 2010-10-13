@@ -6,4 +6,4 @@
 <td></td>
 <td class="money"></td>
 <td class="money"><%= @account.money_balance %></td>
-<td><a class="modify" id="modify_<%= @entry.id %>" href="/update/modify_entry/<%= @entry.id %>?register_account_id=<%= @account.id %>">Add</a></td>
+<td><a class="modify" href="/update/modify_entry/?register_account_id=<%= @account.id %>">Add</a></td>
