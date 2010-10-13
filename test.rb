@@ -75,7 +75,7 @@ end
 def post_xhr(path, params)
   req = Net::HTTP::Post.new(path)
   req.set_form_data(params)
-  req['Accept'] = "text/javascript, text/html, application/xml, text/xml, */*"
+  req['Accept'] = "application/json, text/javascript, */*"
   req['X-Requested-With'] = 'XMLHttpRequest'
   Net::HTTP.new(HOST, PORT).start{|http| http.request(req)}
 end
@@ -90,8 +90,8 @@ describe "$PAM home page" do
   it "should have correct CSS, Javascript, and Navigation links" do 
     p = page('')
     p.at(:title).ih.should == '$PAM - Login'
-    (p/:link).collect{|x| x[:href].gsub(/\A\/stylesheets\/(.*)\.css\?\d*\z/, '\1')}.should == %w'spam scaffold_associations_tree'
-    (p/:script).collect{|x| x[:src].gsub(/\A\/javascripts\/(.*)\.js\?\d*\z/, '\1')}.should == %w'prototype effects dragdrop controls application scaffold_associations_tree'
+    (p/:link).collect{|x| x[:href].gsub(/\A\/stylesheets\/(.*)\.css\?\d*\z/, '\1')}.should == %w'spam scaffold_associations_tree jquery.autocomplete'
+    (p/:script).collect{|x| x[:src].gsub(/\A\/javascripts\/(.*)\.js\?\d*\z/, '\1')}.should == %w'jquery jquery.autocomplete application scaffold_associations_tree'
     (p/"div#nav a").maphr.should == %w'/ /update/register/1 /update/register/2 /update/reconcile/1 /update/reconcile/2 /reports/balance_sheet /reports/earning_spending /reports/income_expense /reports/net_worth /update/manage_account /update/manage_entity /update/manage_entry /login/change_password'
   end
 end
@@ -100,7 +100,7 @@ describe "$PAM register page" do
   def check_entry_row(row, skip_value = false)
     fields = row/"td"/"input, select"
     fields.maptype.should == %w'input input input select input input input'
-    fields.mapname.should == %w'entry[date] entry[reference] entity[name] account[id] entry[memo] entry[amount]' << nil
+    fields.mapname.should == %w'entry[date] entry[reference] entity[name] account[id] entry[memo] entry[amount] add' 
     fields.mapvalue.should == [Date.today.to_s, '', '', nil, '', '', 'Add'] unless skip_value
     opts = fields/"option"
     opts.mapit.should == '/Checking/Credit Card/Food/Salary'.split('/')
@@ -172,7 +172,7 @@ describe "$PAM register page" do
   it "should add entries the Ajax way" do
     Entries.delete
     res = post_xhr('/update/add_entry', "register_account_id"=>'1', "entry[date]"=>'2008-06-06', 'entry[reference]'=>'DEP', 'entity[name]'=>'Employer', 'account[id]'=>'3', 'entry[memo]'=>'Check', 'entry[amount]'=>'1000')
-    res['Content-Type'].should =~ /javascript/
+    res['Content-Type'].should =~ /json/
     entry = Entries.first
     remove_id(entry).should == {:date=>Date.new(2008,06,06), :reference=>'DEP', :entity_id=>1, :credit_account_id=>3, :debit_account_id=>1, :memo=>'Check', :amount=>BigDecimal.new('1000'), :cleared=>false, :user_id=>1}
   end
@@ -180,14 +180,14 @@ describe "$PAM register page" do
   it "should modify entries the Ajax way" do
     entry = Entries.first
     res = post_xhr('/update/add_entry', "update"=>"Update", "selected_entry_id"=>entry[:id].to_s, "register_account_id"=>'1', "entry[date]"=>'2008-06-07', 'entry[reference]'=>'1000', 'entity[name]'=>'Card', 'account[id]'=>'2', 'entry[memo]'=>'Payment', 'entry[amount]'=>'-1000', 'entry[cleared]'=>'0', 'entry[id]'=>entry[:id].to_s)
-    res['Content-Type'].should =~ /javascript/
+    res['Content-Type'].should =~ /json/
     entry2 = Entries[:id => entry[:id]]
     entry2.should == {:date=>Date.new(2008,06,07), :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal.new('1000'), :cleared=>false, :user_id=>1, :id=>entry[:id]}
   end
 
   it "should auto complete entity names" do
-    (Hpricot(post('/update/auto_complete_for_entity_name', 'entity[name]'=>'%').body)/:li).mapit.should == %w'Card Employer Restaurant'
-    (Hpricot(post('/update/auto_complete_for_entity_name', 'entity[name]'=>'z').body)/:li).length.should == 0
+    post('/update/auto_complete_for_entity_name', 'q'=>'%').body.should == %w'Card Employer Restaurant'.join("\n")
+    post('/update/auto_complete_for_entity_name', 'q'=>'z').body.should == " "
   end
 end
 
@@ -241,15 +241,15 @@ describe "$PAM reconcile page" do
     Entries.update(:cleared=>false)
     entry = Entries.first
     entry[:cleared].should == false
-    res = post_xhr('/update/auto_reconcile/1', "auto_reconcile"=>"Auto-Reconcile", "reconcile_to"=>"-1000.00", "entries[#{entry[:id]}]"=>"1")
-    res['Content-Type'].should =~ /javascript/
+    res = post_xhr('/update/auto_reconcile', "id"=>"1", "auto_reconcile"=>"Auto-Reconcile", "reconcile_to"=>"-1000.00", "entries[#{entry[:id]}]"=>"1")
+    res['Content-Type'].should =~ /json/
   end
 
   it "should clear entries the Ajax way" do
     entry = Entries.first
     entry[:cleared].should == false
-    res = post_xhr('/update/clear_entries/1', "auto_reconcile"=>"Auto-Reconcile", "reconcile_to"=>"-1000.00", "entries[#{entry[:id]}]"=>"1")
-    res['Content-Type'].should =~ /javascript/
+    res = post_xhr('/update/clear_entries', "id"=>"1", "auto_reconcile"=>"Auto-Reconcile", "reconcile_to"=>"-1000.00", "entries[#{entry[:id]}]"=>"1")
+    res['Content-Type'].should =~ /json/
     Entries.first[:cleared].should == true
   end
 end
