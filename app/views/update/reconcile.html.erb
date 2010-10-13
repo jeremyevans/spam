@@ -1,14 +1,15 @@
 <% @pagetitle = "Reconciling #{@account.name}" %>
 <h3 id="results"><%= @error_message %></h3>
 <%= form_tag :action=>"clear_entries", :id=>@account.id %>
+<input type="hidden" name="id" value="<%= @account.id %>" />
 <table id="reconcile"><tbody>
 <tr><td>Unreconciled Balance</td><td id="balance"  class="money"><%= @account.unreconciled_balance.to_money %></td></tr>
 <tr><td>Reconciling Changes</td><td id="reconcile_changes" class="money"><%= @reconcile_changes || '$0.00' %></td></tr>
 <tr><td>Reconcile To</td><td><input id="reconcile_to" name="reconcile_to" type="text" size="8" onchange="updatedReconcileTo();" value="<%= @reconcile_to || '$0.00' %>" /></td></tr>
 <tr><td>Off By</td><td id="off_by" class="money"><%= (@account.unreconciled_balance + (@reconcile_changes || 0) - (@reconcile_to || 0)).to_money %></td></tr>
 <tr><td colspan="2" class="centered">
-  <input name="auto_reconcile" type="submit" value="Auto-Reconcile" onclick="<%= remote_function(:url=>{:action=>"auto_reconcile", :id=>@account.id}, :with=>'Form.serialize(this.form)') %>; return false;" />
-  <input name="clear_entries" type="submit" value="Clear Entries" onclick="<%= remote_function(:url=>{:action=>"clear_entries", :id=>@account.id}, :with=>'Form.serialize(this.form)') %>; return false;" />
+  <input id="auto_reconcile" name="auto_reconcile" type="submit" value="Auto-Reconcile" />
+  <input id="clear_entries" name="clear_entries" type="submit" value="Clear Entries" />
 </td></tr>
 </tbody></table>
 <div id="debit_entries">
@@ -17,6 +18,7 @@
 <%= render(:partial=>'reconcile_table.html.erb', :locals=>{:entry_type=>'credit'}) %>
 </div></form>
 <script type="text/javascript">
-document.forms[0].reconcile_to.select();
-document.forms[0].reconcile_to.focus();
+$(document).ready(function() {
+  setup_reconcile_form();
+});
 </script>

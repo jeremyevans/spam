@@ -105,24 +105,113 @@ function ts_displayCurrency(amount) {
 }
 
 function updatedReconcileTo() {
-    $('off_by').innerHTML = ts_displayCurrency(parseCurrency($('balance').innerHTML) + parseCurrency($('reconcile_changes').innerHTML) - parseCurrency($('reconcile_to').value))
+    $('#off_by').text(ts_displayCurrency(parseCurrency($('#balance').text()) + parseCurrency($('#reconcile_changes').text()) - parseCurrency($('#reconcile_to').val())))
 }
 
 function updateOffBy(element) {
     var type = element.id.split('_')[0]
     var amount_id = element.id.split('_')[1]
-    var amount = parseCurrency($('amount_'+ amount_id).innerHTML)
+    var amount = parseCurrency($('#amount_'+ amount_id).text())
     if(type == 'debit' ^ element.checked) { amount *= -1; }
-    $('reconcile_changes').innerHTML = ts_displayCurrency(parseCurrency($('reconcile_changes').innerHTML) + amount)
+    $('#reconcile_changes').text(ts_displayCurrency(parseCurrency($('#reconcile_changes').text()) + amount))
     updatedReconcileTo()
 }
 
-Ajax.EntityAutocompleter = Class.create();
-Object.extend(Object.extend(Ajax.EntityAutocompleter.prototype, Ajax.Autocompleter.prototype), { 
-  selectEntry: function() {
-    this.active = false;
-    this.updateElement(this.getCurrentEntry());
-    this.element.focus();
-    new Ajax.Request('/update/other_account_for_entry/' + $('register_account_id').value + '?entity='+this.element.value.replace(/&/g, '%26'), {asynchronous:true, evalScripts:true, onComplete:function(request){eval(request.responseText)}})
+function set_entity_autocompleter() {
+  $('#entity_name').autocomplete('/update/auto_complete_for_entity_name').result(function(event, data, formatted) {
+    $.getJSON('/update/other_account_for_entry/' + $('#register_account_id').val(),
+     {entity: formatted},
+     function(data){
+      if(data.account_id){$('#account_id').val(data.account_id)}
+      if(data.amount){$('#entry_amount').val(data.amount)}
+    });
+  });
+  document.forms[0].entry_date.focus();
+}
+
+function handle_actions(actions) {
+  var l = actions.length;
+  var i;
+  for(i=0; i<l; i++) {
+    handle_action(actions[i]);
   }
-});
+}
+
+function handle_action(action) {
+  switch(action[0]) {
+  case 'set_value':
+    $(action[1]).val(action[2])
+    break;
+  case 'replace_html':
+    $(action[1]).html(action[2])
+    break;
+  case 'insert_html':
+    $(action[1]).after(action[2])
+    break;
+  case 'focus':
+    $(action[1]).focus()
+    break;
+  case 'autocompleter':
+    set_entity_autocompleter()
+    break;
+  case 'resort':
+    ts_resortTable()
+    break;
+  default:
+    alert('Unhandled action type: ' + action[0]);
+  }
+}
+
+function setup_register_form() {
+  $('#register_form').submit(function() {
+    $.ajax({
+      type: 'POST',
+      url: '/update/add_entry',
+      dataType: 'json',
+      data: $(this).serialize() + '&' + $('#register_form :submit').attr('name') + '=1',
+      success: function(data){
+        handle_actions(data);
+      }
+    });
+    return false;
+  })
+
+  $('a.modify').click(function() {
+    $.getJSON($(this).attr('href'),
+    {selected_entry_id: $('#selected_entry_id').val()},
+    function(data){
+      handle_actions(data);
+    });
+
+    return false;
+  })
+
+  set_entity_autocompleter() 
+}
+
+function setup_reconcile_form() {
+  $('#auto_reconcile').click(function() {
+    $.getJSON('/update/auto_reconcile',
+    $(this.form).serialize(),
+    function(data){
+      handle_actions(data);
+    });
+    return false;
+  })
+
+  $('#clear_entries').click(function() {
+    $.ajax({
+      type: 'POST',
+      url: '/update/clear_entries',
+      dataType: 'json',
+      data: $(this.form).serialize(),
+      success: function(data){
+        handle_actions(data);
+      }
+    });
+    return false;
+  })
+
+  document.forms[0].reconcile_to.select();
+  document.forms[0].reconcile_to.focus();
+}

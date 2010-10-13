@@ -12,14 +12,24 @@ class UpdateController < ApplicationController
     @check_number = (params[:entry][:reference] =~ /\A\d+\z/) ? params[:entry][:reference].next : ''
     respond_to do |format|
       format.html{redirect_to :action=>'register', :id=>@account.id}
-      format.js
+      format.json do
+        json = [
+          ['set_value', '#selected_entry_id', ''],
+          ['replace_html', '#new_entry', render_to_string(:partial=>'new_register_entry.html.erb', :locals=>{:time=>@entry.date})],
+          ['insert_html', '#new_entry', "<tr id='entry_#{@entry.id}'>#{render_to_string(:partial=>'register_entry.html.erb', :locals=>{:entry=>@entry})}</tr>"],
+          ['replace_html', '#results', 'Added entry'],
+          ['autocompleter'],
+          ['resort']
+        ]
+        render :json=>json
+      end
     end
   end
   
   def auto_complete_for_entity_name
-    @items = userEntity.filter(:name.ilike("%#{params[:entity][:name]}%")).order(:name).limit(10).all
+    @items = userEntity.filter(:name.ilike("%#{params[:q]}%")).order(:name).limit(10).all
     if @items.length > 0
-      render :text => "<ul>#{@items.collect{|x| "<li>#{x.name}</li>"}.join("\n")}</ul>", :layout=>false
+      render :inline => '<%=h @items.map{|x| h(x.name)}.join("\n") %>', :layout=>false
     else
       render :nothing=>true
     end
@@ -42,7 +52,20 @@ class UpdateController < ApplicationController
     end
     respond_to do |format|
       format.html{render :action=>"reconcile"}
-      format.js
+      format.json do
+        if @entries
+          json = [
+            ['replace_html', '#off_by', '$0.00'],
+            ['replace_html', '#reconcile_changes', @reconcile_changes.to_money],
+            ['replace_html', '#debit_entries', render_to_string(:partial=>'reconcile_table.html.erb', :locals=>{:entry_type=>'debit'})],
+            ['replace_html', '#credit_entries', render_to_string(:partial=>'reconcile_table.html.erb', :locals=>{:entry_type=>'credit'})]
+          ]
+        else
+          json = []
+        end
+        json << ['replace_html', '#results', @error_message]
+        render :json=>json
+      end
     end
   end
   
@@ -51,7 +74,19 @@ class UpdateController < ApplicationController
     userEntry.filter(:id=>params[:entries].keys.collect{|i|i.to_i}).update(:cleared => true)
     respond_to do |format|
       format.html{redirect_to :action=>"reconcile", :id=>params[:id]}
-      format.js{@account = user_account(params[:id]); render}
+      format.json do
+        @account = user_account(params[:id])
+        json = [
+          ['replace_html', '#off_by', @account.unreconciled_balance.to_money],
+          ['replace_html', '#reconcile_changes', '$0.00'],
+          ['set_value', '#reconcile_to', '$0.00'],
+          ['replace_html', '#balance', @account.unreconciled_balance.to_money],
+          ['replace_html', '#debit_entries', render_to_string(:partial=>'reconcile_table.html.erb', :locals=>{:entry_type=>'debit'})],
+          ['replace_html', '#credit_entries', render_to_string(:partial=>'reconcile_table.html.erb', :locals=>{:entry_type=>'credit'})],
+          ['replace_html', '#results', 'Cleared entries']
+        ]
+        render :json=>json
+      end
     end
   end
   
@@ -71,18 +106,27 @@ class UpdateController < ApplicationController
     end
     respond_to do |format|
       format.html{@show_num_entries = num_register_entries; render :action=>'register'}
-      format.js
+      format.json do
+        json = []
+        json << ['set_value', '#selected_entry_id', @selected_entry_id]
+        json << ['replace_html', '#new_entry', render_to_string(:partial=>"#{@entry ? 'blank' : 'new'}_register_entry.html.erb", :locals=>{:entry=>@entry})]
+        json << ['replace_html', "#entry_#{@other_entry.id}", render_to_string(:partial=>'register_entry.html.erb', :locals=>{:entry=>@other_entry})] if @other_entry
+        json << ['resort']
+        json << ['replace_html', "#entry_#{@entry.id}", render_to_string(:partial=>'modify_register_entry.html.erb', :locals=>{:entry=>@entry})] if @entry
+        json << ['replace_html', '#results', @entry ? 'Modify entry' : 'Add entry']
+        json << ['autocompleter']
+        render :json=>json
+      end
     end
   end
 
   def other_account_for_entry
-    return render(:nothing=>true) unless params[:entity]
-    @account = user_account(params[:id])
-    return render(:nothing=>true) unless @entry = @account.last_entry_for_entity(params[:entity])
-    @entry.main_account = @account
-    respond_to do |format|
-      format.js
+    h = {}
+    if params[:entity] and account = user_account(params[:id]) and entry = account.last_entry_for_entity(params[:entity])
+      entry.main_account = account
+      h = {:account_id=>entry.other_account.id, :amount=>entry.amount}
     end
+    render :json=>h
   end
 
   def reconcile
@@ -127,7 +171,17 @@ class UpdateController < ApplicationController
     @entry.main_account = @account
     respond_to do |format|
       format.html{redirect_to :action=>'register', :id=>@account.id}
-      format.js{render(:action=>'update_register_entry')}
+      format.json do
+        json = [
+          ['set_value', '#selected_entry_id', ''],
+          ['replace_html', '#new_entry', render_to_string(:partial=>'new_register_entry.html.erb', :locals=>{:time=>@entry.date})],
+          ['replace_html', "#entry_#{@entry.id}", render_to_string(:partial=>'register_entry.html.erb', :locals=>{:entry=>@entry})],
+          ['replace_html', '#results', 'Updated entry'],
+          ['autocompleter'],
+          ['resort']
+        ]
+        render :json=>json
+      end
     end
   end
 
