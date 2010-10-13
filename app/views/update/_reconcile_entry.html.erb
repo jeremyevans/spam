@@ -1,5 +1,5 @@
 <tr>
-  <td><input id="<%= "#{entry_type}_#{reconcile_entry.id}" %>" name="entries[<%= reconcile_entry.id %>]" <%= 'checked="checked"'.html_safe! if @entries && @entries.include?(reconcile_entry.id) %> onclick="updateOffBy(this);" type="checkbox" value="1" /></td>
+  <td><input id="<%= "#{entry_type}_#{reconcile_entry.id}" %>" name="entries[<%= reconcile_entry.id %>]" <%= 'checked="checked"'.html_safe if @entries && @entries.include?(reconcile_entry.id) %> onclick="updateOffBy(this);" type="checkbox" value="1" /></td>
 <td><%= reconcile_entry.date %></td>
 <td><%= reconcile_entry.reference %></td>
 <td class="name"><%=h(reconcile_entry.entity.name) if reconcile_entry.entity %></td>
