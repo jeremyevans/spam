@@ -1,7 +1,2 @@
-gem 'rails', '= 2.3.9'
-ENV["RAILS_ENV"] ||= ENV["RACK_ENV"]
-require "config/environment"
-require 'action_controller/rack_lint_patch'
-use Rails::Rack::Static
-run ActionController::Dispatcher.new
-
+require ::File.expand_path('../config/environment',  __FILE__)
+run Spam::Application

@@ -1,20 +1,16 @@
-RAILS_GEM_VERSION = '2.3.9'
-require File.join(File.dirname(__FILE__), 'boot')
+# Load the rails application
+require File.expand_path('../application', __FILE__)
+
+# Initialize the rails application
+Spam::Application.initialize!
 
 $:.unshift "/data/code/sequel/lib"
 require 'sequel'
 Sequel::Model.raise_on_typecast_failure = false
 Sequel.extension :looser_typecasting
+DB.extend(Sequel::LooserTypecasting)
 
-Rails::Initializer.run do |config|
-  config.frameworks -= [ :active_record, :active_resource, :action_mailer ]
-  config.action_controller.session = { :key => "_myapp_session", :secret => "xEc6e4EN+Pce3WYxMeIhLNaqRTLkDV5lOfs9sCd0s/HbFHYVEgHMbA=="}
-  config.action_controller.default_charset = 'ISO-8859-1'
-end
-
-ActionController::Base.param_parsers.delete(Mime::XML)
 require 'to_money'
 require 'set'
 require 'digest/sha1'
 require 'subset_sum'
-DB.extend(Sequel::LooserTypecasting)
