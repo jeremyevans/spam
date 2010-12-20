@@ -1,14 +1,14 @@
 <% @pagetitle = "Earning/Spending" %>
 
-<% if @max_date %>
+<% if !@headers.empty? %>
   <table class="sparse">
-  <thead><tr><th>Account</th><% (0...12).each do |i| %>
-    <th><%= (@max_date << i).strftime('%B %Y') %></th>
+  <thead><tr><th>Account</th><% @headers.each do |k, v| %>
+    <th><%= k %></th>
   <% end %></tr></thead>
   <tbody>
   <% @accounts.each do |account| -%>
-    <tr><td><%= account[:name] %></td><% (0...12).each do |i| %>
-      <td class="money"><%= account[:"month_#{i}"].to_money unless account[:"month_#{i}"] == 0 %></td>
+    <tr><td><%= account[:name] %></td><% @headers.each.each do |k, v| %>
+      <td class="money"><%= account[v].to_money unless account[v] == 0 %></td>
     <% end %></tr>
   <% end%>
   </tbody></table>

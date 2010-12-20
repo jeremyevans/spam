@@ -23,15 +23,34 @@ class ReportsController < ApplicationController
   def earning_spending
     @accounts = []
     DB.transaction do
-      return unless @max_date = userEntry.get(:max[:date])
-      md = @max_date.to_s.cast(:date)
-      age = :age[(md + 1) - md.extract(:day).cast_numeric, (:entries__date + 1) - :entries__date.extract(:day).cast_numeric]
-      @accounts = accounts_entries_ds.select(:accounts__account_type_id, :accounts__name,
-        *(0..12).to_a.collect{|i| :sum[[[~{age.extract(:month) => i}, 0], [debit_cond, :amount * -1]].case(:amount)].as(:"month_#{i}")}).
-        filter(:accounts__account_type_id=>[3,4]).
-        filter(age < '1 year'.cast(:interval)).
-        group(:accounts__account_type_id, :accounts__name).order(:account_type_id.desc, :name).all
+      if max_date = userEntry.get(:max[:date])
+        @headers = (0...12).map{|i| [(max_date << i).strftime('%B %Y'), :"month_#{i}"]}
+        md = max_date.to_s.cast(Date)
+        age = :age.sql_function((md + 1) - md.extract(:day).cast_numeric, (:entries__date + 1) - :entries__date.extract(:day).cast_numeric)
+        i = -1
+        @accounts = accounts_entries_ds.select(:accounts__account_type_id, :accounts__name,
+            *@headers.map{|k,v| :sum.sql_function([[~{age.extract(:month) => (i+=1)}, 0], [debit_cond, :amount * -1]].case(:amount)).as(v)}).
+          filter(:accounts__account_type_id=>[3,4]).
+          filter(age < '1 year'.cast(:interval)).
+         group(:accounts__account_type_id, :accounts__name).order(:account_type_id.desc, :name).all
+      else
+        @headers = []
+      end
     end
+  end
+
+  def yearly_earning_spending
+    @accounts = []
+    DB.transaction do
+      unless (@headers = userEntry.group(:date.extract(:year)).order(:year.desc).select_map(:date.extract(:year).cast(Integer).as(:year))).empty?
+        @headers.map!{|k| [k, :"year_#{k}"]}
+        @accounts = accounts_entries_ds.select(:accounts__account_type_id, :accounts__name,
+          *@headers.map{|k, v| :sum.sql_function([[~{:entries__date.extract(:year) => k}, 0], [debit_cond, :amount * -1]].case(:amount)).as(v)}).
+          filter(:accounts__account_type_id=>[3,4]).
+          group(:accounts__account_type_id, :accounts__name).order(:account_type_id.desc, :name).all
+      end
+    end
+    render(:action=>'earning_spending')
   end
 
   private
