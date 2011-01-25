@@ -68,7 +68,7 @@ class Account < Sequel::Model
   end
 
   def unreconciled_balance
-    balance - (Entry.with_account(id).filter(~:cleared).get(:sum[{{:credit_account_id => id}=>:amount * -1}.case(:amount)]) || 0)
+    balance - (Entry.with_account(id).filter(~:cleared).get(:sum.sql_function({{:credit_account_id => id}=>:amount * -1}.case(:amount))) || 0)
   end
 
   private

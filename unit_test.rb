@@ -1,4 +1,5 @@
 #!/usr/local/bin/spec
+$: << '.'
 require 'rubygems'
 $:.unshift('/data/code/sequel/lib')
 require 'sequel'

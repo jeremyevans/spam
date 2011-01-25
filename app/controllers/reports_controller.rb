@@ -6,10 +6,11 @@ class ReportsController < ApplicationController
   end
   
   def income_expense
+    ue = userEntry
     negative_map = {:income=>true, :expense=>false, :assets=>true, :liabilities=>false}
-    @months = accounts_entries_ds.select((:entries__date.extract(:year).cast_string + :to_char[:entries__date.extract(:month) * -1, '00']).as(:month),
-      *{3=>:income, 4=>:expense, 1=>:assets, 2=>:liabilities}.collect{|i, aliaz|:sum[[[~{:account_type_id=>i},0], [debit_cond, :amount * (negative_map[aliaz] ? -1 : 1)]].case(:amount * (negative_map[aliaz] ? 1 : -1))].as(aliaz)}).
-      filter(:entries__date > '1 year 1 month'.cast(:interval) * -1 + userEntry.select(:max[:date])).
+    @months = accounts_entries_ds.select((:entries__date.extract(:year).cast_string + :to_char.sql_function(:entries__date.extract(:month) * -1, '00')).as(:month),
+      *{3=>:income, 4=>:expense, 1=>:assets, 2=>:liabilities}.collect{|i, aliaz| :sum.sql_function([[~{:account_type_id=>i},0], [debit_cond, :amount * (negative_map[aliaz] ? -1 : 1)]].case(:amount * (negative_map[aliaz] ? 1 : -1))).as(aliaz)}).
+      filter{entries__date > '1 year 1 month'.cast(:interval) * -1 + ue.select(max(date))}.
       group(:month).order(:month.desc).all
     @months.pop if @months.length > 12
   end
@@ -23,7 +24,7 @@ class ReportsController < ApplicationController
   def earning_spending
     @accounts = []
     DB.transaction do
-      if max_date = userEntry.get(:max[:date])
+      if max_date = userEntry.get{max(date)}
         @headers = (0...12).map{|i| [(max_date << i).strftime('%B %Y'), :"month_#{i}"]}
         md = max_date.to_s.cast(Date)
         age = :age.sql_function((md + 1) - md.extract(:day).cast_numeric, (:entries__date + 1) - :entries__date.extract(:day).cast_numeric)
@@ -64,7 +65,7 @@ class ReportsController < ApplicationController
   end
 
   def account_sums(accounts)
-    accounts.to_a.collect{|id, name| :sum[{{:account_type_id=>id}=>:balance}.case(0)].as(name)}
+    accounts.to_a.collect{|id, name| :sum.sql_function({{:account_type_id=>id}=>:balance}.case(0)).as(name)}
   end
 
   def debit_cond
