@@ -1,5 +1,4 @@
 class LoginController < ApplicationController
-  filter_parameter_logging :password
   before_filter :require_login, :except=>['index', 'login']
   
   def update_password

@@ -9,6 +9,7 @@ Bundler.require(:default, Rails.env) if defined?(Bundler)
 module Spam
   class Application < Rails::Application
     config.action_controller.default_charset = 'ISO-8859-1'
+    config.filter_parameters = [:password]
   end
 end
 
