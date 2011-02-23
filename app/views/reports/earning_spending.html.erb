@@ -2,12 +2,12 @@
 
 <% if !@headers.empty? %>
   <table class="sparse">
-  <thead><tr><th>Account</th><% @headers.each do |k, v| %>
+  <thead><tr><th>Account <input id="account_filter" /></th><% @headers.each do |k, v| %>
     <th><%= k %></th>
   <% end %></tr></thead>
   <tbody>
   <% @accounts.each do |account| -%>
-    <tr><td><%= account[:name] %></td><% @headers.each.each do |k, v| %>
+    <tr><td class="account_name"><%= account[:name] %></td><% @headers.each.each do |k, v| %>
       <td class="money"><%= account[v].to_money unless account[v] == 0 %></td>
     <% end %></tr>
   <% end%>
@@ -15,3 +15,29 @@
 <% else %>
   <p>This report isn't ready yet, because no entries have been entered.</p>
 <% end %>
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js"></script>
+<script type="text/javascript">
+t = 0;
+f = $("#account_filter");
+$(document).ready(function() {
+  f.keypress(function() {
+   if (t) {
+     clearTimeout(t);
+   } 
+   t = setTimeout(filter_accounts, 400);
+  });
+});
+
+function filter_accounts() {
+  var v = f.val().toLowerCase();
+  $("td.account_name").each(function() {
+    var a = $(this);
+    if (a.html().toLowerCase().indexOf(v) != -1) {
+      a.parent().show();
+    } else {
+      a.parent().hide();
+    }
+  });
+}
+</script>
