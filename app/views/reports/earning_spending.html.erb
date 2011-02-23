@@ -2,13 +2,13 @@
 
 <% if !@headers.empty? %>
   <table class="sparse">
-  <thead><tr><th>Account <input id="account_filter" /></th><% @headers.each do |k, v| %>
-    <th><%= k %></th>
+  <thead><tr><th>Account<input id="account_filter" /></th><% @headers.each do |k, v| %>
+    <th><%= k %><input type="checkbox" class="column_filter" id="col_<%= v %>" /></th>
   <% end %></tr></thead>
   <tbody>
   <% @accounts.each do |account| -%>
-    <tr><td class="account_name"><%= account[:name] %></td><% @headers.each.each do |k, v| %>
-      <td class="money"><%= account[v].to_money unless account[v] == 0 %></td>
+    <tr class="account"><td class="account_name"><%= account[:name] %></td><% @headers.each.each do |k, v| %>
+      <td class="money col_<%= v %> <%= 'empty' if account[v] == 0 %>"><%= account[v].to_money unless account[v] == 0 %></td>
     <% end %></tr>
   <% end%>
   </tbody></table>
@@ -16,10 +16,11 @@
   <p>This report isn't ready yet, because no entries have been entered.</p>
 <% end %>
 
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js"></script>
 <script type="text/javascript">
 t = 0;
 f = $("#account_filter");
+cf = $(".column_filter");
+tr = $("tr.account");
 $(document).ready(function() {
   f.keypress(function() {
    if (t) {
@@ -27,17 +28,23 @@ $(document).ready(function() {
    } 
    t = setTimeout(filter_accounts, 400);
   });
+  cf.click(function() {
+    filter_accounts();   
+  });
 });
 
 function filter_accounts() {
   var v = f.val().toLowerCase();
-  $("td.account_name").each(function() {
-    var a = $(this);
-    if (a.html().toLowerCase().indexOf(v) != -1) {
-      a.parent().show();
-    } else {
-      a.parent().hide();
-    }
+  tr.removeClass("hide");
+  cf.filter(":checked").each(function() {
+    $("td." + $(this).attr("id")).filter("td.empty").parent().addClass("hide");
   });
+  tr.filter(function() {
+    return $(this).children('td.account_name').html().toLowerCase().indexOf(v) == -1;
+  }).addClass("hide");
+  tr.filter(function() {
+    return !$(this).hasClass("hide");
+  }).show();
+  tr.filter('tr.hide').hide();
 }
 </script>
