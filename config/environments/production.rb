@@ -49,3 +49,11 @@ Spam::Application.configure do
 end
 DEMO_MODE = false
 DB = Sequel.postgres('spam', :user=>'postgres')
+ActiveSupport.on_load(:after_initialize) do
+  ActionView::Resolver.class_eval do
+    def caching?
+      false
+    end
+  end
+end
+
