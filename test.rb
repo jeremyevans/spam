@@ -90,7 +90,7 @@ describe "$PAM home page" do
   it "should have correct CSS, Javascript, and Navigation links" do 
     p = page('')
     p.at(:title).ih.should == '$PAM - Login'
-    (p/:link).collect{|x| x[:href].gsub(/\A\/stylesheets\/(.*)\.css\?\d*\z/, '\1')}.should == %w'spam scaffold_associations_tree jquery.autocomplete'
+    (p/:link).collect{|x| x[:href].gsub(/\A\/stylesheets\/(.*)\.css\?\d*\z/, '\1')}.should == %w'/favicon.ico spam scaffold_associations_tree jquery.autocomplete'
     (p/:script).collect{|x| x[:src].gsub(/\A\/javascripts\/(.*)\.js\?\d*\z/, '\1')}.should == %w'jquery jquery.autocomplete application scaffold_associations_tree'
     (p/"div#nav a").maphr.should == %w'/ /update/register/1 /update/register/2 /update/reconcile/1 /update/reconcile/2 /reports/balance_sheet /reports/income_expense /reports/net_worth /reports/earning_spending /reports/yearly_earning_spending /reports/earning_spending_by_entity /reports/yearly_earning_spending_by_entity /update/manage_account /update/manage_entity /update/manage_entry /login/change_password'
   end
