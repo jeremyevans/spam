@@ -10,6 +10,7 @@ module Spam
   class Application < Rails::Application
     config.action_controller.default_charset = 'ISO-8859-1'
     config.filter_parameters = [:password]
+    config.time_zone = 'UTC'
   end
 end
 
