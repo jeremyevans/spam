@@ -1,13 +1,12 @@
 #!/bin/sh
 WAITTIME=5
-if [ X"$BUNDLE" == "X" ]; then
-  BUNDLE=bundle
-fi
-if [ X"$UNICORN" == "X" ]; then
-  UNICORN=unicorn
-fi
-if [ X"$RUBY" == "X" ]; then
-  SPEC=spec
+BUNDLE=bundle
+UNICORN=unicorn
+SPEC=spec
+if [ X"$RUBY" == "Xruby19" ]; then
+  BUNDLE=bundle19
+  UNICORN=unicorn19
+  SPEC=spec19
 fi
 echo -n '' > log/test.log
 echo -n '' > /var/www/logs/unicorn/spam.test.log
