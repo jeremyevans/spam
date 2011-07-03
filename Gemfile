@@ -1,4 +1,4 @@
-gem 'rails', '3.0.7'
+gem 'rails', '3.0.9'
 gem 'erubis'
 gem 'sequel', :path => "/data/code/sequel"
 gem 'sequel_pg', :require=>'sequel'
