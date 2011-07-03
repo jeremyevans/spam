@@ -3,6 +3,7 @@ require 'sequel'
 Sequel::Model.raise_on_typecast_failure = false
 Sequel.extension :looser_typecasting
 Sequel::Model.plugin :prepared_statements
+Sequel::Model.plugin :prepared_statements_associations
 
 # Load the rails application
 require File.expand_path('../application', __FILE__)
