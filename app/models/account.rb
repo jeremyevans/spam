@@ -12,8 +12,10 @@ class Account < Sequel::Model
   @scaffold_associations = [:recent_credit_entries, :recent_debit_entries]
   @scaffold_session_value = :user_id
   
-  def_dataset_method(:for_select) do
-    all.collect{|account|[account.scaffold_name, account.id]}
+  dataset_module do
+    def for_select
+      all.collect{|account|[account.scaffold_name, account.id]}
+    end
   end
   
   subset(:register_accounts, :account_type_id=>[1,2])

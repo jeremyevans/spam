@@ -14,8 +14,10 @@ class Entry < Sequel::Model
     filter(:user_id=>user_id)
   end
 
-  def_dataset_method(:with_account) do |account_id|
-    filter(account_id=>[:credit_account_id, :debit_account_id])
+  dataset_module do
+    def with_account(account_id)
+      filter(account_id=>[:credit_account_id, :debit_account_id])
+    end
   end
   
   def scaffold_name
