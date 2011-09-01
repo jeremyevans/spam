@@ -1,7 +1,7 @@
 <% @pagetitle = "Login" %>
 
 <% unless session[:user_id] %>
-  <% form_tag(:action=>'login') do %>
+  <%= form_tag(:action=>'login') do %>
     <p><label for='username'>Usename</label>: <input type="text" id="username" name="username" /></p>
     <p><label for='password'>Password</label>: <input type="password" id="password" name="password" /></p>
     <p><input type="submit" value="Login" /></p>
