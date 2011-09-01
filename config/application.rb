@@ -16,3 +16,7 @@ module Spam
   end
 end
 
+# Fix obvious bug in ActiveSupport's Time.===
+def Time.===(other)
+  super || (self == Time && other.is_a?(ActiveSupport::TimeWithZone))
+end
