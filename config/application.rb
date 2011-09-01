@@ -12,7 +12,7 @@ module Spam
     config.action_controller.default_charset = 'ISO-8859-1'
     config.filter_parameters = [:password]
     config.time_zone = 'UTC'
-    config.logger = Logger.new("/var/log/rails/spam.#{Rails.env}.log", 7, 512000)
+    config.logger = Logger.new("/var/log/rails/spam.#{Rails.env}.log")
   end
 end
 
