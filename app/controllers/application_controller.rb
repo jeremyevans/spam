@@ -1,6 +1,18 @@
 class ApplicationController < ActionController::Base
   before_filter :get_navigation_accounts
+  NOT_FOUNDS = [AbstractController::ActionNotFound, ActionController::UnknownController, ActionController::UnknownAction, ActionController::RoutingError]
+  NOT_FOUNDS.each{|e| rescue_from e, :with=>:render_404}
   
+  def process(*a)
+    super
+  rescue *NOT_FOUNDS
+    process_action("render_404")
+  end
+
+  def render_404
+    render(:text=>File.read("#{Rails.root}/public/404.html"), :status=>404)
+  end
+
   private
 
   def demo_mode?

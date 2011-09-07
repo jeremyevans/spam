@@ -1,5 +1,5 @@
 class LoginController < ApplicationController
-  before_filter :require_login, :except=>['index', 'login']
+  before_filter :require_login, :except=>['index', 'login', 'render_404']
   
   def update_password
     return redirect_to(:action=>'index') if demo_mode?
