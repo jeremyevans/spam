@@ -15,8 +15,3 @@ module Spam
     config.logger = Logger.new("/var/log/rails/spam.#{Rails.env}.log")
   end
 end
-
-# Fix obvious bug in ActiveSupport's Time.===
-def Time.===(other)
-  super || (self == Time && other.is_a?(ActiveSupport::TimeWithZone))
-end
