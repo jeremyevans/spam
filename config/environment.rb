@@ -11,6 +11,7 @@ require File.expand_path('../application', __FILE__)
 # Initialize the rails application
 Spam::Application.initialize!
 
+DB.optimize_model_load = true
 DB.extend(Sequel::LooserTypecasting)
 
 require 'to_money'
