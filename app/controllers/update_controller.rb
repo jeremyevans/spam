@@ -27,9 +27,9 @@ class UpdateController < ApplicationController
   end
   
   def auto_complete_for_entity_name
-    @items = userEntity.filter(:name.ilike("%#{params[:q]}%")).order(:name).limit(10).all
-    if @items.length > 0
-      render :inline => '<%=raw @items.map{|x| x.name}.join("\n") %>', :layout=>false
+    @entities = userEntity.auto_complete(params[:q], params[:id])
+    if @entities.length > 0
+      render :inline => '<%=raw @entities.join("\n") %>', :layout=>false
     else
       render :nothing=>true
     end

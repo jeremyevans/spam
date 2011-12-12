@@ -118,8 +118,9 @@ function updateOffBy(element) {
 }
 
 function set_entity_autocompleter() {
-  $('#entity_name').autocomplete('/update/auto_complete_for_entity_name').result(function(event, data, formatted) {
-    $.getJSON('/update/other_account_for_entry/' + $('#register_account_id').val(),
+  var reg_account_id = $('#register_account_id').val();
+  $('#entity_name').autocomplete('/update/auto_complete_for_entity_name/' + reg_account_id).result(function(event, data, formatted) {
+    $.getJSON('/update/other_account_for_entry/' + reg_account_id,
      {entity: formatted},
      function(data){
       if(data.account_id){$('#account_id').val(data.account_id)}

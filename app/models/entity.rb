@@ -11,6 +11,19 @@ class Entity < Sequel::Model
     filter(:user_id=>user_id).order(:name)
   end
 
+  dataset_module do
+    def auto_complete(name, account_id)
+      qualify.
+      filter(:name.ilike("%#{name}%")).
+      left_join(:entries, :entity_id=>:id, account_id.to_i=>[:credit_account_id, :debit_account_id]).
+      order(:entries__date.desc, :name).
+      limit(10).
+      select_group(:name).
+      order{[max(entries__date).desc(:nulls=>:last), :name]}.
+      map(:name)
+    end
+  end
+
   def scaffold_name
     name[0..30]
   end
