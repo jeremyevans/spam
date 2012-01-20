@@ -136,6 +136,7 @@ function handle_actions(actions) {
   for(i=0; i<l; i++) {
     handle_action(actions[i]);
   }
+  $('#entry_date').focus().select()
 }
 
 function handle_action(action) {
@@ -188,6 +189,7 @@ function setup_register_form() {
   })
 
   set_entity_autocompleter() 
+  handle_actions([])
 }
 
 function setup_reconcile_form() {
