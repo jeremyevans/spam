@@ -113,6 +113,7 @@ function updateOffBy(element) {
     var amount_id = element.id.split('_')[1]
     var amount = parseCurrency($('#amount_'+ amount_id).text())
     if(type == 'debit' ^ element.checked) { amount *= -1; }
+    $('#reconciled_balance').text(ts_displayCurrency(parseCurrency($('#reconciled_balance').text()) + amount))
     $('#reconcile_changes').text(ts_displayCurrency(parseCurrency($('#reconcile_changes').text()) + amount))
     updatedReconcileTo()
 }
