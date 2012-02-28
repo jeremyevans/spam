@@ -1,9 +1,13 @@
 <% @pagetitle = "Income/Expense" %>
 
-<table class="sparse">
-<thead><tr><th>Month</th><th>Income</th><th>Expense</th><th>Profit/Loss</th></tr></thead>
-<tbody>
-<% @months.each do |month| -%>
-  <tr><td><%= month[:month] %></td><td class="money"><%= month[:income].to_money %></td><td class="money"><%= month[:expense].to_money %></td><td class="money"><%= (month[:income] - month[:expense]).to_money %></td></tr>
-<% end%>
-</tbody></table>
+<div class="row">
+  <div class="span4">
+    <table class="table table-condensed table-bordered">
+    <thead><tr><th>Month</th><th>Income</th><th>Expense</th><th>Profit/Loss</th></tr></thead>
+    <tbody>
+    <% @months.each do |month| -%>
+      <tr><td><%= month[:month] %></td><td class="money"><%= month[:income].to_money %></td><td class="money"><%= month[:expense].to_money %></td><td class="money"><%= (month[:income] - month[:expense]).to_money %></td></tr>
+    <% end%>
+    </tbody></table>
+  </div>
+</div>

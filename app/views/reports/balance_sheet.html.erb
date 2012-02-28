@@ -1,11 +1,14 @@
 <% @pagetitle = "Balance Sheet" %>
 
-<table>
-<thead><tr><th>Asset Accounts</th><th>Balance</th></tr></thead>
-<tbody>
-<%= balance_sheet_rows(@assets) %>
-</tbody>
-<thead><tr><th>Liability Accounts</th><th>Balance</th></tr></thead>
-<tbody>
-<%= balance_sheet_rows(@liabilities) %>
-</tbody></table>
+<div class="row">
+  <div class="span4">
+    <thead><tr><th>Asset Accounts</th><th>Balance</th></tr></thead>
+    <tbody>
+    <%= balance_sheet_rows(@assets) %>
+    </tbody>
+    <thead><tr><th>Liability Accounts</th><th>Balance</th></tr></thead>
+    <tbody>
+    <%= balance_sheet_rows(@liabilities) %>
+    </tbody></table>
+  </div>
+</div>

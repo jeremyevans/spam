@@ -1,7 +1,8 @@
+<% @fluid_layout = true %>
 <% @pagetitle = "Earning/Spending" %>
 
 <% if !@headers.empty? %>
-  <table class="sparse">
+  <table id="earning_spending" class="table table-condensed">
   <thead><tr><th>Account<input id="account_filter" /></th><% @headers.each do |k, v| %>
     <th><%= k %><input type="checkbox" class="column_filter" id="col_<%= v %>" /></th>
   <% end %></tr></thead>

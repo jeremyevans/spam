@@ -3,48 +3,10 @@ a, a:link, a:visited {
 	color: #363;
 }
 a:hover { text-decoration: underline; }
-a#banner {
-	text-align: center;
-	font-size: 18px;
-	font-weight: bolder;
-	font-variant: small-caps;
-	margin: 5px;
-	padding: 2px;
-	border-width: 2px;
-	border-color: #8A8;
-	border-style: solid;
-	font-family: serif;
-	color: #FFF;
-	background-color: #363;
-	text-decoration: none;
-}
 
 body { 
-	font-family: arial, helvetica, sans-serif, verdana;
 	background-color: #CDC;
-	font-size: 12px;
 }
-
-caption { font-size: 18px; }
-
-div { 
-	border-width: 0;
-	margin: 0;
-	padding: 0;
-}
-div#content {
-	margin: 10px 10px 0 220px;
-	padding: 0 25px 0 5px;
-	width: auto;
-}
-div#nav {
-	padding: 10px;
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 210px;
-}
-div#nav a {	display: block; }
 
 div#debit_entries {
 	float: left;
@@ -78,14 +40,11 @@ div.auto_complete ul strong.highlight {
 	padding:0;
 }
 
-h1 { font-size: 20px; }
-h2 { font-size: 18px; }
-h3 { font-size: 16px; }
-h4 { font-size: 14px; }
-
 img { border-width: 0px; }
 
 input, select { 
+  width: auto;
+  line-height: auto;
 	border-style: solid;
 	border-color: black;
 	border-width: 1px;
@@ -95,22 +54,12 @@ select { background-color: white; }
 
 p {	padding: .5em 5px; }
 
-table {
-	border-width: 1px;
-	border-style: solid;
-	border-collapse: collapse;
-	padding: 5px;
-}
-table thead, table tbody, table tr, table th, table td { 
-	border-width: inherit; 
-	border-style: inherit;
-	padding: inherit;
-	font-size: 12px;
-}
-
 table input, table select { font-size: 12px; }
 
+table#register td { padding: 1px 5px; }
+
 table#reconcile input { margin: 2px; }
+table#earning_spending input { margin-left: 5px; line-height: auto; height: auto; margin-bottom: 0; }
 
 .centered { text-align: center; }
 
@@ -126,3 +75,10 @@ table#reconcile input { margin: 2px; }
 	text-align: center; 
 	font-size: 24px;
 }
+
+div.form-actions { background-color: inherit; border-top-width: 0; }
+div.container-fluid table {margin: auto; width: auto;}
+div.container-fluid h1, div.container-fluid h3 {text-align: center;}
+div.navbar-inner {background-color: #141; background-image: none; }
+ul.dropdown-menu li.dropdown-menu-sub { padding: 3px 15px; }
+ul.dropdown-menu li.dropdown-menu-sub ul { list-style: none outside none; margin: 0; }
