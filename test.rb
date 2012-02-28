@@ -87,12 +87,9 @@ def remove_id(hash)
 end
 
 describe "$PAM home page" do
-  it "should have correct CSS, Javascript, and Navigation links" do 
+  it "should display login correct title" do 
     p = page('')
-    p.at(:title).ih.should == '$PAM - Login'
-    (p/:link).collect{|x| x[:href].gsub(/\A\/stylesheets\/(.*)\.css\?\d*\z/, '\1')}.should == %w'/favicon.ico spam scaffold_associations_tree jquery.autocomplete'
-    (p/:script).collect{|x| x[:src].gsub(/\A\/javascripts\/(.*)\.js\?\d*\z/, '\1')}.should == %w'jquery jquery.autocomplete application scaffold_associations_tree'
-    (p/"div#nav a").maphr.should == %w'/ /update/register/1 /update/register/2 /update/reconcile/1 /update/reconcile/2 /reports/balance_sheet /reports/income_expense /reports/net_worth /reports/earning_spending /reports/yearly_earning_spending /reports/earning_spending_by_entity /reports/yearly_earning_spending_by_entity /update/manage_account /update/manage_entity /update/manage_entry /login/change_password'
+    p.at(:title).ih.should == 'SPAM - Login'
   end
 end
 
@@ -109,9 +106,9 @@ describe "$PAM register page" do
 
   it "should have a correct form and table" do 
     p = page('/update/register/1')
-    p.at(:title).ih.should == '$PAM - Checking Register'
+    p.at(:title).ih.should == 'SPAM - Checking Register'
     p.at(:h3).ih.should == 'Showing 35 Most Recent Entries'
-    form = p.at(:form)
+    form = (p/'div#content').at(:form)
     form[:action].should == '/update/add_entry'
     input = (form/:input)
     input.length.should == 8
@@ -194,17 +191,17 @@ end
 describe "$PAM reconcile page" do
   it "should have correct form and table" do
     p = page('/update/reconcile/1')
-    form = p.at(:form)
+    form = (p/'div#content').at(:form)
     form[:action].should == '/update/clear_entries/1'
     tables = form/:table
     tables.length.should == 3
     table = tables.first
     tr = table/:tr
-    tr.length.should == 5
+    tr.length.should == 6
     td = tr/:td
-    td.length.should == 9
-    td.mapit.should == "Unreconciled Balance/$0.00/Reconciling Changes/$0.00/Reconcile To//Off By/$0.00/\n  \n  \n".split('/')
-    td[5].at(:input)[:value].should == '$0.00'
+    td.length.should == 11
+    td.mapit.map{|x| x.strip}.should == "Unreconciled Balance/$0.00/Reconciling Changes/$0.00/Reconciled Balance/$0.00/Off By/$0.00/Reconcile To/// ".split('/')[0...-1]
+    table.at(:input)[:value].should == '0.0'
     input = td.last/:input
     input.mapvalue.should == 'Auto-Reconcile/Clear Entries'.split('/')
     input.mapname.should == 'auto_reconcile/clear_entries'.split('/')
@@ -234,7 +231,7 @@ describe "$PAM reconcile page" do
     Entries.first[:cleared].should == true
     p = page('/update/reconcile/1')
     p.at("input#credit_#{entry[:id]}").should == nil
-    (p.at(:table)/:td).mapit.should == "Unreconciled Balance/$-1000.00/Reconciling Changes/$0.00/Reconcile To//Off By/$-1000.00/\n  \n  \n".split('/')
+    (p.at(:table)/:td).mapit.map{|x| x.strip}.should == "Unreconciled Balance/$-1000.00/Reconciling Changes/$0.00/Reconciled Balance/$-1000.00/Off By/$-1000.00/Reconcile To/// ".split('/')[0...-1]
   end
 
   it "should auto reconcile the Ajax way" do
