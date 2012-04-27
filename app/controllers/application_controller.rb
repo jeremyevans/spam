@@ -1,6 +1,6 @@
 class ApplicationController < ActionController::Base
   before_filter :get_navigation_accounts
-  NOT_FOUNDS = [AbstractController::ActionNotFound, ActionController::UnknownController, ActionController::UnknownAction, ActionController::RoutingError]
+  NOT_FOUNDS = [AbstractController::ActionNotFound, ActionController::UnknownController, ActionController::RoutingError]
   NOT_FOUNDS.each{|e| rescue_from e, :with=>:render_404}
   
   def process(*a)
