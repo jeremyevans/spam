@@ -128,7 +128,7 @@ function set_entity_autocompleter() {
       if(data.amount){$('#entry_amount').val(data.amount)}
     });
   });
-  document.forms[0].entry_date.focus();
+  document.forms[1].entry_date.focus();
 }
 
 function handle_actions(actions) {
@@ -216,6 +216,6 @@ function setup_reconcile_form() {
     return false;
   })
 
-  document.forms[0].reconcile_to.select();
-  document.forms[0].reconcile_to.focus();
+  document.forms[1].reconcile_to.select();
+  document.forms[1].reconcile_to.focus();
 }
