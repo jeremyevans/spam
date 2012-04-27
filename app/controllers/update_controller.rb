@@ -15,8 +15,8 @@ class UpdateController < ApplicationController
       format.json do
         json = [
           ['set_value', '#selected_entry_id', ''],
-          ['replace_html', '#new_entry', render_to_string(:partial=>'new_register_entry.html.erb', :locals=>{:time=>@entry.date})],
-          ['insert_html', '#new_entry', "<tr id='entry_#{@entry.id}'>#{render_to_string(:partial=>'register_entry.html.erb', :locals=>{:entry=>@entry})}</tr>"],
+          ['replace_html', '#new_entry', render_to_string(:partial=>'new_register_entry', :formats => [:html], :locals=>{:time=>@entry.date})],
+          ['insert_html', '#new_entry', "<tr id='entry_#{@entry.id}'>#{render_to_string(:partial=>'register_entry', :formats => [:html], :locals=>{:entry=>@entry})}</tr>"],
           ['replace_html', '#results', 'Added entry'],
           ['autocompleter'],
           ['resort']
@@ -57,8 +57,8 @@ class UpdateController < ApplicationController
           json = [
             ['replace_html', '#off_by', '$0.00'],
             ['replace_html', '#reconcile_changes', @reconcile_changes.to_money],
-            ['replace_html', '#debit_entries', render_to_string(:partial=>'reconcile_table.html.erb', :locals=>{:entry_type=>'debit'})],
-            ['replace_html', '#credit_entries', render_to_string(:partial=>'reconcile_table.html.erb', :locals=>{:entry_type=>'credit'})]
+            ['replace_html', '#debit_entries', render_to_string(:partial=>'reconcile_table', :formats => [:html], :locals=>{:entry_type=>'debit'})],
+            ['replace_html', '#credit_entries', render_to_string(:partial=>'reconcile_table', :formats => [:html], :locals=>{:entry_type=>'credit'})]
           ]
         else
           json = []
@@ -81,8 +81,8 @@ class UpdateController < ApplicationController
           ['replace_html', '#reconcile_changes', '$0.00'],
           ['set_value', '#reconcile_to', '$0.00'],
           ['replace_html', '#balance', @account.unreconciled_balance.to_money],
-          ['replace_html', '#debit_entries', render_to_string(:partial=>'reconcile_table.html.erb', :locals=>{:entry_type=>'debit'})],
-          ['replace_html', '#credit_entries', render_to_string(:partial=>'reconcile_table.html.erb', :locals=>{:entry_type=>'credit'})],
+          ['replace_html', '#debit_entries', render_to_string(:partial=>'reconcile_table', :formats => [:html], :locals=>{:entry_type=>'debit'})],
+          ['replace_html', '#credit_entries', render_to_string(:partial=>'reconcile_table', :formats => [:html], :locals=>{:entry_type=>'credit'})],
           ['replace_html', '#results', 'Cleared entries']
         ]
         render :json=>json
@@ -109,10 +109,10 @@ class UpdateController < ApplicationController
       format.json do
         json = []
         json << ['set_value', '#selected_entry_id', @selected_entry_id]
-        json << ['replace_html', '#new_entry', render_to_string(:partial=>"#{@entry ? 'blank' : 'new'}_register_entry.html.erb", :locals=>{:entry=>@entry})]
-        json << ['replace_html', "#entry_#{@other_entry.id}", render_to_string(:partial=>'register_entry.html.erb', :locals=>{:entry=>@other_entry})] if @other_entry
+        json << ['replace_html', '#new_entry', render_to_string(:partial=>"#{@entry ? 'blank' : 'new'}_register_entry", :formats => [:html], :locals=>{:entry=>@entry})]
+        json << ['replace_html', "#entry_#{@other_entry.id}", render_to_string(:partial=>'register_entry', :formats => [:html], :locals=>{:entry=>@other_entry})] if @other_entry
         json << ['resort']
-        json << ['replace_html', "#entry_#{@entry.id}", render_to_string(:partial=>'modify_register_entry.html.erb', :locals=>{:entry=>@entry})] if @entry
+        json << ['replace_html', "#entry_#{@entry.id}", render_to_string(:partial=>'modify_register_entry', :formats => [:html], :locals=>{:entry=>@entry})] if @entry
         json << ['replace_html', '#results', @entry ? 'Modify entry' : 'Add entry']
         json << ['autocompleter']
         render :json=>json
@@ -174,8 +174,8 @@ class UpdateController < ApplicationController
       format.json do
         json = [
           ['set_value', '#selected_entry_id', ''],
-          ['replace_html', '#new_entry', render_to_string(:partial=>'new_register_entry.html.erb', :locals=>{:time=>@entry.date})],
-          ['replace_html', "#entry_#{@entry.id}", render_to_string(:partial=>'register_entry.html.erb', :locals=>{:entry=>@entry})],
+          ['replace_html', '#new_entry', render_to_string(:partial=>'new_register_entry', :formats => [:html], :locals=>{:time=>@entry.date})],
+          ['replace_html', "#entry_#{@entry.id}", render_to_string(:partial=>'register_entry', :formats => [:html], :locals=>{:entry=>@entry})],
           ['replace_html', '#results', 'Updated entry'],
           ['autocompleter'],
           ['resort']

@@ -20,10 +20,10 @@
 </div>
 <div class="row">
   <div id="debit_entries" class="span5">
-    <%= render(:partial=>'reconcile_table.html.erb', :locals=>{:entry_type=>'debit'}) %>
+    <%= render(:partial=>'reconcile_table', :formats => [:html], :locals=>{:entry_type=>'debit'}) %>
   </div>
   <div id="credit_entries" class="span5 offset1">
-    <%= render(:partial=>'reconcile_table.html.erb', :locals=>{:entry_type=>'credit'}) %>
+    <%= render(:partial=>'reconcile_table', :formats => [:html], :locals=>{:entry_type=>'credit'}) %>
   </div>
 </div>
 </form>

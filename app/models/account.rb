@@ -1,10 +1,10 @@
 class Account < Sequel::Model
   many_to_one :account_type
-  one_to_many :entries, :read_only=>true, :order=>[:date.desc, :reference.desc, :amount.desc], :dataset=>proc{Entry.with_account(id)}, :eager=>[:entity, :credit_account, :debit_account], :after_load=>:set_main_account, :reciprocal=>nil
-  one_to_many :credit_entries, :class_name=>'Entry', :key=>:credit_account_id, :eager=>[:debit_account, :entity], :order=>:date.desc
-  one_to_many :debit_entries, :class_name=>'Entry', :key=>:debit_account_id, :eager=>[:credit_account, :entity], :order=>:date.desc
-  one_to_many :recent_credit_entries, :class_name=>'Entry', :key=>:credit_account_id, :eager=>[:debit_account, :entity], :order=>:date.desc, :limit=>25
-  one_to_many :recent_debit_entries, :class_name=>'Entry', :key=>:debit_account_id, :eager=>[:credit_account, :entity], :order=>:date.desc, :limit=>25
+  one_to_many :entries, :read_only=>true, :order=>[:date, :reference, :amount].map{|s| Sequel.desc(s)}, :dataset=>proc{Entry.with_account(id)}, :eager=>[:entity, :credit_account, :debit_account], :after_load=>:set_main_account, :reciprocal=>nil
+  one_to_many :credit_entries, :class_name=>'Entry', :key=>:credit_account_id, :eager=>[:debit_account, :entity], :order=>Sequel.desc(:date)
+  one_to_many :debit_entries, :class_name=>'Entry', :key=>:debit_account_id, :eager=>[:credit_account, :entity], :order=>Sequel.desc(:date)
+  one_to_many :recent_credit_entries, :class_name=>'Entry', :key=>:credit_account_id, :eager=>[:debit_account, :entity], :order=>Sequel.desc(:date), :limit=>25
+  one_to_many :recent_debit_entries, :class_name=>'Entry', :key=>:debit_account_id, :eager=>[:credit_account, :entity], :order=>Sequel.desc(:date), :limit=>25
   @scaffold_select_order = :name
   @scaffold_fields = [:name, :account_type, :hidden, :description]
   @scaffold_column_types = {:description=>:text}
@@ -19,7 +19,7 @@ class Account < Sequel::Model
   end
   
   subset(:register_accounts, :account_type_id=>[1,2])
-  subset(:unhidden, ~:hidden)
+  subset(:unhidden, Sequel.~(:hidden))
 
   def self.user(user_id)
     filter(:user_id=>user_id).order(:name)
@@ -43,15 +43,15 @@ class Account < Sequel::Model
 
   def entries_to_reconcile(type=nil)
     if type
-      Entry.eager(:entity).filter(:"#{type}_account_id"=>id).filter(~:cleared).order(:date, :reference, :amount.desc).all
+      Entry.eager(:entity).filter(:"#{type}_account_id"=>id).exclude(:cleared).order(:date, :reference, Sequel.desc(:amount)).all
     else
-      entries_dataset.filter(~:cleared).all{|x| x.main_account = self}
+      entries_dataset.exclude(:cleared).all{|x| x.main_account = self}
     end
   end
 
   def last_entry_for_entity(entity_name)
     return unless entity = Entity[:name=>entity_name, :user_id=>user_id]
-    entity.entries_dataset.with_account(id).order(:date.desc, :reference.desc, :amount.desc).first
+    entity.entries_dataset.with_account(id).reverse_order(:date, :reference, :amount).first
   end
 
   def money_balance
@@ -60,7 +60,7 @@ class Account < Sequel::Model
 
   def next_check_number
     return '' if account_type_id != 1
-    return '' unless entry = Entry.with_account(id).filter(:reference.like(/^\d+$/)).order(:reference.desc).first
+    return '' unless entry = Entry.with_account(id).filter(Sequel.like(:reference, /^\d+$/)).reverse_order(:reference).first
     return '' unless entry.reference.to_i > 0
     (entry.reference.to_i+1).to_s
   end
@@ -70,7 +70,7 @@ class Account < Sequel::Model
   end
 
   def unreconciled_balance
-    balance - (Entry.with_account(id).filter(~:cleared).get(:sum.sql_function({{:credit_account_id => id}=>:amount * -1}.case(:amount))) || 0)
+    balance - (Entry.with_account(id).exclude(:cleared).get{|o| o.sum(Sequel.case({{:credit_account_id => id}=>Sequel.*(:amount, -1)}, :amount))} || 0)
   end
 
   private

@@ -1,6 +1,6 @@
 class Entity < Sequel::Model
   one_to_many :entries
-  one_to_many :recent_entries, :class_name=>'Entry', :eager=>[:credit_account, :debit_account], :order=>:date.desc, :limit=>25
+  one_to_many :recent_entries, :class_name=>'Entry', :eager=>[:credit_account, :debit_account], :order=>Sequel.desc(:date), :limit=>25
   @scaffold_fields = [:name]
   @scaffold_select_order = :name
   @scaffold_associations = [:recent_entries]
@@ -14,9 +14,9 @@ class Entity < Sequel::Model
   dataset_module do
     def auto_complete(name, account_id)
       qualify.
-      filter(:name.ilike("%#{name}%")).
+      filter(Sequel.ilike(:name, "%#{name}%")).
       left_join(:entries, :entity_id=>:id, account_id.to_i=>[:credit_account_id, :debit_account_id]).
-      order(:entries__date.desc, :name).
+      order(Sequel.desc(:entries__date), :name).
       limit(10).
       select_group(:name).
       order{[max(entries__date).desc(:nulls=>:last), :name]}.
