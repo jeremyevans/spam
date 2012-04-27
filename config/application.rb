@@ -9,7 +9,7 @@ Bundler.require(:default, Rails.env) if defined?(Bundler)
 module Spam
   class Application < Rails::Application
     config.encoding = "ISO-8859-1" if RUBY_VERSION >= '1.9'
-    config.action_controller.default_charset = 'ISO-8859-1'
+    config.action_dispatch.default_charset = 'ISO-8859-1'
     config.filter_parameters = [:password]
     config.time_zone = 'UTC'
     config.logger = Logger.new("/var/log/rails/spam.#{Rails.env}.log")
