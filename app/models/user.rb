@@ -2,12 +2,11 @@ class User < Sequel::Model
   def self.login_user_id(username, password)
     return unless username && password
     return unless u = filter(:name=>username).first
-    return unless u.password == ::Digest::SHA1.new.update(u.salt).update(password).hexdigest
+    return unless BCrypt::Password.new(u.password_hash) == password
     u.id
   end
   
-  def password=(pass)
-    self.salt = `openssl rand -hex 20`.strip
-    self[:password] = ::Digest::SHA1.new.update(salt).update(pass).hexdigest
+  def password=(new_password)
+    self.password_hash = BCrypt::Password.create(new_password)
   end
 end

@@ -3,14 +3,14 @@ $: << '.'
 require 'rubygems'
 $:.unshift('/data/code/sequel/lib')
 require 'sequel'
-DB = Sequel.postgres('spamtest', :user=>'guest', :host=>'/tmp')
+DB = Sequel.postgres('spamtest', :user=>'postgres')
 require 'subset_sum'
 require 'lib/to_money'
-require 'digest/sha1'
+require 'bcrypt'
 Dir['app/models/*.rb'].each{|f| require(f)}
 [:entries, :entities, :accounts, :account_types, :users].each{|x| DB[x].delete}
-DB[:users] << {:password=>"be358e142bf770bbd5aeb563b868c3c13a833c14", :salt=>"daaaeef2b3502ebd0a65698cc994ee767589ca1c", :name=>"default", :num_register_entries=>35, :id=>1}
-DB[:users] << {:password=>"                                        ", :salt=>"                                        ", :name=>"test", :num_register_entries=>35, :id=>2}
+DB[:users] << {:password_hash=>BCrypt::Password.create("blah"), :name=>"default", :num_register_entries=>35, :id=>1}
+DB[:users] << {:password_hash=>BCrypt::Password.create("blah2"), :name=>"test", :num_register_entries=>35, :id=>2}
 DB[:account_types] << {:name=>"Asset", :id=>1}
 DB[:account_types] << {:name=>"Liability", :id=>2}
 DB[:account_types] << {:name=>"Income", :id=>3}
@@ -245,18 +245,11 @@ describe Entry do
 end
 
 describe User do
-  specify "#password= should create a new salt" do
+  specify "#password= should set a new password hash" do
     user = User[2]
-    salt = user.salt
-    user.password = 'blah'
-    user.salt.should_not == salt
-    user.salt.should =~ /\A[0-9a-f]{40}\z/
-  end
-
-  specify "#password= should set the SHA1 password hash based on the salt and password" do
-    user = User[2]
-    user.password = 'blah'
-    user.password.should == Digest::SHA1.new.update(user.salt).update('blah').hexdigest
+    pw = user.password_hash
+    user.password = 'foo'
+    user.password_hash.should_not == pw
   end
 
   specify ".login_user_id should return nil unless both username and password are present" do
@@ -270,13 +263,10 @@ describe User do
   end
 
   specify ".login_user_id should return nil unless the password matches for that username" do
-    User.login_user_id('test', 'wrong').should == nil
+    User.login_user_id('default', 'wrong').should == nil
   end
 
   specify ".login_user_id should return the user's id if the password matches " do
-    user = User[2]
-    user.password = 'blah'
-    user.save
-    User.login_user_id('test', 'blah').should == 2
+    User.login_user_id('default', 'blah').should == 1
   end
 end

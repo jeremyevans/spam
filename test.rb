@@ -5,11 +5,12 @@ require 'open-uri'
 require 'net/http'
 $:.unshift "/data/code/sequel/lib"
 require 'sequel'
+require 'bcrypt'
 
-DB = Sequel.postgres('spamtest', :user=>'guest', :host=>'/tmp')
+DB = Sequel.postgres('spamtest', :user=>'postgres')
 [:entries, :entities, :accounts, :account_types, :users].each{|x| DB[x].delete}
-DB[:users] << {:password=>"be358e142bf770bbd5aeb563b868c3c13a833c14", :salt=>"daaaeef2b3502ebd0a65698cc994ee767589ca1c", :name=>"default", :num_register_entries=>35, :id=>1}
-DB[:users] << {:password=>"                                        ", :salt=>"                                        ", :name=>"test", :num_register_entries=>35, :id=>2}
+DB[:users] << {:password_hash=>BCrypt::Password.create("pass"), :name=>"default", :num_register_entries=>35, :id=>1}
+DB[:users] << {:password_hash=>BCrypt::Password.create("pass2"), :name=>"test", :num_register_entries=>35, :id=>2}
 DB[:account_types] << {:name=>"Asset", :id=>1}
 DB[:account_types] << {:name=>"Liability", :id=>2}
 DB[:account_types] << {:name=>"Income", :id=>3}

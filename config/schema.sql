@@ -14,16 +14,15 @@ SELECT setval('account_types_id_seq', 4);
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     name TEXT UNIQUE NOT NULL,
-    salt CHAR(40) NOT NULL,
-    password CHAR(40) NOT NULL,
-    num_register_entries INTEGER DEFAULT 35 NOT NULL
+    password_hash TEXT NOT NULL,
+    num_register_entries INTEGER DEFAULT 50 NOT NULL
 ) WITHOUT OIDS;
 
 CREATE TABLE accounts (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
-    user_id INTEGER REFERENCES users (id) NOT NULL,
-    account_type_id INTEGER REFERENCES account_types (id) NOT NULL,
+    user_id INTEGER REFERENCES users NOT NULL,
+    account_type_id INTEGER REFERENCES account_types NOT NULL,
     balance DECIMAL(10,2) DEFAULT 0 NOT NULL,
     description TEXT,
     hidden BOOLEAN DEFAULT FALSE
@@ -31,16 +30,16 @@ CREATE TABLE accounts (
 
 CREATE TABLE entities (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users (id) NOT NULL,
+    user_id INTEGER REFERENCES users NOT NULL,
     name TEXT NOT NULL
 ) WITHOUT OIDS;
 
 CREATE TABLE entries (
     id SERIAL PRIMARY KEY,
-    debit_account_id INTEGER REFERENCES accounts(id) NOT NULL,
-    credit_account_id INTEGER REFERENCES accounts(id) NOT NULL,
-    entity_id INTEGER REFERENCES entities(id),
-    user_id INTEGER REFERENCES users (id) NOT NULL,
+    debit_account_id INTEGER REFERENCES accounts NOT NULL,
+    credit_account_id INTEGER REFERENCES accounts NOT NULL,
+    entity_id INTEGER REFERENCES entities,
+    user_id INTEGER REFERENCES users NOT NULL,
     reference TEXT,
     date DATE DEFAULT CURRENT_DATE,
     amount DECIMAL(10,2) CHECK (amount > 0) NOT NULL,
