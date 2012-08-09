@@ -34,4 +34,8 @@ Spam::Application.configure do
   config.active_support.deprecation = :stderr
 end
 DEMO_MODE = true
+if ENV['TEST_DATABASE_URL']
+DB = Sequel.connect(ENV['TEST_DATABASE_URL'])
+else
 DB = Sequel.postgres('spamtest', :user=>'postgres', :loggers=>[Logger.new('log/test.log')])
+end

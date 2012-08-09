@@ -48,7 +48,12 @@ Spam::Application.configure do
   config.active_support.deprecation = :log
 end
 DEMO_MODE = false
+if ENV['DATABASE_URL']
+DB = Sequel.connect(ENV['DATABASE_URL'])
+else
 DB = Sequel.postgres('spam', :user=>'postgres')
+end
+
 ActiveSupport.on_load(:after_initialize) do
   ActionView::Resolver.class_eval do
     def caching?

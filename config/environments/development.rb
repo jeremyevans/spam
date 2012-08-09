@@ -23,4 +23,8 @@ Spam::Application.configure do
   config.action_dispatch.best_standards_support = :builtin
 end
 DEMO_MODE = false
+if ENV['DATABASE_URL']
+DB = Sequel.connect(ENV['DATABASE_URL'])
+else
 DB = Sequel.postgres('spam', :user=>'postgres', :loggers=>[Logger.new('log/development.log')])
+end
