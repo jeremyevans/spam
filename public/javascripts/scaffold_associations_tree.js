@@ -1,5 +1,5 @@
 /* Based on aqtree3clickable from http://www.kryogenix.org/code/browser/aqlists/
-Modifications by Jeremy Evans (jeremyevans0@gmail.com) */
+Modifications by Jeremy Evans (code@jeremyevans.net) */
 
 addEvent(window, "load", makeTreesC);
 
@@ -9,7 +9,7 @@ function makeTreesC() {
     uls = document.getElementsByTagName("ul");
     for (uli=0;uli<uls.length;uli++) {
         ul = uls[uli];
-        if (ul.nodeName == "UL" && ul.className == "scaffold_associations_tree") {
+        if (ul.nodeName == "UL" && ul.className.split(" ").indexOf("scaffold_associations_tree") != -1) {
             processULELC(ul);
         }
     }
