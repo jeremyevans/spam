@@ -10,6 +10,5 @@ module Spam
   class Application < Rails::Application
     config.filter_parameters = [:password]
     config.time_zone = 'UTC'
-    config.logger = Logger.new("/var/log/rails/spam.#{Rails.env}.log")
   end
 end
