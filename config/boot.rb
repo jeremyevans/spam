@@ -1,8 +1,8 @@
 require 'rubygems'
-gem 'railties', '3.2.7'
-gem 'actionpack', '3.2.7'
+gem 'railties', '3.2.8'
+gem 'actionpack', '3.2.8'
 
 # Set up gems listed in the Gemfile.
-ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../../Gemfile', __FILE__)
+#ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../../Gemfile', __FILE__)
 
-require 'bundler/setup' if File.exists?(ENV['BUNDLE_GEMFILE'])
+#require 'bundler/setup' if File.exists?(ENV['BUNDLE_GEMFILE'])

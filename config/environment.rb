@@ -10,7 +10,7 @@ require File.expand_path('../application', __FILE__)
 # Initialize the rails application
 Spam::Application.initialize!
 
-DB.optimize_model_load = true
+DB.optimize_model_load = true if DB.respond_to?(:optimize_model_load=)
 DB.extension(:looser_typecasting)
 
 require 'to_money'
