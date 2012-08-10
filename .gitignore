@@ -1,2 +1,3 @@
 log/*
 /Gemfile.lock
+config/secret_token.txt

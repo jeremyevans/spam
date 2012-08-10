@@ -1,1 +1,8 @@
-Spam::Application.config.secret_token = 'xEc6e4EN+Pce3WYxMeIhLNaqRTLkDV5lOfs9sCd0s/HbFHYVEgHMbA=='
+unless secret = ENV['SECRET_TOKEN']
+  if File.exist?('config/secret_token.txt')
+    secret = File.read('config/secret_token.txt')
+  else
+    raise StandardError, "cannot load secret token"
+  end
+end
+Spam::Application.config.secret_token = secret
