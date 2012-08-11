@@ -1,0 +1,149 @@
+= SPAM (Simple Personal Accounting Manager)
+
+SPAM is a accounting web application designed to be simple while
+still doing true double-entry accounting.  To avoid a lot of
+the complexity inherent in most accounting systems, SPAM implements
+double entry accounting by having each entry have a single amount
+tied to both a credit account and a debit account.  The limits the
+types of entries that can be made, which is the tradeoff for the
+increased simplicity.
+
+= Demo Site
+
+A demo site is available at http://spam-demo.herokuapp.com, with
+login/password: demo/demo.
+
+= Source Code
+
+Source code is available on GitHub at https://github.com/jeremyevans/spam
+
+= Background
+
+This was originally a Rails 0.13.1 application designed for my personal use.
+Previous to developing this, I used Quicken, but I was trying to migrate off
+Windows and couldn't find a simple open source accounting application I liked,
+so I decided to write my own.  Early versions of this app had a .qif file
+importer which I used to import my Quicken information, but it was removed
+after a schema change since modern versions of Quicken don't use the same
+file format.
+
+Originally, this was written as a single-user application, but many years
+ago I switched to it multi-user, so it should work fine with multiple users.
+
+= Heroku Setup
+
+This app can be easily cloned and run on heroku.  You just need to make
+sure you are using the heroku-postgresql:dev database (PostgreSQL 9.1), not
+the old shared database (PostgreSQL 8.3).  Mainly this is because the
+triggers used by the application require plpgsql.
+
+  git clone git://github.com/jeremyevans/spam.git
+  cd spam
+  heroku create
+  heroku config:set STDOUT_LOGGER=1 SECRET_TOKEN="your secret token"
+  heroku addons:add heroku-postgresql:dev
+  heroku pg:promote HEROKU_POSTGRESQL_COLOR
+  heroku pg:psql < config/schema.sql
+
+You then need to manually create users (there is no UI for this):
+
+  heroku pg:psql
+  # INSERT INTO users (name, password_hash) VALUES ('name', 'bcrypt hash'); 
+
+The password_hash value should be a preformatted bcrypt hash.  You can create one doing:
+
+  ruby -r bcrypt -e 'puts BCrypt::Password.create("your password")'
+
+Then you just need to push to heroku:
+
+  git push heroku
+
+= Non-Heroku Setup
+
+== Requirements
+
+* PostgreSQL 9.0+
+* Ruby 1.8.7, 1.9.2, or 1.9.3
+* Ruby Gems:
+  * bcrypt
+  * pg
+  * rails
+  * scaffolding_extensions
+  * sequel
+  * subset_sum
+
+== Installation
+
+Running this outside of Heroku is fairly easy:
+
+  git clone git://github.com/jeremyevans/spam.git
+  cd spam
+  cat "your secret token" > config/secret_token.txt
+  bundle install
+  createdb -U postgres spam
+  psql -U postgres spam < config/schema.sql
+
+Manually setup your user:
+
+  psql -U postgres spam
+  # INSERT INTO users (name, password_hash) VALUES ('name', 'bcrypt hash');
+
+Then run the app:
+
+  unicorn # or your rack-compatible server of choice
+
+= Usage
+
+== Account Creation
+
+After completing the setup, login to the app with the user you created.
+Then click on Admin->Manage Accounts at the top.  Click on Create account,
+and then create the accounts you want to use.  You'll probably want at least
+one of each account type (Asset, Liability, Income, and Expense).
+
+== Adding Entries Via the Register
+
+After creating your accounts, click on Register->Your Account Name (links are
+automatically created here for non-hidden asset and liability accounts). This
+brings you to the register for the account.  This screen is the usual way to
+add entries to the account.  Enter a date, an optional reference/check number,
+a name for the entity, the other account for the entry, an optional memo, and
+the amount of the entry.  If the entry is a debit to the current account and
+a credit to the other account the amount should be positive.  If the entry is
+a credit to the current account and a debit to the other account, the amount
+should be negative.  For a typical checking account where you get paid once or
+twice a month but write many checks during the month, most amounts will be
+negative.
+
+== Reconciling Accounts
+
+At some point, you are going to want to reconcile your entries to make sure
+they match your statements.  To do this, go to Reconcile->Your Account Name.
+This shows you all of the unreconciled entries.  You click on the entries
+you want to reconcile (that appear on your statement), and if the reconciled
+balance matches the statement balance, click Clear Entries.
+
+If you want to be lazy, you can just type in the statement balance in the
+Reconcile To box, and click Auto-Reconcile, but this will only work for a
+small number of outstanding entries, and even then you will want to check
+manually that the entries it wants to clear show up on the statement.  If
+the results look correct, click Clear Entries.
+
+== Reports
+
+After entering entries, you can get reports.  There are 7 different reports
+offered, use the Reports entry on the navigation menu to get access to them.
+Reports are currently tabular-only, no graphs.
+
+= Caveats
+
+I've upgraded this over the years to new versions of Rails, and switched it
+from ActiveRecord to Sequel after taking over maintenance of Sequel. Still,
+much of the code is pre-Rails 1 style with fat controllers.
+
+There is a unit and an integration test suite, but both are pretty minimal.
+There are no javascript tests.
+
+= Author
+
+Jeremy Evans <code@jeremyevans.net>
