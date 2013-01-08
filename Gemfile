@@ -1,6 +1,6 @@
-source 'https://rubygems.org' unless ENV['NO_SOURCE']
+source 'https://rubygems.org'
 
-gem 'rails', '3.2.8'
+gem 'rails', '3.2.11'
 gem 'unicorn'
 gem 'pg'
 gem 'sequel'
