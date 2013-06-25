@@ -15,7 +15,7 @@ class Entity < Sequel::Model
     def auto_complete(name, account_id)
       qualify.
       filter(Sequel.ilike(:name, "%#{name}%")).
-      left_join(:entries, :entity_id=>:id, account_id.to_i=>[:credit_account_id, :debit_account_id]).
+      left_join(:entries, {:entity_id=>:id, account_id.to_i=>[:credit_account_id, :debit_account_id]}, :qualify=>:symbol).
       order(Sequel.desc(:entries__date), :name).
       limit(10).
       select_group(:name).
