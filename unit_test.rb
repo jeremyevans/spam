@@ -27,9 +27,7 @@ describe Account do
     @account2.refresh
   end
   after do
-    Entry.delete
-    Entity.delete
-    Account.delete
+    [:entries, :entities, :accounts].each{|x| DB[x].delete}
   end
 
   specify "associations should be correct" do
@@ -72,7 +70,7 @@ describe Account do
     @account.entries.length.should == 2
     @account.entries.first.amount.should == -50
     @account.entries.last.amount.should == 100
-    Entry.delete
+    DB[:entries].delete
     @account.entries(true).should == []
   end
 
@@ -151,7 +149,7 @@ describe Entity do
     @entity = Entity.create(:name=>"blah", :user_id=>2)
   end
   after do
-    Entity.delete
+    DB[:entities].delete
   end
 
   specify "associations should be correct" do
@@ -183,9 +181,7 @@ describe Entry do
     @account2.refresh
   end
   after do
-    Entry.delete
-    Entity.delete
-    Account.delete
+    [:entries, :entities, :accounts].each{|x| DB[x].delete}
   end
 
   specify "associations should be correct" do
