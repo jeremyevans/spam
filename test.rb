@@ -1,13 +1,11 @@
-#!/usr/bin/env spec
 require 'rubygems'
-require 'hpricot'
-require 'open-uri'
-require 'net/http'
-$:.unshift "/data/code/sequel/lib"
-require 'sequel'
-require 'bcrypt'
+require 'capybara'
+require 'capybara/dsl'
+require 'capybara/rspec/matchers'
+require 'rack/test'
+ENV['RAILS_ENV'] = 'test'
+require ::File.expand_path('../config/environment',  __FILE__)
 
-DB = Sequel.postgres('spamtest', :user=>'postgres')
 [:entries, :entities, :accounts, :account_types, :users].each{|x| DB[x].delete}
 DB[:users] << {:password_hash=>BCrypt::Password.create("pass"), :name=>"default", :num_register_entries=>35, :id=>1}
 DB[:users] << {:password_hash=>BCrypt::Password.create("pass2"), :name=>"test", :num_register_entries=>35, :id=>2}
@@ -28,267 +26,179 @@ DB[:entities] << {:user_id=>2, :name=>"Test", :id=>4}
 DB[:entries] << {:credit_account_id=>6, :reference=>"", :user_id=>2, :entity_id=>4, :cleared=>false, :amount=>100, :memo=>"", :date=>'2008-06-11', :debit_account_id=>5, :id=>1}
 Entries = DB[:entries].filter(:user_id => 1)
 
-HOST = 'www'
-PORT = 8989
+Capybara.app = Spam::Application
 
-module Hpricot::Traverse
-  alias ih inner_html
-  alias it inner_text
-  def hc
-    children.reject{|x| Hpricot::Text === x}
+class Spec::Example::ExampleGroup
+  include Rack::Test::Methods
+  include Capybara::DSL
+  include Capybara::RSpecMatchers
+
+  after do
+    Capybara.reset_sessions!
+    Capybara.use_default_driver
   end
-end
-class Hpricot::Elements
-  def maphr
-    collect{|x| x[:href]}
+
+  def execute(*args, &block)
+    result = nil
+    Sequel::Model.db.transaction(:rollback=>:always){result = super(*args, &block)}
+    result
   end
-  def mapit
-    collect{|x| x.it}
+
+  def remove_id(hash)
+    h = hash.dup
+    h.delete(:id)
+    h
   end
-  def maptype
-    collect{|x| x.name}
-  end
-  def mapname
-    collect{|x| x[:name]}
-  end
-  def mapvalue
-    collect{|x| x[:value]}
-  end
-end
 
-def http_url(path)
-  "http://#{HOST}:#{PORT}#{path}"
-end
-
-def page(path)
-  f = open(http_url(path))
-  h = Hpricot(f) 
-  f.close
-  h
-end
-
-def post(path, params)
-  req = Net::HTTP::Post.new(path)
-  req.set_form_data(params)
-  Net::HTTP.new(HOST, PORT).start{|http| http.request(req)}
-end
-
-def post_xhr(path, params)
-  req = Net::HTTP::Post.new(path)
-  req.set_form_data(params)
-  req['Accept'] = "application/json, text/javascript, */*"
-  req['X-Requested-With'] = 'XMLHttpRequest'
-  Net::HTTP.new(HOST, PORT).start{|http| http.request(req)}
-end
-
-def remove_id(hash)
-  h = hash.dup
-  h.delete(:id)
-  h
-end
-
-describe "$PAM home page" do
-  it "should display login correct title" do 
-    p = page('')
-    p.at(:title).ih.should == 'SPAM - Login'
+  def login
+    visit('/')
+    fill_in 'Username', :with=>'default'
+    fill_in 'Password', :with=>'pass'
+    click_on 'Login'
   end
 end
 
-describe "$PAM register page" do
-  def check_entry_row(row, skip_value = false)
-    fields = row/"td"/"input, select"
-    fields.maptype.should == %w'input input input select input input input'
-    fields.mapname.should == %w'entry[date] entry[reference] entity[name] account[id] entry[memo] entry[amount] add' 
-    fields.mapvalue.should == [Date.today.to_s, '', '', nil, '', '', 'Add'] unless skip_value
-    opts = fields/"option"
-    opts.mapit.should == '/Checking/Credit Card/Food/Salary'.split('/')
-    opts.mapvalue.should == [nil, '1', '2', '4', '3']
+describe "SPAM" do
+  it "should have working login" do 
+    visit('/')
+    find('title').text.should == 'SPAM - Login'
+    fill_in 'Username', :with=>'default'
+    fill_in 'Password', :with=>'foo'
+    click_on 'Login'
+    page.html.should =~ /Incorrect username or password/
+
+    fill_in 'Username', :with=>'default'
+    fill_in 'Password', :with=>'pass'
+    click_on 'Login'
+    page.html.should =~ /You have been logged in/
   end
 
-  it "should have a correct form and table" do 
-    p = page('/update/register/1')
-    p.at(:title).ih.should == 'SPAM - Checking Register'
-    p.at(:h3).ih.should == 'Showing 35 Most Recent Entries'
-    form = (p/'div#content').at(:form)
-    form[:action].should == '/update/add_entry'
-    input = (form/:input)
-    input.length.should == 8
-    hidden = input[0..1]
-    hidden.mapname.should == %w'selected_entry_id register_account_id'
-    hidden.mapvalue.should == [nil, '1']
-    (form/:tr).length.should == 2
-    (form/"table thead tr th").mapit.should == 'Date/Num/Entity/Other Account/Memo/C/Amount/Balance/Modify'.split('/')
-    check_entry_row((form/"table tbody tr").first)
+  it "should have working change password" do 
+    login
+
+    click_on 'Change Password'
+    within('div#content form') do
+      fill_in 'Password', :with=>'pass3foo'
+      fill_in 'Confirm Password', :with=>'pass2foo'
+      click_on 'Change Password'
+    end
+    BCrypt::Password.new(User[1].password_hash).should == 'pass'
+    page.html.should =~ /Passwords don't match, please try again/
+
+    within('div#content form') do
+      click_on 'Change Password'
+    end
+    BCrypt::Password.new(User[1].password_hash).should == 'pass'
+    page.html.should =~ /Password too short, use at least 6 characters, preferably 10 or more/
+
+    within('div#content form') do
+      fill_in 'Password', :with=>'pass3foo'
+      fill_in 'Confirm Password', :with=>'pass3foo'
+      click_on 'Change Password'
+    end
+    page.html.should =~ /Password updated/
+    BCrypt::Password.new(User[1].password_hash).should == 'pass3foo'
   end
 
-  it "should add entries the non-Ajax way" do
-    res = post('/update/add_entry', "register_account_id"=>'1', "entry[date]"=>'2008-06-06', 'entry[reference]'=>'DEP', 'entity[name]'=>'Employer', 'account[id]'=>'3', 'entry[memo]'=>'Check', 'entry[amount]'=>'1000')
-    res['Location'].should == http_url('/update/register/1')
+  it "should have a working register form" do 
+    login
+
+    visit('/update/register/1')
+    find('title').text.should == 'SPAM - Checking Register'
+    find('h3').text.should == 'Showing 35 Most Recent Entries'
+    form = find('div#content form')
+    form.all('tr').length.should == 2
+    form.all("table thead tr th").map{|s| s.text}.should == 'Date/Num/Entity/Other Account/Memo/C/Amount/Balance/Modify'.split('/')
+    form.all("option").map{|s| s.text}.should == '/Checking/Credit Card/Food/Salary'.split('/')
+
+    fill_in "entry[date]", :with=>'2008-06-06'
+    fill_in "entry[reference]", :with=>'DEP'
+    fill_in "entity[name]", :with=>'Employer'
+    select 'Salary'
+    fill_in "entry[memo]", :with=>'Check'
+    fill_in "entry[amount]", :with=>'1000'
+    click_on 'Add'
+
     entry = Entries.first
-    remove_id(entry).should == {:date=>Date.new(2008,06,06), :reference=>'DEP', :entity_id=>1, :credit_account_id=>3, :debit_account_id=>1, :memo=>'Check', :amount=>BigDecimal.new('1000'), :cleared=>false, :user_id=>1}
+    remove_id(entry).should == {:date=>Date.new(2008,6,6), :reference=>'DEP', :entity_id=>1, :credit_account_id=>3, :debit_account_id=>1, :memo=>'Check', :amount=>BigDecimal.new('1000'), :cleared=>false, :user_id=>1}
 
-    p = page('/update/register/1')
-    tr = (p/"form table tbody tr")
-    tr.length.should == 2
-    (tr.first/:td)[-2].it.should == '$1000.00'
-    check_entry_row(tr.first)
-    tr = tr.last
-    td = tr/:td
-    td.mapit.should == '2008-06-06/DEP/Employer/Salary/Check//$1000.00/$1000.00/Modify'.split('/')
-    td.at(:a)[:href].should == "/update/modify_entry/#{entry[:id]}?register_account_id=1"
+    page.all("div#content form table tbody tr").last.all('td').map{|s| s.text}.should == '2008-06-06/DEP/Employer/Salary/Check//$1000.00/$1000.00/Modify'.split('/')
+    click_on 'Modify'
+    fill_in "entry[date]", :with=>'2008-06-07'
+    fill_in "entry[reference]", :with=>'1000'
+    fill_in "entity[name]", :with=>'Card'
+    select 'Credit Card'
+    fill_in "entry[memo]", :with=>'Payment'
+    fill_in "entry[amount]", :with=>'-1000'
+    check 'entry[cleared]'
+    click_on 'Update'
+
+    Entries[:id => entry[:id]].should == {:date=>Date.new(2008,6,7), :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal.new('1000'), :cleared=>true, :user_id=>1, :id=>entry[:id]}
+    page.all("div#content form table tbody tr").last.all('td').map{|s| s.text}.should == '2008-06-07/1000/Card/Credit Card/Payment/R/$-1000.00/$-1000.00/Modify'.split('/')
+    
+    click_on 'Modify'
+    click_on 'Add'
+
+    fill_in "entry[date]", :with=>'2008-06-08'
+    fill_in "entry[reference]", :with=>'1001'
+    fill_in "entity[name]", :with=>'Card'
+    select 'Credit Card'
+    fill_in "entry[memo]", :with=>'Payment'
+    fill_in "entry[amount]", :with=>'-1001'
+    click_on 'Add'
+    remove_id(Entries.order(:id).last).should == {:date=>Date.new(2008,6,8), :reference=>'1001', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal.new('1001'), :cleared=>false, :user_id=>1}
   end
 
-  it "should modify entries the non-Ajax way" do
-    entry = Entries.first
-    p = page("/update/modify_entry/#{entry[:id]}?register_account_id=1")
-    tr = (p/"form table tbody tr")
-    tr.length.should == 2
-    (tr.first/:td).mapit.should == '///////$1000.00/Add'.split('/')
-    (tr.first/:td)[-2].it.should == '$1000.00'
-    tr = tr.last
-    fields = tr/"td"/"input, select"
-    fields.maptype.should == %w'input input input select input input input input input input'
-    fields.mapname.should == %w'entry[date] entry[reference] entity[name] account[id] entry[memo] entry[cleared] entry[cleared] entry[amount] entry[id] update'
-    fields.mapvalue.should == ['2008-06-06', 'DEP', 'Employer', nil, 'Check', '0', '1', '1000.0', entry[:id].to_s, 'Update']
-    (fields/:option)[4][:selected].should == 'selected'
+  describe 'with existing entry' do
+    before do
+      login
+      @entry_id = Entries.insert(:date=>Date.new(2008,06,07), :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal.new('1000'), :cleared=>false, :user_id=>1)
+    end
 
-    res = post('/update/add_entry', "update"=>"Update", "register_account_id"=>'1', "entry[date]"=>'2008-06-07', 'entry[reference]'=>'1000', 'entity[name]'=>'Card', 'account[id]'=>'2', 'entry[memo]'=>'Payment', 'entry[amount]'=>'-1000', 'entry[cleared]'=>'1', 'entry[id]'=>entry[:id].to_s)
-    res['Location'].should == http_url('/update/register/1')
-    entry2 = Entries[:id => entry[:id]]
-    entry2.should == {:date=>Date.new(2008,06,07), :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal.new('1000'), :cleared=>true, :user_id=>1, :id=>entry[:id]}
+    it "should have working reconcile page" do
+      visit('/update/reconcile/1')
+      form = find('div#content form')
+      form.find('table').all('tr td').map{|x| x.text.strip}.should == "Unreconciled Balance/$0.00/Reconciling Changes/$0.00/Reconciled Balance/$0.00/Off By/$0.00/Reconcile To/// ".split('/')[0...-1]
+      form.all('caption').map{|s| s.text}.should == 'Debit Entries/Credit Entries'.split('/')
+      form.all('table').last.all('thead th').map{|s| s.text}.should == %w'C Date Num Entity Amount'
+      form.all('table').last.all('tbody td').map{|s| s.text}.should == '/2008-06-07/1000/Card/$1000.00'.split('/')
 
-    p = page('/update/register/1')
-    tr = (p/"form table tbody tr")
-    tr.length.should == 2
-    check_entry_row(tr.first, true)
-    (tr.first/:td)[-2].it.should == '$-1000.00'
-    tr = tr.last
-    td = tr/:td
-    td.mapit.should == '2008-06-07/1000/Card/Credit Card/Payment/R/$-1000.00/$-1000.00/Modify'.split('/')
-  end
+      check "entries[#{@entry_id}]"
+      fill_in 'reconcile_to', :with=>'-1000.00'
+      click_on 'Auto-Reconcile'
+      page.find("input#credit_#{@entry_id}")[:checked].should be_true
 
-  it "should add entries the Ajax way" do
-    Entries.delete
-    res = post_xhr('/update/add_entry', "register_account_id"=>'1', "entry[date]"=>'2008-06-06', 'entry[reference]'=>'DEP', 'entity[name]'=>'Employer', 'account[id]'=>'3', 'entry[memo]'=>'Check', 'entry[amount]'=>'1000')
-    res['Content-Type'].should =~ /json/
-    entry = Entries.first
-    remove_id(entry).should == {:date=>Date.new(2008,06,06), :reference=>'DEP', :entity_id=>1, :credit_account_id=>3, :debit_account_id=>1, :memo=>'Check', :amount=>BigDecimal.new('1000'), :cleared=>false, :user_id=>1}
-  end
+      click_on 'Clear Entries'
+      Entries.first[:cleared].should == true
+      page.all("input#credit_#{@entry_id}").should == []
+      page.find('table').all('td').map{|x| x.text.strip}.should == "Unreconciled Balance/$-1000.00/Reconciling Changes/$0.00/Reconciled Balance/$-1000.00/Off By/$-1000.00/Reconcile To/// ".split('/')[0...-1]
+    end
 
-  it "should modify entries the Ajax way" do
-    entry = Entries.first
-    res = post_xhr('/update/add_entry', "update"=>"Update", "selected_entry_id"=>entry[:id].to_s, "register_account_id"=>'1', "entry[date]"=>'2008-06-07', 'entry[reference]'=>'1000', 'entity[name]'=>'Card', 'account[id]'=>'2', 'entry[memo]'=>'Payment', 'entry[amount]'=>'-1000', 'entry[cleared]'=>'0', 'entry[id]'=>entry[:id].to_s)
-    res['Content-Type'].should =~ /json/
-    entry2 = Entries[:id => entry[:id]]
-    entry2.should == {:date=>Date.new(2008,06,07), :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal.new('1000'), :cleared=>false, :user_id=>1, :id=>entry[:id]}
-  end
+    it "should have correct reports" do
+      visit('/reports/balance_sheet')
+      page.all('table th, table td').map{|x| x.text}.should == 'Asset Accounts/Balance/Checking/$-1000.00/Liability Accounts/Balance/Credit Card/$1000.00'.split('/')
 
-  it "should auto complete entity names" do
-    post('/update/auto_complete_for_entity_name', 'q'=>'%').body.should == %w'Card Employer Restaurant'.join("\n")
-    post('/update/auto_complete_for_entity_name', 'q'=>'z').body.should == " "
-  end
-end
+      DB[:entries].insert(:date=>Date.new(2008,04,07), :reference=>'1001', :entity_id=>2, :credit_account_id=>3, :debit_account_id=>4, :memo=>'Food', :amount=>100, :cleared=>false, :user_id=>1)
 
-describe "$PAM reconcile page" do
-  it "should have correct form and table" do
-    p = page('/update/reconcile/1')
-    form = (p/'div#content').at(:form)
-    form[:action].should == '/update/clear_entries/1'
-    tables = form/:table
-    tables.length.should == 3
-    table = tables.first
-    tr = table/:tr
-    tr.length.should == 6
-    td = tr/:td
-    td.length.should == 11
-    td.mapit.map{|x| x.strip}.should == "Unreconciled Balance/$0.00/Reconciling Changes/$0.00/Reconciled Balance/$0.00/Off By/$0.00/Reconcile To/// ".split('/')[0...-1]
-    table.at(:input)[:value].should == '0.0'
-    input = td.last/:input
-    input.mapvalue.should == 'Auto-Reconcile/Clear Entries'.split('/')
-    input.mapname.should == 'auto_reconcile/clear_entries'.split('/')
-    tables.shift
-    (tables/:caption).mapit.should == 'Debit Entries/Credit Entries'.split('/')
-    tables.each{|t| (t/"thead tr th").mapit.should == %w'C Date Num Entity Amount'}
-    (tables.first/"tbody tr td").length.should == 0
-    td = tables.last/"tbody tr td"
-    td.mapit.should == '/2008-06-07/1000/Card/$1000.00'.split('/')
-    cb = td.first.at(:input)
-    cb[:name].should == "entries[#{Entries.first[:id]}]"
-    cb[:value].should == "1"
-  end
+      visit('/reports/earning_spending')
+      page.all('th, td').map{|x| x.text}.should == 'Account/June 2008/May 2008/April 2008/March 2008/February 2008/January 2008/December 2007/November 2007/October 2007/September 2007/August 2007/July 2007/Food///$-100.00//////////Salary///$100.00////////// '.split('/')[0...-1]
 
-  it "should auto reconcile the non-Ajax way" do
-    entry = Entries.first
-    entry[:cleared].should == false
-    res = post('/update/clear_entries/1', "auto_reconcile"=>"Auto-Reconcile", "reconcile_to"=>"-1000.00", "entries[#{entry[:id]}]"=>"1")
-    Hpricot(res.body).at("input#credit_#{entry[:id]}")[:checked].should == 'checked'
-  end
+      visit('/reports/yearly_earning_spending')
+      page.all('th, td').map{|x| x.text}.should == 'Account/2008/Food/$-100.00/Salary/$100.00'.split('/')
 
-  it "should clear entries the non-Ajax way" do
-    entry = Entries.first
-    entry[:cleared].should == false
-    res = post('/update/clear_entries/1', "clear_entries"=>"Clear Entries", "reconcile_to"=>"-1000.00", "entries[#{entry[:id]}]"=>"1")
-    res['Location'].should == http_url('/update/reconcile/1')
-    Entries.first[:cleared].should == true
-    p = page('/update/reconcile/1')
-    p.at("input#credit_#{entry[:id]}").should == nil
-    (p.at(:table)/:td).mapit.map{|x| x.strip}.should == "Unreconciled Balance/$-1000.00/Reconciling Changes/$0.00/Reconciled Balance/$-1000.00/Off By/$-1000.00/Reconcile To/// ".split('/')[0...-1]
-  end
+      visit('/reports/income_expense')
+      page.all('th, td').map{|x| x.text}.should == 'Month|Income|Expense|Profit/Loss|2008-06|$0.00|$0.00|$0.00|2008-04|$100.00|$100.00|$0.00'.split('|')
 
-  it "should auto reconcile the Ajax way" do
-    Entries.update(:cleared=>false)
-    entry = Entries.first
-    entry[:cleared].should == false
-    res = post_xhr('/update/auto_reconcile', "id"=>"1", "auto_reconcile"=>"Auto-Reconcile", "reconcile_to"=>"-1000.00", "entries[#{entry[:id]}]"=>"1")
-    res['Content-Type'].should =~ /json/
-  end
+      visit('/reports/net_worth')
+      page.all('th, td').map{|x| x.text}.should == 'Month/Assets/Liabilities/Net Worth/Current/$-1000.00/$-1000.00/$0.00/Start of 2008-06/$0.00/$0.00/$0.00/Start of 2008-04/$0.00/$0.00/$0.00'.split('/')
 
-  it "should clear entries the Ajax way" do
-    entry = Entries.first
-    entry[:cleared].should == false
-    res = post_xhr('/update/clear_entries', "id"=>"1", "auto_reconcile"=>"Auto-Reconcile", "reconcile_to"=>"-1000.00", "entries[#{entry[:id]}]"=>"1")
-    res['Content-Type'].should =~ /json/
-    Entries.first[:cleared].should == true
-  end
-end
+      DB[:entries].exclude(:id => @entry_id).update(:credit_account_id=>1)
 
-describe "$PAM reports" do
-  it "balance sheet should be correct" do
-    cells = (page('/reports/balance_sheet').at(:table)/:tr).collect{|x| x.children.collect{|x| x.it}}.flatten
-    cells.should == 'Asset Accounts/Balance/Checking/$-1000.00/Liability Accounts/Balance/Credit Card/$1000.00'.split('/')
-  end
+      visit('/reports/earning_spending_by_entity')
+      page.all('th, td').map{|x| x.text}.should == 'Account/June 2008/May 2008/April 2008/March 2008/February 2008/January 2008/December 2007/November 2007/October 2007/September 2007/August 2007/July 2007/Restaurant///$-100.00////////// '.split('/')[0...-1]
 
-  it "earning spending reports by account should be correct" do
-    DB[:entries].insert(:date=>Date.new(2008,04,07), :reference=>'1001', :entity_id=>2, :credit_account_id=>3, :debit_account_id=>4, :memo=>'Food', :amount=>100, :cleared=>false, :user_id=>1)
-
-    p = page('/reports/earning_spending')
-    (p/:th).collect{|x| x.it}.should == 'Account/June 2008/May 2008/April 2008/March 2008/February 2008/January 2008/December 2007/November 2007/October 2007/September 2007/August 2007/July 2007'.split('/')
-    (p/:td).collect{|x| x.it}.should == 'Food///$-100.00//////////Salary///$100.00////////// '.split('/')[0...-1]
-
-    p = page('/reports/yearly_earning_spending')
-    (p/:th).collect{|x| x.it}.should == 'Account/2008'.split('/')
-    (p/:td).collect{|x| x.it}.should == 'Food/$-100.00/Salary/$100.00'.split('/')
-  end
-
-  it "income expense should be correct" do
-    cells = (page('/reports/income_expense').at(:table)/:tr).collect{|x| x.children.collect{|x| x.it}}.flatten
-    cells.should == 'Month|Income|Expense|Profit/Loss|2008-06|$0.00|$0.00|$0.00|2008-04|$100.00|$100.00|$0.00'.split('|')
-  end
-
-  it "net worth should be correct" do
-    cells = (page('/reports/net_worth').at(:table)/:tr).collect{|x| x.children.collect{|x| x.it}}.flatten
-    cells.should == 'Month/Assets/Liabilities/Net Worth/Current/$-1000.00/$-1000.00/$0.00/Start of 2008-06/$0.00/$0.00/$0.00/Start of 2008-04/$0.00/$0.00/$0.00'.split('/')
-  end
-
-  it "earning spending reports by entity should be correct" do
-    DB[:entries].filter{id > 1}.update(:credit_account_id=>1)
-
-    p = page('/reports/earning_spending_by_entity')
-    (p/:th).collect{|x| x.it}.should == 'Account/June 2008/May 2008/April 2008/March 2008/February 2008/January 2008/December 2007/November 2007/October 2007/September 2007/August 2007/July 2007'.split('/')
-    (p/:td).collect{|x| x.it}.should == 'Restaurant///$-100.00////////// '.split('/')[0...-1]
-
-    p = page('/reports/yearly_earning_spending_by_entity')
-    (p/:th).collect{|x| x.it}.should == 'Account/2008'.split('/')
-    (p/:td).collect{|x| x.it}.should == 'Restaurant/$-100.00'.split('/')
+      visit('/reports/yearly_earning_spending_by_entity')
+      page.all('th, td').map{|x| x.text}.should == 'Account/2008/Restaurant/$-100.00'.split('/')
+    end
   end
 end
