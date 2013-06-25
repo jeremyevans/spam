@@ -1,6 +1,7 @@
 class UpdateController < ApplicationController
   scaffold_all_models :only=>[Account, Entity, Entry]
   before_filter :require_login
+  before_filter :require_post, :only=>[:add_entry, :clear_entries]
 
   def add_entry
     @account = user_account(params[:register_account_id])

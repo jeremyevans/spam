@@ -15,12 +15,7 @@ class ApplicationController < ActionController::Base
 
   private
 
-  def demo_mode?
-    DEMO_MODE == true
-  end
-
   def get_navigation_accounts
-    session[:user_id] = 1 if demo_mode?
     @navigation_accounts = userAccount.unhidden.register_accounts if session[:user_id]
   end
     
@@ -28,6 +23,13 @@ class ApplicationController < ActionController::Base
     unless session[:user_id]
       flash[:notice] = 'You need to login'
       redirect_to(:controller=>'login', :action=>'index')
+    end
+  end
+
+  def require_post
+    unless request.method == 'POST'
+      headers['Allow'] = 'POST'
+      render :text=>'', :layout=>false, :status=>405
     end
   end
 
