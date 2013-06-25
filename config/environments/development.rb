@@ -6,9 +6,6 @@ Spam::Application.configure do
   # since you don't have to restart the webserver when you make code changes.
   config.cache_classes = false
 
-  # Log error messages when you accidentally call methods on nil.
-  config.whiny_nils = true
-
   # Show full error reports and disable caching
   config.consider_all_requests_local       = true
   config.action_controller.perform_caching = false
@@ -21,8 +18,9 @@ Spam::Application.configure do
 
   # Only use best-standards-support built into browsers
   config.action_dispatch.best_standards_support = :builtin
+
+  config.eager_load = false
 end
-DEMO_MODE = false
 if ENV['DATABASE_URL']
 DB = Sequel.connect(ENV['DATABASE_URL'])
 else

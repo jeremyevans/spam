@@ -1,2 +1,3 @@
 /log/*
 /config/secret_token.txt
+/config/secret_key_base.txt
