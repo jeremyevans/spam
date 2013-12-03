@@ -1,7 +1,7 @@
 require 'rubygems'
 if RUBY_VERSION > '1.9'
-  gem 'railties', '4.0.0'
-  gem 'actionpack', '4.0.0'
+  gem 'railties', '4.0.2'
+  gem 'actionpack', '4.0.2'
 else
   gem 'railties', '3.2.12'
   gem 'actionpack', '3.2.12'
