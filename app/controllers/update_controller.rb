@@ -1,7 +1,37 @@
 class UpdateController < ApplicationController
-  scaffold_all_models :only=>[Account, Entity, Entry]
   before_filter :require_login
   before_filter :require_post, :only=>[:add_entry, :clear_entries]
+
+  AutoForme.for(:rails, self) do
+    model_type :sequel
+    inline_mtm_associations :all
+    association_links :all_except_mtm
+
+    model Account do
+      columns [:name, :account_type, :hidden, :description]
+      order :name
+      display_name :short_name
+      column_options :description=>{:as=>:textarea, :cols=>'50', :rows=>'4'}
+      association_links [:recent_credit_entries, :recent_debit_entries]
+      session_value :user_id
+    end
+    model Entity do
+      columns [:name]
+      order :name
+      display_name :short_name
+      association_links [:recent_entries]
+      autocomplete_options({})
+      session_value :user_id
+    end
+    model Entry do
+      columns [:date, :reference, :entity, :credit_account, :debit_account, :amount, :memo, :cleared]
+      order [:date, :reference, :amount].map{|s| Sequel.desc(s)}
+      display_name :scaffold_name
+      eager_graph [:entity, :credit_account, :debit_account]
+      autocomplete_options(:display=>Sequel.lit("reference || date::TEXT || entity.name ||  debit_account.name || credit_account.name || entries.amount::TEXT"))
+      session_value :user_id
+    end
+  end
 
   def add_entry
     @account = user_account(params[:register_account_id])

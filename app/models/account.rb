@@ -5,16 +5,10 @@ class Account < Sequel::Model
   one_to_many :debit_entries, :class_name=>'Entry', :key=>:debit_account_id, :eager=>[:credit_account, :entity], :order=>Sequel.desc(:date)
   one_to_many :recent_credit_entries, :class_name=>'Entry', :key=>:credit_account_id, :eager=>[:debit_account, :entity], :order=>Sequel.desc(:date), :limit=>25
   one_to_many :recent_debit_entries, :class_name=>'Entry', :key=>:debit_account_id, :eager=>[:credit_account, :entity], :order=>Sequel.desc(:date), :limit=>25
-  @scaffold_select_order = :name
-  @scaffold_fields = [:name, :account_type, :hidden, :description]
-  @scaffold_column_types = {:description=>:text}
-  @scaffold_column_options_hash = {:description=>{:cols=>'50', :rows=>'4'}}
-  @scaffold_associations = [:recent_credit_entries, :recent_debit_entries]
-  @scaffold_session_value = :user_id
   
   dataset_module do
     def for_select
-      all.collect{|account|[account.scaffold_name, account.id]}
+      all.collect{|account|[account.short_name, account.id]}
     end
   end
   
@@ -65,7 +59,7 @@ class Account < Sequel::Model
     (entry.reference.to_i+1).to_s
   end
 
-  def scaffold_name
+  def short_name
     name[0..30]
   end
 

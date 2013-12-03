@@ -120,13 +120,15 @@ function updateOffBy(element) {
 
 function set_entity_autocompleter() {
   var reg_account_id = $('#register_account_id').val();
-  $('#entity_name').autocomplete('/update/auto_complete_for_entity_name/' + reg_account_id).result(function(event, data, formatted) {
-    $.getJSON('/update/other_account_for_entry/' + reg_account_id,
-     {entity: formatted},
-     function(data){
-      if(data.account_id){$('#account_id').val(data.account_id)}
-      if(data.amount){$('#entry_amount').val(data.amount)}
-    });
+  $('#entity_name').autocomplete('/update/auto_complete_for_entity_name/' + reg_account_id,
+    {onFinish: function() {
+      $.getJSON('/update/other_account_for_entry/' + reg_account_id,
+       {entity: $('#entity_name').val()},
+       function(data){
+        if(data.account_id){$('#account_id').val(data.account_id)}
+        if(data.amount){$('#entry_amount').val(data.amount)}
+      });
+    }
   });
   document.forms[1].entry_date.focus();
 }

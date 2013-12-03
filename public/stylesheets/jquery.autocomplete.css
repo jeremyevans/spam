@@ -1,48 +1,38 @@
-.ac_results {
+/**
+ * @fileOverview CSS for jquery-autocomplete, the jQuery Autocompleter
+ * @author <a href="mailto:dylan@dyve.net">Dylan Verheul</a>
+ * @license MIT | GPL | Apache 2.0, see LICENSE.txt
+ * @see https://github.com/dyve/jquery-autocomplete
+ */
+.acResults {
 	padding: 0px;
-	border: 1px solid black;
-	background-color: white;
+	border: 1px solid WindowFrame;
+	background-color: Window;
 	overflow: hidden;
-	z-index: 99999;
 }
 
-.ac_results ul {
-	width: 100%;
+.acResults ul {
+	margin: 0px;
+	padding: 0px;
 	list-style-position: outside;
-	list-style: none;
-	padding: 0;
-	margin: 0;
+	list-style: none;	
 }
 
-.ac_results li {
+.acResults ul li {
 	margin: 0px;
 	padding: 2px 5px;
-	cursor: default;
+	cursor: pointer;
 	display: block;
-	/* 
-	if width will be 100% horizontal scrollbar will apear 
-	when scroll mode will be used
-	*/
-	/*width: 100%;*/
 	font: menu;
 	font-size: 12px;
-	/* 
-	it is very important, if line-height not setted or setted 
-	in relative units scroll will be broken in firefox
-	*/
-	line-height: 16px;
 	overflow: hidden;
 }
 
-.ac_loading {
-	background: white url('indicator.gif') right center no-repeat;
+.acLoading {
+	background : url('indicator.gif') right center no-repeat;
 }
 
-.ac_odd {
-	background-color: #eee;
-}
-
-.ac_over {
-	background-color: #0A246A;
-	color: white;
+.acSelect {
+	background-color: Highlight;
+	color: HighlightText;
 }

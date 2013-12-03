@@ -128,9 +128,9 @@ describe Account do
     @account.next_check_number.should == '1035'
   end
 
-  specify "#scaffold_name should be the first 31 letters of name" do
+  specify "#short_name should be the first 31 letters of name" do
     @account.set(:name=>'A' * 50)
-    @account.scaffold_name.should == 'A' * 31
+    @account.short_name.should == 'A' * 31
   end
 
   specify "#unreconciled_balance should be the current balance less the sum of entries not cleared" do
@@ -164,9 +164,9 @@ describe Entity do
     Entity.user(2).all.should == [@entity2, @entity]
   end
 
-  specify "#scaffold_name should be the first 31 letters of name" do
+  specify "#short_name should be the first 31 letters of name" do
     @entity.set(:name=>'A' * 50)
-    @entity.scaffold_name.should == 'A' * 31
+    @entity.short_name.should == 'A' * 31
   end
 end
 

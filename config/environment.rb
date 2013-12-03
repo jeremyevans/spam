@@ -4,6 +4,7 @@ Sequel::Model.raise_on_typecast_failure = false
 Sequel::Model.plugin :prepared_statements_safe
 Sequel::Model.plugin :prepared_statements_associations
 Sequel::Model.plugin :active_model
+Sequel::Model.plugin :table_select
 
 # Load the rails application
 require File.expand_path('../application', __FILE__)

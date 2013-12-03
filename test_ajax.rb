@@ -112,7 +112,7 @@ describe "SPAM" do
       fill_in "entity[name]", :with=>'Card'
 
       wait
-      find('li.ac_over').click
+      find('div.acResults ul li').click
 
       wait
       fill_in "entry[memo]", :with=>'Payment2'
