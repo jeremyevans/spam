@@ -82,3 +82,5 @@ div.container-fluid h1, div.container-fluid h3 {text-align: center;}
 div.navbar-inner {background-color: #141; background-image: none; }
 ul.dropdown-menu li.dropdown-menu-sub { padding: 3px 15px; }
 ul.dropdown-menu li.dropdown-menu-sub ul { list-style: none outside none; margin: 0; }
+
+#autoforme_content a.btn {color: white;}
