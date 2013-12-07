@@ -10,7 +10,7 @@ increased simplicity.
 
 = Demo Site
 
-A demo site is available at http://spam-demo.herokuapp.com, with
+A demo site is available at http://spam-demo.jeremyevans.net, with
 login/password: demo/demo.
 
 = Source Code
