@@ -27,14 +27,14 @@ GEM
       tzinfo (~> 0.3.37)
     arel (4.0.0)
     atomic (1.1.9)
-    autoforme (0.5.0)
-      forme (>= 0.9.0)
+    autoforme (0.5.3)
+      forme (>= 0.9.1)
       rack
       sequel (>= 3.0.0)
     bcrypt-ruby (3.0.1)
     builder (3.1.4)
     erubis (2.7.0)
-    forme (0.9.0)
+    forme (0.9.1)
     hike (1.2.1)
     i18n (0.6.4)
     kgio (2.7.4)
@@ -64,7 +64,7 @@ GEM
       thor (>= 0.18.1, < 2.0)
     raindrops (0.10.0)
     rake (10.0.3)
-    sequel (4.5.0)
+    sequel (4.6.0)
     sequel_pg (1.6.8)
       pg (>= 0.8.0)
       sequel (>= 3.39.0)
@@ -95,7 +95,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  autoforme
+  autoforme (>= 0.5.3)
   bcrypt-ruby
   pg
   rails (= 4.0.2)
