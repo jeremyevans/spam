@@ -1,3 +1,8 @@
+env_file = File.expand_path('../.env.rb', __FILE__)
+if File.exists?(env_file)
+  load(env_file)
+end
+
 Encoding.default_internal = Encoding.default_external = 'ISO-8859-1' if RUBY_VERSION >= '1.9'
 require 'capybara'
 require 'capybara-webkit'

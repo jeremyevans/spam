@@ -1,9 +1,13 @@
 #!/usr/local/bin/spec
+env_file = File.expand_path('../.env.rb', __FILE__)
+if File.exists?(env_file)
+  load(env_file)
+end
 $: << '.'
 require 'rubygems'
 $:.unshift('/data/code/sequel/lib')
 require 'sequel'
-DB = Sequel.postgres('spamtest', :user=>'postgres')
+DB = Sequel.connect(ENV['TEST_DATABASE_URL'] || 'postgres:///spamtest?user=postgres')
 require 'subset_sum'
 require 'lib/to_money'
 require 'bcrypt'

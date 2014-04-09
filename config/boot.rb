@@ -1,3 +1,8 @@
+env_file = File.expand_path('../../.env.rb', __FILE__)
+if File.exists?(env_file)
+  load(env_file)
+end
+
 require 'rubygems'
 if RUBY_VERSION > '1.9'
   gem 'railties', '4.0.2'
