@@ -1,0 +1,35 @@
+<% @no_heading = true %>
+<h1 class="centered"><%= @pagetitle = "Reconciling #{@account.name}" %></h1>
+<h3 id="results" class="centered"><%= @error_message %></h3>
+<form action="/update/clear_entries" method="post">
+<%= Rack::Csrf.tag(env) %>
+<input type="hidden" name="id" value="<%= @account.id %>" />
+<div class="row">
+  <div class="span4 offset4">
+    <table id="reconcile" class="table table-bordered table-condensed"><tbody>
+    <tr><td>Unreconciled Balance</td><td id="balance"  class="money"><%= @account.unreconciled_balance.to_money %></td></tr>
+    <tr><td>Reconciling Changes</td><td id="reconcile_changes" class="money"><%= @reconcile_changes || '$0.00' %></td></tr>
+    <tr><td>Reconciled Balance</td><td id="reconciled_balance" class="money"><%= @account.unreconciled_balance.to_money %></td></tr>
+    <tr><td>Off By</td><td id="off_by" class="money"><%= (@account.unreconciled_balance + (@reconcile_changes || 0) - (@reconcile_to || 0)).to_money %></td></tr>
+    <tr><td>Reconcile To</td><td><input id="reconcile_to" name="reconcile_to" type="text" size="8" onchange="updatedReconcileTo();" value="<%= @reconcile_to || @account.unreconciled_balance %>" /></td></tr>
+    <tr><td colspan="2" class="centered">
+      <input id="auto_reconcile" name="auto_reconcile" class="btn" type="submit" value="Auto-Reconcile" />
+      <input id="clear_entries" name="clear_entries" class="btn pull-right" type="submit" value="Clear Entries" />
+    </td></tr>
+    </tbody></table>
+  </div>
+</div>
+<div class="row">
+  <div id="debit_entries" class="span5">
+    <%= render('_reconcile_table', :locals=>{:entry_type=>'debit'}) %>
+  </div>
+  <div id="credit_entries" class="span5 offset1">
+    <%= render('_reconcile_table', :locals=>{:entry_type=>'credit'}) %>
+  </div>
+</div>
+</form>
+<script type="text/javascript">
+$(document).ready(function() {
+  setup_reconcile_form();
+});
+</script>

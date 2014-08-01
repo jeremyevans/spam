@@ -1,4 +1,8 @@
-/log/*
-/config/secret_token.txt
-/config/secret_key_base.txt
+/log
+/secret_token.txt
+/secret_key_base.txt
 /.env.rb
+/db_config.rb
+/unicorn.test.pid
+/unicorn.test.log
+/unicorn.conf

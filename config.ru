@@ -1,2 +1,2 @@
-require ::File.expand_path('../config/environment',  __FILE__)
-run Spam::Application
+require ::File.expand_path('../spam',  __FILE__)
+run Spam.app

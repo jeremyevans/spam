@@ -32,10 +32,7 @@ ago I switched to it multi-user, so it should work fine with multiple users.
 
 = Heroku Setup
 
-This app can be easily cloned and run on heroku.  You just need to make
-sure you are using the heroku-postgresql:dev database (PostgreSQL 9.1+), not
-the old shared database (PostgreSQL 8.3).  Mainly this is because the
-triggers used by the application require plpgsql.
+This app can be easily cloned and run on heroku: 
 
   git clone git://github.com/jeremyevans/spam.git
   cd spam
@@ -44,7 +41,7 @@ triggers used by the application require plpgsql.
     SECRET_KEY_BASE="another secret key"
   heroku addons:add heroku-postgresql:dev
   heroku pg:promote HEROKU_POSTGRESQL_COLOR
-  heroku pg:psql < config/schema.sql
+  heroku pg:psql < schema.sql
 
 You then need to manually create users (there is no UI for this):
 
@@ -65,13 +62,7 @@ Then you just need to push to heroku:
 
 * PostgreSQL 9.0+
 * Ruby 1.8.7+
-* Ruby Gems:
-  * bcrypt
-  * pg
-  * rails
-  * scaffolding_extensions
-  * sequel
-  * subset_sum
+* Gems mentioned in Gemfile
 
 == Installation
 
@@ -79,15 +70,15 @@ Running this outside of Heroku is fairly easy:
 
   git clone git://github.com/jeremyevans/spam.git
   cd spam
-  cat "your secret token" > config/secret_token.txt
-  cat "another secret key" > config/secret_key_base.txt
+  echo -n "your secret token" > secret_token.txt
   bundle install
-  createdb -U postgres spam
-  psql -U postgres spam < config/schema.sql
+  createuser -U postgres spam
+  createdb -U postgres -O spam spam
+  psql -U spam < schema.sql
 
 Manually setup your user:
 
-  psql -U postgres spam
+  psql -U spam
   # INSERT INTO users (name, password_hash) VALUES ('name', 'bcrypt hash');
 
 Then run the app:
@@ -140,8 +131,9 @@ Reports are currently tabular-only, no graphs.
 = Caveats
 
 I've upgraded this over the years to new versions of Rails, and switched it
-from ActiveRecord to Sequel after taking over maintenance of Sequel. Still,
-much of the code is pre-Rails 1 style with fat controllers.
+from ActiveRecord to Sequel after taking over maintenance of Sequel and from
+Rails to Roda after developing Roda. Still, much of the code is pre-Rails 1
+style with fat controllers.
 
 While there are 3 test suites (unit, integration, javascript), the tests are
 still pretty minimal.

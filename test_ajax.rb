@@ -1,22 +1,14 @@
-env_file = File.expand_path('../.env.rb', __FILE__)
-if File.exists?(env_file)
-  load(env_file)
-end
-
-Encoding.default_internal = Encoding.default_external = 'ISO-8859-1' if RUBY_VERSION >= '1.9'
 require 'capybara'
 require 'capybara-webkit'
 require 'capybara/dsl'
 require 'capybara/rspec/matchers'
 require 'headless'
-require 'sequel'
-require 'bcrypt'
 
-if ENV['TEST_DATABASE_URL']
-DB = Sequel.connect(ENV['TEST_DATABASE_URL'])
-else
-DB = Sequel.postgres('spamtest', :user=>'postgres')
-end
+$: << '.'
+ENV['RACK_ENV'] = 'test'
+require 'models'
+db_name = DB.get{current_database{}}
+raise "Doesn't look like a test database (#{db_name}), not running tests" unless db_name =~ /test\z/
 
 [:entries, :entities, :accounts, :account_types, :users].each{|x| DB[x].delete}
 DB[:users] << {:password_hash=>BCrypt::Password.create("pass"), :name=>"default", :num_register_entries=>35, :id=>1}

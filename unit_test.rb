@@ -1,17 +1,10 @@
 #!/usr/local/bin/spec
-env_file = File.expand_path('../.env.rb', __FILE__)
-if File.exists?(env_file)
-  load(env_file)
-end
 $: << '.'
-require 'rubygems'
-$:.unshift('/data/code/sequel/lib')
-require 'sequel'
-DB = Sequel.connect(ENV['TEST_DATABASE_URL'] || 'postgres:///spamtest?user=postgres')
-require 'subset_sum'
-require 'lib/to_money'
-require 'bcrypt'
-Dir['app/models/*.rb'].each{|f| require(f)}
+ENV['RACK_ENV'] = 'test'
+require 'models'
+db_name = DB.get{current_database{}}
+raise "Doesn't look like a test database (#{db_name}), not running tests" unless db_name =~ /test\z/
+
 [:entries, :entities, :accounts, :account_types, :users].each{|x| DB[x].delete}
 DB[:users] << {:password_hash=>BCrypt::Password.create("blah"), :name=>"default", :num_register_entries=>35, :id=>1}
 DB[:users] << {:password_hash=>BCrypt::Password.create("blah2"), :name=>"test", :num_register_entries=>35, :id=>2}

@@ -3,8 +3,12 @@ require 'capybara'
 require 'capybara/dsl'
 require 'capybara/rspec/matchers'
 require 'rack/test'
-ENV['RAILS_ENV'] = 'test'
-require ::File.expand_path('../config/environment',  __FILE__)
+ENV['RACK_ENV'] = 'test'
+
+require ::File.expand_path('../spam',  __FILE__)
+
+db_name = DB.get{current_database{}}
+raise "Doesn't look like a test database (#{db_name}), not running tests" unless db_name =~ /test\z/
 
 [:entries, :entities, :accounts, :account_types, :users].each{|x| DB[x].delete}
 DB[:users] << {:password_hash=>BCrypt::Password.create("pass"), :name=>"default", :num_register_entries=>35, :id=>1}
@@ -26,7 +30,7 @@ DB[:entities] << {:user_id=>2, :name=>"Test", :id=>4}
 DB[:entries] << {:credit_account_id=>6, :reference=>"", :user_id=>2, :entity_id=>4, :cleared=>false, :amount=>100, :memo=>"", :date=>'2008-06-11', :debit_account_id=>5, :id=>1}
 Entries = DB[:entries].filter(:user_id => 1)
 
-Capybara.app = Spam::Application
+Capybara.app = Spam.app
 
 class Spec::Example::ExampleGroup
   include Rack::Test::Methods

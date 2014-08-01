@@ -1,1 +1,1 @@
-web: unicorn -p $PORT -c config/unicorn.heroku.conf
+web: unicorn -p $PORT -c unicorn.heroku.conf

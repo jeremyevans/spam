@@ -1,9 +1,0 @@
-<td><%= entry.date %></td>
-<td><%= entry.reference %></td>
-<td><%=h(entry.entity.name) if entry.entity %></td>
-<td><%= entry.other_account.name %></td>
-<td><%= entry.memo %></td>
-<td><%= 'R' if entry.cleared %></td>
-<td class="money"><%= entry.money_amount %></td>
-<td class="money"><%= @account.money_balance %><% @account[:balance] -= entry.amount %></td>
-<td><a class="modify" id="modify_<%= entry.id %>" href="/update/modify_entry/<%= entry.id %>?register_account_id=<%= @account.id %>">Modify</a></td>

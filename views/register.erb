@@ -1,0 +1,26 @@
+<% @fluid_layout = true %>
+<% @pagetitle = "#{@account.name} Register" %>
+<h3 id="results">Showing <%= @show_num_entries == -1 ? 'All' : "#{@show_num_entries} Most Recent" %> Entries</h3>
+<form id="register_form" action="/update/add_entry" method="post">
+  <%= Rack::Csrf.tag(env) %>
+  <input type="hidden" id="selected_entry_id" name="selected_entry_id" value="<%= @entry_id %>" />
+  <input type="hidden" id="register_account_id" name="register_account_id" value="<%= @account.id %>" />
+<table id="register" class="table table-condensed">
+<thead><tr><th>Date</th><th>Num</th><th>Entity</th><th>Other Account</th><th>Memo</th><th><abbr title="Cleared">C</abbr></th><th>Amount</th><th>Balance</th><th>Modify</th></tr></thead>
+<tbody>
+<tr id="new_entry"><%= render("_#{@entry ? 'blank' : 'new'}_register_entry") %></tr>
+<% @account.entries_dataset.limit(@show_num_entries).all{|x| x.main_account = @account}.each do |entry| %>
+  <tr id="entry_<%= entry.id %>"><%= render("_#{'modify_' if @entry && entry.id == @entry.id}register_entry", :locals=>{:entry=>entry}) %></tr>
+<% end %>
+</tbody></table>
+</form>
+
+<% unless @show_num_entries == 100 %>
+  <a href="/update/register/<%= @account.id %>?show=100">Show 100</a>
+<% end %>
+
+<script type="text/javascript">
+$(document).ready(function() {
+  setup_register_form();
+});
+</script>
