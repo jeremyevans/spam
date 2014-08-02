@@ -210,7 +210,7 @@ class Spam < Roda
           h = {}
           if r['entity'] and account = user_account(id) and entry = account.last_entry_for_entity(r['entity'])
             entry.main_account = account
-            h = {:account_id=>entry.other_account.id, :amount=>entry.amount}
+            h = {:account_id=>entry.other_account.id, :amount=>entry.amount.to_s('F')}
           end
           h.to_json
         end
