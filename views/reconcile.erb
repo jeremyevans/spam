@@ -2,7 +2,7 @@
 <h1 class="centered"><%= @pagetitle = "Reconciling #{@account.name}" %></h1>
 <h3 id="results" class="centered"><%= @error_message %></h3>
 <form action="/update/clear_entries" method="post">
-<%= Rack::Csrf.tag(env) %>
+<%= csrf_tag %>
 <input type="hidden" name="id" value="<%= @account.id %>" />
 <div class="row">
   <div class="span4 offset4">

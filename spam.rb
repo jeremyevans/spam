@@ -2,8 +2,6 @@ require ::File.expand_path('../models',  __FILE__)
 
 require 'roda'
 require 'rack/protection'
-require 'rack/csrf'
-require 'json'
 
 class String
   def html_safe
@@ -21,7 +19,7 @@ class Spam < Roda
   end
 
   use Rack::Session::Cookie, :secret=>secret, :key => '_spam_session'
-  use Rack::Csrf
+  plugin :csrf
   use Rack::Static, :urls=>%w'/images /javascripts /stylesheets /favicon.ico', :root=>'public'
   use Rack::Protection
 
@@ -30,6 +28,9 @@ class Spam < Roda
   plugin :render, :cache=>false
   plugin :flash
   plugin :h
+  plugin :json
+  plugin :symbol_views
+  plugin :symbol_matchers
 
   plugin :autoforme do
     inline_mtm_associations :all
@@ -75,8 +76,8 @@ class Spam < Roda
       @navigation_accounts = userAccount.unhidden.register_accounts
     end
 
-    r.get '' do
-      view 'login'
+    r.root do
+      :login
     end
 
     r.post 'login' do
@@ -99,23 +100,22 @@ class Spam < Roda
       r.redirect '/'
     end
 
-
     r.on 'reports', :method=>:get do
       r.is 'balance_sheet' do
         @assets, @liabilities = userAccount.register_accounts.exclude(Sequel.&(:hidden, :balance=>0)).all.partition{|x| x.account_type_id == 1}
-        view 'balance_sheet'
+        :balance_sheet
       end
       
       r.is 'income_expense' do
         income_expense_report
-        view 'income_expense'
+        :income_expense
       end
       
       r.is 'net_worth' do
         account = accounts_ds.select(*account_sums(1=>:assets, 2=>:liabilities)).first
         @assets, @liabilities = account[:assets].to_f, -account[:liabilities].to_f
         income_expense_report
-        view 'net_worth'
+        :net_worth
       end
       
       r.is 'earning_spending' do
@@ -125,7 +125,7 @@ class Spam < Roda
            filter(@age < Sequel.cast('1 year', :interval)).
            group(:accounts__account_type_id, :accounts__name).order(Sequel.desc(:account_type_id), :name).all
         end
-        view 'earning_spending'
+        :earning_spending
       end
 
       r.is 'earning_spending_by_entity' do
@@ -135,7 +135,7 @@ class Spam < Roda
            filter(Sequel.or(:d__account_type_id => [3,4], :c__account_type_id => [3,4]) & Sequel.or(:d__account_type_id => nil, :c__account_type_id => nil)).
            group(:entities__name).order(:name).all
         end
-        view 'earning_spending'
+        :earning_spending
       end
 
       r.is 'yearly_earning_spending_by_entity' do
@@ -144,7 +144,7 @@ class Spam < Roda
            filter(Sequel.or(:d__account_type_id => [3,4], :c__account_type_id => [3,4]) & Sequel.or(:d__account_type_id => nil, :c__account_type_id => nil)).
            group(:entities__name).order(:name).all
         end
-        view 'earning_spending'
+        :earning_spending
       end
 
       r.is 'yearly_earning_spending' do
@@ -153,13 +153,13 @@ class Spam < Roda
            filter(:accounts__account_type_id=>[3,4]).
            group(:accounts__account_type_id, :accounts__name).order(Sequel.desc(:account_type_id), :name).all
         end
-        view 'earning_spending'
+        :earning_spending
       end
     end
 
     r.on 'update' do
       r.get do
-        r.is 'auto_complete_for_entity_name/:id' do |id|
+        r.is 'auto_complete_for_entity_name/:d' do |id|
           @entities = userEntity.auto_complete(r['q'], id)
           if @entities.length > 0
             render(:inline => '<%= @entities.join("\n") %>')
@@ -172,7 +172,7 @@ class Spam < Roda
           auto_reconcile
         end
         
-        r.is /modify_entry(?:\/(\d+))?/ do |id|
+        r.is 'modify_entry:optd' do |id|
           @account = user_account(r['register_account_id'])
           @accounts = userAccount.for_select
           @selected_entry_id = r['selected_entry_id'].to_i if r['selected_entry_id'].to_i > 0
@@ -199,34 +199,34 @@ class Spam < Roda
             json << ['replace_html', "#entry_#{@entry.id}", render('_modify_register_entry', :locals=>{:entry=>@entry})] if @entry
             json << ['replace_html', '#results', @entry ? 'Modify entry' : 'Add entry']
             json << ['autocompleter']
-            json.to_json
+            json
           else
             @show_num_entries = num_register_entries
-            view 'register'
+            :register
           end
         end
 
-        r.is 'other_account_for_entry/:id' do |id|
+        r.is 'other_account_for_entry/:d' do |id|
           h = {}
           if r['entity'] and account = user_account(id) and entry = account.last_entry_for_entity(r['entity'])
             entry.main_account = account
             h = {:account_id=>entry.other_account.id, :amount=>entry.amount.to_s('F')}
           end
-          h.to_json
+          h
         end
 
-        r.is 'reconcile/:id' do |id|
+        r.is 'reconcile/:d' do |id|
           @account = user_account(id)
-          view 'reconcile'
+          :reconcile
         end
 
-        r.is 'register/:id' do |id|
+        r.is 'register/:d' do |id|
           @account = user_account(id)
           @accounts = userAccount.for_select
           @show_num_entries = ((r['show'] and r['show'].to_i != 0) ? r['show'].to_i : num_register_entries)
           @show_num_entries = nil if @show_num_entries < 1
           @check_number = @account.next_check_number
-          view 'register'
+          :register
         end
       end
 
@@ -250,7 +250,7 @@ class Spam < Roda
               ['replace_html', '#results', 'Added entry'],
               ['autocompleter'],
               ['resort']
-            ].to_json
+            ]
           else
             r.redirect "/update/register/#{@account.id}"
           end
@@ -273,7 +273,7 @@ class Spam < Roda
               ['replace_html', '#debit_entries', render('_reconcile_table', :locals=>{:entry_type=>'debit'})],
               ['replace_html', '#credit_entries', render('_reconcile_table', :locals=>{:entry_type=>'credit'})],
               ['replace_html', '#results', 'Cleared entries']
-            ].to_json
+            ]
           else
             r.redirect "/update/reconcile/#{r['id']}"
           end
@@ -283,7 +283,7 @@ class Spam < Roda
 
     r.is "change_password" do
       r.get do
-        view 'change_password'
+        :change_password
       end
 
       r.post do
@@ -429,7 +429,7 @@ class Spam < Roda
         json = []
       end
       json << ['replace_html', '#results', @error_message]
-      json.to_json
+      json
     else
       view 'reconcile'
     end
@@ -468,7 +468,7 @@ class Spam < Roda
         ['replace_html', '#results', 'Updated entry'],
         ['autocompleter'],
         ['resort']
-      ].to_json
+      ]
     else
       r.redirect "/update/register/#{@account.id}"
     end
