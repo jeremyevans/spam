@@ -3,12 +3,6 @@ require ::File.expand_path('../models',  __FILE__)
 require 'roda'
 require 'rack/protection'
 
-class String
-  def html_safe
-    self
-  end
-end
-
 class Spam < Roda
   unless secret = ENV['SECRET_TOKEN']
     if File.exist?('secret_token.txt')
@@ -25,7 +19,8 @@ class Spam < Roda
 
   plugin :not_found
   plugin :error_handler
-  plugin :render, :cache=>false
+  plugin :render, :cache=>(ENV['RACK_ENV'] != 'development'), :escape=>true
+  plugin :render_each
   plugin :flash
   plugin :h
   plugin :json
@@ -160,12 +155,7 @@ class Spam < Roda
     r.on 'update' do
       r.get do
         r.is 'auto_complete_for_entity_name/:d' do |id|
-          @entities = userEntity.auto_complete(r['q'], id)
-          if @entities.length > 0
-            render(:inline => '<%= @entities.join("\n") %>')
-          else
-            ''
-          end
+          userEntity.auto_complete(r['q'], id).join("\n")
         end
         
         r.is 'auto_reconcile' do
@@ -316,7 +306,7 @@ class Spam < Roda
   private
 
   def balance_sheet_rows(accounts)
-    accounts.collect{|account| "<tr><td class='account_name'>#{h account.name}</td><td class='money'>#{account.money_balance}</td></tr>" }.join("\n").html_safe
+    accounts.collect{|account| "<tr><td class='account_name'>#{h account.name}</td><td class='money'>#{account.money_balance}</td></tr>" }.join("\n")
   end
 
   def get_navigation_accounts

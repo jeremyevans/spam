@@ -1,11 +1,11 @@
 <% f = Forme::Form.new(:wrapper=>:td, :namespace=>'entry') %>
 
-<%= f.input(:text, :key=>:date, :size=>10, :value=>((defined?(time) && time) ? time : Date.today).strftime("%Y-%m-%d")) %>
-<%= f.input(:text, :key=>:reference, :size=>4, :value=>@check_number, :autocomplete=>false) %>
-<td><%= f.input(:text, :name=>'entity[name]', :id=>'entity_name', :size=>30, :autocomplete=>false, :wrapper=>false) %><div class="auto_complete" id="entity_name_auto_complete"></div></td>
-<%= f.input(:select, :name=>'account[id]', :id=>'account_id', :options=>@accounts, :add_blank=>true) %>
-<%= f.input(:text, :key=>:memo, :size=>30, :autocomplete=>false) %>
+<%== f.input(:text, :key=>:date, :size=>10, :value=>((defined?(time) && time) ? time : Date.today).strftime("%Y-%m-%d")) %>
+<%== f.input(:text, :key=>:reference, :size=>4, :value=>@check_number, :autocomplete=>false) %>
+<td><%== f.input(:text, :name=>'entity[name]', :id=>'entity_name', :size=>30, :autocomplete=>false, :wrapper=>false) %><div class="auto_complete" id="entity_name_auto_complete"></div></td>
+<%== f.input(:select, :name=>'account[id]', :id=>'account_id', :options=>@accounts, :add_blank=>true) %>
+<%== f.input(:text, :key=>:memo, :size=>30, :autocomplete=>false) %>
 <td></td>
-<%= f.input(:text, :key=>:amount, :size=>7, :autocomplete=>false, :wrapper_attr=>{:class=>:money}) %>
+<%== f.input(:text, :key=>:amount, :size=>7, :autocomplete=>false, :wrapper_attr=>{:class=>:money}) %>
 <td class="money"><%= @account.money_balance %></td>
 <td><input type="submit" name="add" value="Add" /></td>

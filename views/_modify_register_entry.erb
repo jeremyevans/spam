@@ -1,11 +1,11 @@
 <% f = Forme::Form.new(:wrapper=>:td, :namespace=>'entry') %>
 
-<%= f.input(:text, :key=>:date, :size=>10, :value=>@entry.date.strftime("%Y-%m-%d")) %>
-<%= f.input(:text, :key=>:reference, :size=>4, :value=>@entry.reference, :autocomplete=>false) %>
-<td><%= f.input(:text, :name=>'entity[name]', :id=>'entity_name', :size=>30, :autocomplete=>false, :wrapper=>false, :value=>@entry.entity_name) %><div class="auto_complete" id="entity_name_auto_complete"></div></td>
-<%= f.input(:select, :name=>'account[id]', :id=>'account_id', :options=>@accounts, :value=>@entry.other_account.id, :add_blank=>true) %>
-<%= f.input(:text, :key=>:memo, :size=>30, :autocomplete=>false, :value=>@entry.memo) %>
-<%= f.input(:checkbox, :key=>:cleared, :checked=>@entry.cleared, :value=>'t') %>
-<%= f.input(:text, :key=>:amount, :size=>7, :autocomplete=>false, :wrapper_attr=>{:class=>:money}, :value=>@entry.amount) %>
-<%= f.input(:hidden, :key=>:id, :value=>@entry.id, :autocomplete=>false, :wrapper_attr=>{:class=>:money}) %>
+<%== f.input(:text, :key=>:date, :size=>10, :value=>@entry.date.strftime("%Y-%m-%d")) %>
+<%== f.input(:text, :key=>:reference, :size=>4, :value=>@entry.reference, :autocomplete=>false) %>
+<td><%== f.input(:text, :name=>'entity[name]', :id=>'entity_name', :size=>30, :autocomplete=>false, :wrapper=>false, :value=>@entry.entity_name) %><div class="auto_complete" id="entity_name_auto_complete"></div></td>
+<%== f.input(:select, :name=>'account[id]', :id=>'account_id', :options=>@accounts, :value=>@entry.other_account.id, :add_blank=>true) %>
+<%== f.input(:text, :key=>:memo, :size=>30, :autocomplete=>false, :value=>@entry.memo) %>
+<%== f.input(:checkbox, :key=>:cleared, :checked=>@entry.cleared, :value=>'t') %>
+<%== f.input(:text, :key=>:amount, :size=>7, :autocomplete=>false, :wrapper_attr=>{:class=>:money}, :value=>@entry.amount) %>
+<%== f.input(:hidden, :key=>:id, :value=>@entry.id, :autocomplete=>false, :wrapper_attr=>{:class=>:money}) %>
 <td><input type="submit" name="update" value="Update" /></td>

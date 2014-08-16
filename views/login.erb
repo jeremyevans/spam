@@ -2,7 +2,7 @@
 
 <% unless session[:user_id] %>
   <form action="/login" method="post" class="form-horizontal">
-    <%= csrf_tag %>
+    <%== csrf_tag %>
     <fieldset>
       <div class="control-group">
         <label class="control-label" for="username">Username</label>

@@ -1,7 +1,5 @@
 <table class="table table-condensed table-bordered ">
 <caption><%= entry_type.capitalize %> Entries</caption>
 <thead><tr><th><abbr title="Cleared">C</abbr></th><th>Date</th><th>Num</th><th>Entity</th><th>Amount</th></tr></thead><tbody>
-<% @account.send("entries_to_reconcile", entry_type).each do |v| %>
-  <%= render('_reconcile_entry', :locals=>{:entry_type=>entry_type, :reconcile_entry=>v}) %>
-<% end %>
+<%== render_each(@account.send("entries_to_reconcile", entry_type), :_reconcile_entry, :locals=>{:entry_type=>entry_type}, :local=>:reconcile_entry) %>
 </tbody></table>

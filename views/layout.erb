@@ -30,7 +30,7 @@
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">Registers<b class="caret"></b></a>
               <ul class="dropdown-menu">
                 <% @navigation_accounts.each do |account| %>
-                  <li><a href="/update/register/<%= account.id %>"><%=h account.name %></a></li>
+                  <li><a href="/update/register/<%= account.id %>"><%= account.name %></a></li>
                 <% end %>
               </ul>
             </li>
@@ -41,7 +41,7 @@
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">Reconcile<b class="caret"></b></a>
               <ul class="dropdown-menu">
                 <% @navigation_accounts.each do |account| %>
-                  <li><a href="/update/reconcile/<%= account.id %>"><%=h account.name %></a></li>
+                  <li><a href="/update/reconcile/<%= account.id %>"><%= account.name %></a></li>
                 <% end %>
               </ul>
             </li>
@@ -78,7 +78,7 @@
         </ul>
 
         <form action="/logout" method="post">
-          <%= csrf_tag %>
+          <%== csrf_tag %>
           <input type="submit" value="Logout" class="btn btn-warning pull-right">
         </form>
         <% end %>
@@ -93,9 +93,9 @@
   <% end %>
 
   <% if flash[:notice] %>
-    <div class="alert alert-success"><h2><%=h flash[:notice] %></h2></div>
+    <div class="alert alert-success"><h2><%= flash[:notice] %></h2></div>
   <% end %>
-  <%= yield %>
+  <%== yield %>
 </div>
 
 </body></html>
