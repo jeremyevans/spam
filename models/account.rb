@@ -20,7 +20,7 @@ class Account < Sequel::Model
   end
 
   def cents(dollars)
-    (dollars * 100).round
+    (dollars * 100).round.to_i
   end
   
   def entries_reconciling_to(reconciled_balance, definite_entries = [], max_seconds = nil)
