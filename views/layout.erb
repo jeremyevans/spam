@@ -5,16 +5,8 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>SPAM<%= " - #{@pagetitle || (@autoforme_action.title if @autoforme_action)}" if @pagetitle || @autoforme_action %></title>
 <link rel="shortcut icon" href="/favicon.ico" />
-<link href="/stylesheets/scaffold_associations_tree.css" media="screen" rel="stylesheet" />
-<link href="/stylesheets/jquery.autocomplete.css" media="screen" rel="stylesheet" />
-<link href="/stylesheets/bootstrap.min.css" media="screen" rel="stylesheet" />
-<link href="/stylesheets/spam.css" media="screen" rel="stylesheet" />
-<script src="/javascripts/jquery.min.js"></script>
-<script src="/javascripts/bootstrap-dropdown.js"></script>
-<script src="/javascripts/jquery.autocomplete.js"></script>
-<script src="/javascripts/autoforme.js"></script>
-<script src="/javascripts/application.js"></script>
-<script src="/javascripts/scaffold_associations_tree.js"></script>
+<%== assets(:css) %>
+<%== assets(:js) %>
 </head>
 
 <body>

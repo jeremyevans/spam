@@ -20,6 +20,15 @@ class Spam < Roda
   plugin :not_found
   plugin :error_handler
   plugin :render, :cache=>(ENV['RACK_ENV'] != 'development'), :escape=>true
+  plugin :assets,
+    :css=>%w'bootstrap.min.css jquery.autocomplete.css scaffold_associations_tree.css spam.scss',
+    :js=>%w'jquery.min.js bootstrap-dropdown.js jquery.autocomplete.js autoforme.js application.js scaffold_associations_tree.js',
+    :css_opts=>{:style=>:compressed, :cache=>false},
+    :compiled_js_dir=>'javascripts',
+    :compiled_css_dir=>'stylesheets',
+    :compiled_path=>nil,
+    :precompiled=>'compiled_assets.json',
+    :prefix=>nil
   plugin :render_each
   plugin :flash
   plugin :h
@@ -67,6 +76,8 @@ class Spam < Roda
   BY_YEAR_COND = Proc.new{|k| Sequel.~(Sequel.extract(:year, :entries__date) => k)}
 
   route do |r|
+    r.assets
+
     if session[:user_id]
       @navigation_accounts = userAccount.unhidden.register_accounts
     end

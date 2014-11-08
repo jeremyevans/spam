@@ -1,7 +1,8 @@
 source 'https://rubygems.org'
 
-gem 'roda', '>= 1.0.0'
+gem 'roda', '>= 1.1'
 gem 'tilt'
+gem 'sass'
 gem 'erubis'
 gem 'rack-protection'
 gem 'rack_csrf'
