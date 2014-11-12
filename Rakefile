@@ -18,7 +18,6 @@ namespace :assets do
   desc "Precompile the assets"
   task :precompile do
     require './spam'
-    Dir.mkdir('public/javascripts') unless File.directory?('public/javascripts')
     Spam.compile_assets
   end
 end

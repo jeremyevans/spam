@@ -94,14 +94,29 @@ div.container-fluid {
   h1, h3 {text-align: center;}
 }
 
-div.navbar-inner {
-  background-color: #141;
-  background-image: none;
-}
-
-ul.dropdown-menu li.dropdown-menu-sub {
-  padding: 3px 15px;
-  ul { list-style: none outside none; margin: 0; }
+.navbar-default {
+  color: white;
+  &, .dropdown-menu, .dropdown-menu li a:hover {
+    background-color: #141;
+  }
+  .navbar-brand, .navbar-nav > li > a, .navbar-nav .open .dropdown-menu > li > a {
+    &, &:hover, &:visited { color: white; }
+    &:hover { text-decoration: underline; }
+  }
+  .navbar-form {
+    padding: 0;
+    border-width: 0;
+    margin-right: 20px;
+  }
+  .collapse.in input {
+    width: auto;
+    margin: auto;
+  }
 }
 
 #autoforme_content a.btn {color: white;}
+
+#autoforme_content form {
+  label[for] { min-width: 200px;}
+  input[type=date] { line-height: normal;}
+}

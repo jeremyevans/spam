@@ -1,6 +1,5 @@
-<% @fluid_layout = true %>
 <% @pagetitle = "#{@account.name} Register" %>
-<h3 id="results">Showing <%= @show_num_entries == -1 ? 'All' : "#{@show_num_entries} Most Recent" %> Entries</h3>
+<h3 id="results" class="text-center">Showing <%= @show_num_entries == -1 ? 'All' : "#{@show_num_entries} Most Recent" %> Entries</h3>
 <form id="register_form" action="/update/add_entry" method="post">
   <%== csrf_tag %>
   <input type="hidden" id="selected_entry_id" name="selected_entry_id" value="<%= @entry_id %>" />
@@ -16,7 +15,9 @@
 </form>
 
 <% unless @show_num_entries == 100 %>
-  <a href="/update/register/<%= @account.id %>?show=100">Show 100</a>
+  <div class="text-center">
+    <a href="/update/register/<%= @account.id %>?show=100">Show 100</a>
+  </div>
 <% end %>
 
 <script type="text/javascript">

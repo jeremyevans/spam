@@ -22,7 +22,7 @@ class Spam < Roda
   plugin :render, :cache=>(ENV['RACK_ENV'] != 'development'), :escape=>true
   plugin :assets,
     :css=>%w'bootstrap.min.css jquery.autocomplete.css scaffold_associations_tree.css spam.scss',
-    :js=>%w'jquery.min.js bootstrap-dropdown.js jquery.autocomplete.js autoforme.js application.js scaffold_associations_tree.js',
+    :js=>%w'jquery-1.11.1.min.js bootstrap.min.js jquery.autocomplete.js autoforme.js application.js scaffold_associations_tree.js',
     :css_opts=>{:style=>:compressed, :cache=>false},
     :compiled_js_dir=>'javascripts',
     :compiled_css_dir=>'stylesheets',
@@ -87,10 +87,10 @@ class Spam < Roda
     end
 
     r.post 'login' do
-      flash[:notice] = unless session[:user_id] = User.login_user_id(r['username'], r['password'])
-        'Incorrect username or password.'
+      unless session[:user_id] = User.login_user_id(r['username'], r['password'])
+        flash[:error] = 'Incorrect username or password.'
       else
-        'You have been logged in.'
+        flash[:notice] = 'You have been logged in.'
       end
       r.redirect '/'
     end
@@ -102,7 +102,7 @@ class Spam < Roda
     end
 
     unless session[:user_id]
-      flash[:notice] = 'You need to login'
+      flash[:error] = 'You need to login'
       r.redirect '/'
     end
 
@@ -288,23 +288,23 @@ class Spam < Roda
       end
 
       r.post do
-        flash[:notice] = if r['password'] && r['password2']
+        if r['password'] && r['password2']
           if r['password'].length < 6
-            "Password too short, use at least 6 characters, preferably 10 or more."
+            flash[:error] = "Password too short, use at least 6 characters, preferably 10 or more."
           elsif r['password'] != r['password2']
-            "Passwords don't match, please try again."
+            flash[:error] = "Passwords don't match, please try again."
           else
             user = User[session[:user_id]]
             user.password = r['password']
             if user.save
               page = '/'
-              'Password updated.'
+              flash[:notice] = 'Password updated.'
             else
-              "Can't update account."
+              flash[:error] = "Can't update account."
             end
           end
         else
-          "No password provided, so can't change it."
+          flash[:error] = "No password provided, so can't change it."
         end
 
         r.redirect(page||'/change_password')

@@ -5,7 +5,7 @@
 <%== csrf_tag %>
 <input type="hidden" name="id" value="<%= @account.id %>" />
 <div class="row">
-  <div class="span4 offset4">
+  <div class="col-md-4 col-md-offset-4">
     <table id="reconcile" class="table table-bordered table-condensed"><tbody>
     <tr><td>Unreconciled Balance</td><td id="balance"  class="money"><%= @account.unreconciled_balance.to_money %></td></tr>
     <tr><td>Reconciling Changes</td><td id="reconcile_changes" class="money"><%= @reconcile_changes || '$0.00' %></td></tr>
@@ -20,10 +20,10 @@
   </div>
 </div>
 <div class="row">
-  <div id="debit_entries" class="span5">
+  <div id="debit_entries" class="col-md-5">
     <%== render('_reconcile_table', :locals=>{:entry_type=>'debit'}) %>
   </div>
-  <div id="credit_entries" class="span5 offset1">
+  <div id="credit_entries" class="col-md-5 col-md-offset-1">
     <%== render('_reconcile_table', :locals=>{:entry_type=>'credit'}) %>
   </div>
 </div>
