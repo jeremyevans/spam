@@ -35,7 +35,6 @@ class Spam < Roda
   plugin :json
   plugin :symbol_views
   plugin :symbol_matchers
-  plugin :static_path_info
 
   plugin :autoforme do
     inline_mtm_associations :all
@@ -487,4 +486,6 @@ class Spam < Roda
   def json_requested?
     env['HTTP_ACCEPT'] =~ /application\/json/
   end
+
+  freeze
 end
