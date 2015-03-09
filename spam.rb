@@ -1,7 +1,6 @@
 require ::File.expand_path('../models',  __FILE__)
 
 require 'roda'
-require 'rack/protection'
 
 class Spam < Roda
   unless secret = ENV['SECRET_TOKEN']
@@ -15,7 +14,6 @@ class Spam < Roda
   use Rack::Session::Cookie, :secret=>secret, :key => '_spam_session'
   plugin :csrf
   use Rack::Static, :urls=>%w'/images /javascripts /stylesheets /favicon.ico', :root=>'public'
-  use Rack::Protection
 
   plugin :not_found
   plugin :error_handler
