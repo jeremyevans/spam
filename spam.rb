@@ -484,6 +484,4 @@ class Spam < Roda
   def json_requested?
     env['HTTP_ACCEPT'] =~ /application\/json/
   end
-
-  freeze
 end
