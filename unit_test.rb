@@ -13,6 +13,8 @@ DB[:account_types] << {:name=>"Liability", :id=>2}
 DB[:account_types] << {:name=>"Income", :id=>3}
 DB[:account_types] << {:name=>"Expense", :id=>4}
 
+require './spec_helper'
+
 describe Account do
   before do
     @account = Account.create(:name=>'TestAccount', :user_id=>2, :account_type_id=>1, :hidden=>false)

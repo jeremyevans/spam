@@ -33,11 +33,13 @@ Entries = DB[:entries].filter(:user_id => 1)
 PORT = ENV['PORT'] || 8989
 SLEEP_TIME = Float(ENV['SLEEP_TIME'] || 0.5)
 
+require './spec_helper'
+
 Capybara.default_driver = :webkit
 Capybara.default_selector = :css
 Capybara.server_port = PORT
 
-class Spec::Example::ExampleGroup
+class RSPEC_EXAMPLE_GROUP
   include Capybara::DSL
   include Capybara::RSpecMatchers
 
@@ -60,10 +62,9 @@ describe "SPAM" do
       fill_in 'Password', :with=>'pass'
       click_on 'Login'
 
-      within('#nav-register') do
-        click_link('Checking')
-      end
-      find('title').text.should == 'SPAM - Checking Register'
+      find('#nav-register').click_link('Registers')
+      find('#nav-register').click_link('Checking')
+      page.should have_title('SPAM - Checking Register')
       find('h3').text.should == 'Showing 35 Most Recent Entries'
       form = find('div#content form')
       form.all('tr').length.should == 2
@@ -120,11 +121,10 @@ describe "SPAM" do
       Entries.delete
       @entry_id = Entries.insert(:date=>Date.new(2008,06,07), :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal.new('1000'), :cleared=>false, :user_id=>1)
 
-      within('#nav-reconcile') do
-        click_link('Checking')
-      end
+      find('#nav-reconcile').click_link('Reconcile')
+      find('#nav-reconcile').click_link('Checking')
       form = find('div#content form')
-      form.find('table').all('tr td').map{|x| x.text.strip}.should == "Unreconciled Balance/$0.00/Reconciling Changes/$0.00/Reconciled Balance/$0.00/Off By/$0.00/Reconcile To/// ".split('/')[0...-1]
+      form.first('table').all('tr td').map{|x| x.text.strip}.should == "Unreconciled Balance/$0.00/Reconciling Changes/$0.00/Reconciled Balance/$0.00/Off By/$0.00/Reconcile To/// ".split('/')[0...-1]
       form.all('caption').map{|s| s.text}.should == 'Debit Entries/Credit Entries'.split('/')
       form.all('table').last.all('thead th').map{|s| s.text}.should == %w'C Date Num Entity Amount'
       form.all('table').last.all('tbody td').map{|s| s.text}.should == '/2008-06-07/1000/Card/$1000.00'.split('/')
@@ -134,14 +134,14 @@ describe "SPAM" do
       click_on 'Auto-Reconcile'
 
       wait
-      page.find("input#credit_#{@entry_id}")[:checked].should be_true
+      page.find("input#credit_#{@entry_id}")[:checked].should == 'true'
 
       click_on 'Clear Entries'
 
       wait
       Entries.first[:cleared].should == true
-      page.all("input#credit_#{@entry_id}").should == []
-      page.find('table').all('td').map{|x| x.text.strip}.should == "Unreconciled Balance/$-1000.00/Reconciling Changes/$0.00/Reconciled Balance/$-1000.00/Off By/$-1000.00/Reconcile To/// ".split('/')[0...-1]
+      page.all("input#credit_#{@entry_id}").size.should == 0
+      page.first('table').all('td').map{|x| x.text.strip}.should == "Unreconciled Balance/$-1000.00/Reconciling Changes/$0.00/Reconciled Balance/$-1000.00/Off By/$-1000.00/Reconcile To/// ".split('/')[0...-1]
     end
   end
 end    
