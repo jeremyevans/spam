@@ -68,8 +68,8 @@ describe "SPAM" do
       find('h3').text.should == 'Showing 35 Most Recent Entries'
       form = find('div#content form')
       form.all('tr').length.should == 2
-      form.all("table thead tr th").map{|s| s.text}.should == 'Date/Num/Entity/Other Account/Memo/C/Amount/Balance/Modify'.split('/')
-      form.all("option").map{|s| s.text}.should == '/Checking/Credit Card/Food/Salary'.split('/')
+      form.all("table thead tr th").map(&:text).should == 'Date/Num/Entity/Other Account/Memo/C/Amount/Balance/Modify'.split('/')
+      form.all("option").map(&:text).should == '/Checking/Credit Card/Food/Salary'.split('/')
 
       fill_in "entry[date]", :with=>'2008-06-06'
       fill_in "entry[reference]", :with=>'DEP'
@@ -83,7 +83,7 @@ describe "SPAM" do
       entry = Entries.first
       remove_id(entry).should == {:date=>Date.new(2008,6,6), :reference=>'DEP', :entity_id=>1, :credit_account_id=>3, :debit_account_id=>1, :memo=>'Check', :amount=>BigDecimal.new('1000'), :cleared=>false, :user_id=>1}
 
-      page.all("div#content form table tbody tr").last.all('td').map{|s| s.text}.should == '2008-06-06/DEP/Employer/Salary/Check//$1000.00/$1000.00/Modify'.split('/')
+      page.all("div#content form table tbody tr").last.all('td').map(&:text).should == '2008-06-06/DEP/Employer/Salary/Check//$1000.00/$1000.00/Modify'.split('/')
       click_on 'Modify'
 
       wait
@@ -98,7 +98,7 @@ describe "SPAM" do
 
       wait
       Entries[:id => entry[:id]].should == {:date=>Date.new(2008,6,7), :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal.new('1000'), :cleared=>true, :user_id=>1, :id=>entry[:id]}
-      page.all("div#content form table tbody tr").last.all('td').map{|s| s.text}.should == '2008-06-07/1000/Card/Credit Card/Payment/R/$-1000.00/$-1000.00/Modify'.split('/')
+      page.all("div#content form table tbody tr").last.all('td').map(&:text).should == '2008-06-07/1000/Card/Credit Card/Payment/R/$-1000.00/$-1000.00/Modify'.split('/')
       
       click_on 'Modify'
       wait
@@ -125,9 +125,9 @@ describe "SPAM" do
       find('#nav-reconcile').click_link('Checking')
       form = find('div#content form')
       form.first('table').all('tr td').map{|x| x.text.strip}.should == "Unreconciled Balance/$0.00/Reconciling Changes/$0.00/Reconciled Balance/$0.00/Off By/$0.00/Reconcile To/// ".split('/')[0...-1]
-      form.all('caption').map{|s| s.text}.should == 'Debit Entries/Credit Entries'.split('/')
-      form.all('table').last.all('thead th').map{|s| s.text}.should == %w'C Date Num Entity Amount'
-      form.all('table').last.all('tbody td').map{|s| s.text}.should == '/2008-06-07/1000/Card/$1000.00'.split('/')
+      form.all('caption').map(&:text).should == 'Debit Entries/Credit Entries'.split('/')
+      form.all('table').last.all('thead th').map(&:text).should == %w'C Date Num Entity Amount'
+      form.all('table').last.all('tbody td').map(&:text).should == '/2008-06-07/1000/Card/$1000.00'.split('/')
 
       check "entries[#{@entry_id}]"
       fill_in 'reconcile_to', :with=>'-1000.00'

@@ -43,14 +43,14 @@ describe Account do
   end
 
   specify ".register_accounts should be a dataset giving Asset and Liability accounts" do
-    Account.register_accounts.all.sort_by{|a| a.name}.should == [@account2, @account]
+    Account.register_accounts.all.sort_by(&:name).should == [@account2, @account]
     Account.filter(:user_id=>1).register_accounts.all.should == []
     @account.update(:account_type_id=>3)
     Account.register_accounts.all.should == [@account2]
   end
 
   specify ".unhidden should be a dataset giving unhidden accounts" do
-    Account.unhidden.all.sort_by{|a| a.name}.should == [@account2, @account]
+    Account.unhidden.all.sort_by(&:name).should == [@account2, @account]
     Account.filter(:user_id=>1).unhidden.all.should == []
     @account.update(:hidden=>true)
     Account.unhidden.all.should == [@account2]
@@ -74,9 +74,9 @@ describe Account do
   end
 
   specify "#entries_reconciling_to should return all unreconciled entries reconciling to a given amount" do
-    @account.entries_reconciling_to(100).collect{|e| e.id}.should == [@entry.id]
-    @account.entries_reconciling_to(-50).collect{|e| e.id}.should == [@entry2.id]
-    @account.entries_reconciling_to(50).sort_by{|e| e.amount}.collect{|e| e.id}.should == [@entry2.id, @entry.id]
+    @account.entries_reconciling_to(100).collect(&:id).should == [@entry.id]
+    @account.entries_reconciling_to(-50).collect(&:id).should == [@entry2.id]
+    @account.entries_reconciling_to(50).sort_by(&:amount).collect(&:id).should == [@entry2.id, @entry.id]
   end
 
   specify "#entries_reconciling_to should return nil if no entries reconcile" do
@@ -84,9 +84,9 @@ describe Account do
   end
 
   specify "#entries_reconciling_to should take a definite entries argument" do
-    @account.entries_reconciling_to(100, [@entry.id]).collect{|e| e.id}.should == [@entry.id]
+    @account.entries_reconciling_to(100, [@entry.id]).collect(&:id).should == [@entry.id]
     @account.entries_reconciling_to(-50, [@entry.id]).should == nil
-    @account.entries_reconciling_to(50, [@entry2.id]).sort_by{|e| e.amount}.collect{|e| e.id}.should == [@entry2.id, @entry.id]
+    @account.entries_reconciling_to(50, [@entry2.id]).sort_by(&:amount).collect(&:id).should == [@entry2.id, @entry.id]
   end
 
   specify "#entries_to_reconcile should be an array of cleared entries" do
@@ -192,29 +192,29 @@ describe Entry do
 
   specify ".user should be a dataset with for only a particular users accounts, ordered by name" do
     Entry.user(1).all.should == []
-    Entry.user(2).all.sort_by{|x| x.amount}.should == [@entry2, @entry]
+    Entry.user(2).all.sort_by(&:amount).should == [@entry2, @entry]
   end
 
   specify ".with_account should be a dataset method that only gives entries with the given account_id" do
-    Entry.with_account(@account.id).all.sort_by{|x| x.amount}.should == [@entry2, @entry]
-    Entry.dataset.with_account(@account2.id).all.sort_by{|x| x.amount}.should == [@entry2, @entry]
+    Entry.with_account(@account.id).all.sort_by(&:amount).should == [@entry2, @entry]
+    Entry.dataset.with_account(@account2.id).all.sort_by(&:amount).should == [@entry2, @entry]
     account3 = Account.create(:name=>'RestAccount', :user_id=>2, :account_type_id=>3)
     @entry.update(:debit_account=>account3)
-    Entry.with_account(@account.id).all.sort_by{|x| x.amount}.should == [@entry2]
-    Entry.with_account(@account2.id).all.sort_by{|x| x.amount}.should == [@entry2, @entry]
-    Entry.with_account(account3.id).all.sort_by{|x| x.amount}.should == [@entry]
+    Entry.with_account(@account.id).all.sort_by(&:amount).should == [@entry2]
+    Entry.with_account(@account2.id).all.sort_by(&:amount).should == [@entry2, @entry]
+    Entry.with_account(account3.id).all.sort_by(&:amount).should == [@entry]
     @entry2.update(:credit_account=>account3)
-    Entry.with_account(@account.id).all.sort_by{|x| x.amount}.should == []
-    Entry.with_account(@account2.id).all.sort_by{|x| x.amount}.should == [@entry2, @entry]
-    Entry.with_account(account3.id).all.sort_by{|x| x.amount}.should == [@entry2, @entry]
+    Entry.with_account(@account.id).all.sort_by(&:amount).should == []
+    Entry.with_account(@account2.id).all.sort_by(&:amount).should == [@entry2, @entry]
+    Entry.with_account(account3.id).all.sort_by(&:amount).should == [@entry2, @entry]
     @entry.update(:credit_account=>@account)
-    Entry.with_account(@account.id).all.sort_by{|x| x.amount}.should == [@entry]
-    Entry.with_account(@account2.id).all.sort_by{|x| x.amount}.should == [@entry2]
-    Entry.with_account(account3.id).all.sort_by{|x| x.amount}.should == [@entry2, @entry]
+    Entry.with_account(@account.id).all.sort_by(&:amount).should == [@entry]
+    Entry.with_account(@account2.id).all.sort_by(&:amount).should == [@entry2]
+    Entry.with_account(account3.id).all.sort_by(&:amount).should == [@entry2, @entry]
 
-    Entry.with_account(@account.id).with_account(@account2.id).all.sort_by{|x| x.amount}.should == []
-    Entry.with_account(@account.id).with_account(account3.id).all.sort_by{|x| x.amount}.should == [@entry]
-    Entry.with_account(@account2.id).with_account(account3.id).all.sort_by{|x| x.amount}.should == [@entry2]
+    Entry.with_account(@account.id).with_account(@account2.id).all.sort_by(&:amount).should == []
+    Entry.with_account(@account.id).with_account(account3.id).all.sort_by(&:amount).should == [@entry]
+    Entry.with_account(@account2.id).with_account(account3.id).all.sort_by(&:amount).should == [@entry2]
   end
 
   specify "#scaffold_name should include the date, reference, enty, debit account, credit account, and amount" do

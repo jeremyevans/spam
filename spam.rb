@@ -260,7 +260,7 @@ class Spam < Roda
             next auto_reconcile
           end
 
-          userEntry.filter(:id=>r['entries'].keys.collect{|i|i.to_i}).update(:cleared => true)
+          userEntry.filter(:id=>r['entries'].keys.collect(&:to_i)).update(:cleared => true)
 
           if json_requested?
             @account = user_account(r['id'])
@@ -404,10 +404,10 @@ class Spam < Roda
     @reconcile_to = r['reconcile_to'].to_f
     @account = user_account(id)
     begin
-      @entries = @account.entries_reconciling_to(@reconcile_to, (r['entries'] || {}).keys.collect{|i|i.to_i}, 15)
+      @entries = @account.entries_reconciling_to(@reconcile_to, (r['entries'] || {}).keys.collect(&:to_i), 15)
       if @entries
         @reconcile_changes = @reconcile_to - @account.unreconciled_balance if @entries
-        @entries = @entries.map{|x| x.id}
+        @entries = @entries.map(&:id)
         @error_message = "Autoreconciled account"
       else
         @error_message = "No combination of entries reconciles to #{@reconcile_to}"
