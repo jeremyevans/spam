@@ -15,5 +15,5 @@ gem 'autoforme', '>= 1.0.1'
 
 group :development, :test do
   gem "capybara", '>= 2'
-  gem "rspec", '>= 1.3'
+  gem "minitest"
 end
