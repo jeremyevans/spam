@@ -1,7 +1,6 @@
 require 'capybara'
 require 'capybara-webkit'
 require 'capybara/dsl'
-require 'capybara/rspec/matchers'
 require 'headless'
 
 $: << '.'
@@ -33,15 +32,14 @@ Entries = DB[:entries].filter(:user_id => 1)
 PORT = ENV['PORT'] || 8989
 SLEEP_TIME = Float(ENV['SLEEP_TIME'] || 0.5)
 
-require './spec_helper'
+require 'minitest/autorun'
 
 Capybara.default_driver = :webkit
 Capybara.default_selector = :css
 Capybara.server_port = PORT
 
-class RSPEC_EXAMPLE_GROUP
+class Minitest::Spec
   include Capybara::DSL
-  include Capybara::RSpecMatchers
 
   def wait
     sleep SLEEP_TIME
@@ -64,12 +62,12 @@ describe "SPAM" do
 
       find('#nav-register').click_link('Registers')
       find('#nav-register').click_link('Checking')
-      page.should have_title('SPAM - Checking Register')
-      find('h3').text.should == 'Showing 35 Most Recent Entries'
+      page.title.must_equal 'SPAM - Checking Register'
+      find('h3').text.must_equal 'Showing 35 Most Recent Entries'
       form = find('div#content form')
-      form.all('tr').length.should == 2
-      form.all("table thead tr th").map(&:text).should == 'Date/Num/Entity/Other Account/Memo/C/Amount/Balance/Modify'.split('/')
-      form.all("option").map(&:text).should == '/Checking/Credit Card/Food/Salary'.split('/')
+      form.all('tr').length.must_equal 2
+      form.all("table thead tr th").map(&:text).must_equal 'Date/Num/Entity/Other Account/Memo/C/Amount/Balance/Modify'.split('/')
+      form.all("option").map(&:text).must_equal '/Checking/Credit Card/Food/Salary'.split('/')
 
       fill_in "entry[date]", :with=>'2008-06-06'
       fill_in "entry[reference]", :with=>'DEP'
@@ -81,9 +79,9 @@ describe "SPAM" do
 
       wait
       entry = Entries.first
-      remove_id(entry).should == {:date=>Date.new(2008,6,6), :reference=>'DEP', :entity_id=>1, :credit_account_id=>3, :debit_account_id=>1, :memo=>'Check', :amount=>BigDecimal.new('1000'), :cleared=>false, :user_id=>1}
+      remove_id(entry).must_equal(:date=>Date.new(2008,6,6), :reference=>'DEP', :entity_id=>1, :credit_account_id=>3, :debit_account_id=>1, :memo=>'Check', :amount=>BigDecimal.new('1000'), :cleared=>false, :user_id=>1)
 
-      page.all("div#content form table tbody tr").last.all('td').map(&:text).should == '2008-06-06/DEP/Employer/Salary/Check//$1000.00/$1000.00/Modify'.split('/')
+      page.all("div#content form table tbody tr").last.all('td').map(&:text).must_equal '2008-06-06/DEP/Employer/Salary/Check//$1000.00/$1000.00/Modify'.split('/')
       click_on 'Modify'
 
       wait
@@ -97,8 +95,8 @@ describe "SPAM" do
       click_on 'Update'
 
       wait
-      Entries[:id => entry[:id]].should == {:date=>Date.new(2008,6,7), :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal.new('1000'), :cleared=>true, :user_id=>1, :id=>entry[:id]}
-      page.all("div#content form table tbody tr").last.all('td').map(&:text).should == '2008-06-07/1000/Card/Credit Card/Payment/R/$-1000.00/$-1000.00/Modify'.split('/')
+      Entries[:id => entry[:id]].must_equal(:date=>Date.new(2008,6,7), :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal.new('1000'), :cleared=>true, :user_id=>1, :id=>entry[:id])
+      page.all("div#content form table tbody tr").last.all('td').map(&:text).must_equal '2008-06-07/1000/Card/Credit Card/Payment/R/$-1000.00/$-1000.00/Modify'.split('/')
       
       click_on 'Modify'
       wait
@@ -117,31 +115,31 @@ describe "SPAM" do
       click_on 'Add'
 
       wait
-      remove_id(Entries.order(:id).last).should == {:date=>Date.new(2008,6,8), :reference=>'1001', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment2', :amount=>BigDecimal.new('1000'), :cleared=>false, :user_id=>1}
+      remove_id(Entries.order(:id).last).must_equal(:date=>Date.new(2008,6,8), :reference=>'1001', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment2', :amount=>BigDecimal.new('1000'), :cleared=>false, :user_id=>1)
       Entries.delete
       @entry_id = Entries.insert(:date=>Date.new(2008,06,07), :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal.new('1000'), :cleared=>false, :user_id=>1)
 
       find('#nav-reconcile').click_link('Reconcile')
       find('#nav-reconcile').click_link('Checking')
       form = find('div#content form')
-      form.first('table').all('tr td').map{|x| x.text.strip}.should == "Unreconciled Balance/$0.00/Reconciling Changes/$0.00/Reconciled Balance/$0.00/Off By/$0.00/Reconcile To/// ".split('/')[0...-1]
-      form.all('caption').map(&:text).should == 'Debit Entries/Credit Entries'.split('/')
-      form.all('table').last.all('thead th').map(&:text).should == %w'C Date Num Entity Amount'
-      form.all('table').last.all('tbody td').map(&:text).should == '/2008-06-07/1000/Card/$1000.00'.split('/')
+      form.first('table').all('tr td').map{|x| x.text.strip}.must_equal "Unreconciled Balance/$0.00/Reconciling Changes/$0.00/Reconciled Balance/$0.00/Off By/$0.00/Reconcile To/// ".split('/')[0...-1]
+      form.all('caption').map(&:text).must_equal 'Debit Entries/Credit Entries'.split('/')
+      form.all('table').last.all('thead th').map(&:text).must_equal %w'C Date Num Entity Amount'
+      form.all('table').last.all('tbody td').map(&:text).must_equal '/2008-06-07/1000/Card/$1000.00'.split('/')
 
       check "entries[#{@entry_id}]"
       fill_in 'reconcile_to', :with=>'-1000.00'
       click_on 'Auto-Reconcile'
 
       wait
-      page.find("input#credit_#{@entry_id}")[:checked].should == 'true'
+      page.find("input#credit_#{@entry_id}")[:checked].must_equal 'true'
 
       click_on 'Clear Entries'
 
       wait
-      Entries.first[:cleared].should == true
-      page.all("input#credit_#{@entry_id}").size.should == 0
-      page.first('table').all('td').map{|x| x.text.strip}.should == "Unreconciled Balance/$-1000.00/Reconciling Changes/$0.00/Reconciled Balance/$-1000.00/Off By/$-1000.00/Reconcile To/// ".split('/')[0...-1]
+      Entries.first[:cleared].must_equal true
+      page.all("input#credit_#{@entry_id}").size.must_equal 0
+      page.first('table').all('td').map{|x| x.text.strip}.must_equal "Unreconciled Balance/$-1000.00/Reconciling Changes/$0.00/Reconciled Balance/$-1000.00/Off By/$-1000.00/Reconcile To/// ".split('/')[0...-1]
     end
   end
 end    
