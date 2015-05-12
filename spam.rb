@@ -1,6 +1,11 @@
 require ::File.expand_path('../models',  __FILE__)
 
 require 'roda'
+begin
+  require 'tilt/erubis'
+rescue LoadError
+  require 'tilt/erb'
+end
 
 class Spam < Roda
   unless secret = ENV['SECRET_TOKEN']
