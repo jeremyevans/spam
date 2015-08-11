@@ -73,6 +73,18 @@ class Spam < Roda
     File.read("public/404.html")
   end
 
+  plugin :rodauth do
+    enable :login, :logout, :change_password
+    session_key :user_id
+    login_param 'username'
+    login_label 'Username'
+    login_column :name
+    account_model User
+    skip_status_checks? true
+    account_password_hash_column :password_hash
+    title_instance_variable :@pagetitle
+  end
+
   ::Forme.register_config(:mine, :base=>:default, :labeler=>:explicit, :wrapper=>:div)
   ::Forme.default_config = :mine
 
@@ -80,33 +92,17 @@ class Spam < Roda
 
   route do |r|
     r.assets
-
-    if session[:user_id]
-      @navigation_accounts = userAccount.unhidden.register_accounts
-    end
-
-    r.root do
-      :login
-    end
-
-    r.post 'login' do
-      unless session[:user_id] = User.login_user_id(r['username'], r['password'])
-        flash[:error] = 'Incorrect username or password.'
-      else
-        flash[:notice] = 'You have been logged in.'
-      end
-      r.redirect '/'
-    end
-
-    r.post 'logout' do
-      session.clear
-      flash[:notice] = 'You have been logged out.'
-      r.redirect '/'
-    end
+    r.rodauth
 
     unless session[:user_id]
-      flash[:error] = 'You need to login'
-      r.redirect '/'
+      flash[:error] = 'You need to login' unless r.path_info == '/'
+      r.redirect '/login'
+    end
+
+    @navigation_accounts = userAccount.unhidden.register_accounts
+
+    r.root do
+      view :content=>""
     end
 
     r.on 'reports', :method=>:get do
@@ -282,35 +278,6 @@ class Spam < Roda
             r.redirect "/update/reconcile/#{r['id']}"
           end
         end
-      end
-    end
-
-    r.is "change_password" do
-      r.get do
-        :change_password
-      end
-
-      r.post do
-        if r['password'] && r['password2']
-          if r['password'].length < 6
-            flash[:error] = "Password too short, use at least 6 characters, preferably 10 or more."
-          elsif r['password'] != r['password2']
-            flash[:error] = "Passwords don't match, please try again."
-          else
-            user = User[session[:user_id]]
-            user.password = r['password']
-            if user.save
-              page = '/'
-              flash[:notice] = 'Password updated.'
-            else
-              flash[:error] = "Can't update account."
-            end
-          end
-        else
-          flash[:error] = "No password provided, so can't change it."
-        end
-
-        r.redirect(page||'/change_password')
       end
     end
 

@@ -59,7 +59,7 @@ describe "SPAM" do
     fill_in 'Username', :with=>'default'
     fill_in 'Password', :with=>'foo'
     click_on 'Login'
-    page.html.must_match /Incorrect username or password/
+    page.html.must_match /invalid password/
 
     fill_in 'Username', :with=>'default'
     fill_in 'Password', :with=>'pass'
@@ -74,17 +74,17 @@ describe "SPAM" do
     fill_in 'Password', :with=>'pass3foo'
     fill_in 'Confirm Password', :with=>'pass2foo'
     click_button 'Change Password'
-    page.html.must_match /Passwords don't match, please try again/
+    page.html.must_match /passwords do not match/
     BCrypt::Password.new(User[1].password_hash).must_be :==, 'pass'
 
     click_button 'Change Password'
-    page.html.must_match /Password too short, use at least 6 characters, preferably 10 or more/
+    page.html.must_match /invalid password, does not meet requirements \(minimum 6 characters\)/
     BCrypt::Password.new(User[1].password_hash).must_be :==, 'pass'
 
     fill_in 'Password', :with=>'pass3foo'
     fill_in 'Confirm Password', :with=>'pass3foo'
     click_button 'Change Password'
-    page.html.must_match /Password updated/
+    page.html.must_match /Your password has been changed/
     BCrypt::Password.new(User[1].password_hash).must_be :==, 'pass3foo'
   end
 

@@ -253,22 +253,4 @@ describe User do
     user.password = 'foo'
     user.password_hash.wont_equal pw
   end
-
-  it ".login_user_id should return nil unless both username and password are present" do
-    User.login_user_id(nil, nil).must_equal nil
-    User.login_user_id('default', nil).must_equal nil
-    User.login_user_id(nil, 'blah').must_equal nil
-  end
-
-  it ".login_user_id should return nil unless a user with a given username exists" do
-    User.login_user_id('blah', nil).must_equal nil
-  end
-
-  it ".login_user_id should return nil unless the password matches for that username" do
-    User.login_user_id('default', 'wrong').must_equal nil
-  end
-
-  it ".login_user_id should return the user's id if the password matches " do
-    User.login_user_id('default', 'blah').must_equal 1
-  end
 end
