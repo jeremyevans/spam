@@ -34,6 +34,8 @@ Entries = DB[:entries].filter(:user_id => 1)
 
 Capybara.app = Spam.app
 
+Spam.not_found{raise "path not found: #{request.path_info}"}
+
 class Minitest::Spec
   include Rack::Test::Methods
   include Capybara::DSL
