@@ -18,7 +18,7 @@ class Spam < Roda
 
   use Rack::Session::Cookie, :secret=>secret, :key => '_spam_session'
   plugin :csrf
-  plugin :static, %w'/images /javascripts /stylesheets /favicon.ico'
+  plugin :static, %w'/images /javascripts /stylesheets /favicon.ico', :gzip=>true
 
   plugin :not_found
   plugin :error_handler
@@ -31,7 +31,8 @@ class Spam < Roda
     :compiled_css_dir=>'stylesheets',
     :compiled_path=>nil,
     :precompiled=>'compiled_assets.json',
-    :prefix=>nil
+    :prefix=>nil,
+    :gzip=>nil
   plugin :render_each
   plugin :flash
   plugin :h
