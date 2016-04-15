@@ -23,3 +23,18 @@ class Entity < Sequel::Model
     name[0..30]
   end
 end
+
+# Table: entities
+# Columns:
+#  id      | integer | PRIMARY KEY DEFAULT nextval('entities_id_seq'::regclass)
+#  name    | text    | NOT NULL
+#  user_id | integer | NOT NULL
+# Indexes:
+#  entities_pkey  | PRIMARY KEY btree (id)
+#  entities_namei | UNIQUE btree (user_id, lower(name))
+# Foreign key constraints:
+#  entities_user_id_fkey | (user_id) REFERENCES users(id)
+# Referenced By:
+#  entries | entries_entity_id_fkey | (entity_id) REFERENCES entities(id)
+# Triggers:
+#  no_updating_entities_user_id | BEFORE UPDATE ON entities FOR EACH ROW EXECUTE PROCEDURE no_updating_user_id()

@@ -73,3 +73,24 @@ class Account < Sequel::Model
     entries.each{|e| e.main_account = self}
   end
 end
+
+# Table: accounts
+# Columns:
+#  id              | integer       | PRIMARY KEY DEFAULT nextval('accounts_id_seq'::regclass)
+#  name            | text          | NOT NULL
+#  balance         | numeric(10,2) | NOT NULL DEFAULT 0
+#  description     | text          |
+#  hidden          | boolean       | DEFAULT false
+#  account_type_id | integer       | NOT NULL
+#  user_id         | integer       | NOT NULL
+# Indexes:
+#  accounts_pkey  | PRIMARY KEY btree (id)
+#  accounts_namei | UNIQUE btree (user_id, lower(name))
+# Foreign key constraints:
+#  accounts_account_type_id_fkey | (account_type_id) REFERENCES account_types(id)
+#  accounts_user_id_fkey         | (user_id) REFERENCES users(id)
+# Referenced By:
+#  entries | entries_credit_account_id_fkey | (credit_account_id) REFERENCES accounts(id)
+#  entries | entries_debit_account_id_fkey  | (debit_account_id) REFERENCES accounts(id)
+# Triggers:
+#  no_updating_accounts_user_id | BEFORE UPDATE ON accounts FOR EACH ROW EXECUTE PROCEDURE no_updating_user_id()
