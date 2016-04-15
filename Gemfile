@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'roda', '>= 1.2.0'
-gem 'rodauth'
+gem 'rodauth', '>= 1.0.0'
 gem 'tilt'
 gem 'sass'
 gem 'erubis'

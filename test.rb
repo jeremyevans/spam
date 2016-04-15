@@ -1,4 +1,4 @@
-require 'rubygems'
+#require 'rubygems'
 require 'capybara'
 require 'capybara/dsl'
 require 'rack/test'
@@ -73,17 +73,20 @@ describe "SPAM" do
     login
 
     click_link 'Change Password'
-    fill_in 'Password', :with=>'pass3foo'
+    fill_in 'Password', :with=>'pass'
+    fill_in 'New Password', :with=>'pass3foo'
     fill_in 'Confirm Password', :with=>'pass2foo'
     click_button 'Change Password'
     page.html.must_match /passwords do not match/
     BCrypt::Password.new(User[1].password_hash).must_be :==, 'pass'
 
+    fill_in 'Password', :with=>'pass'
     click_button 'Change Password'
     page.html.must_match /invalid password, does not meet requirements \(minimum 6 characters\)/
     BCrypt::Password.new(User[1].password_hash).must_be :==, 'pass'
 
-    fill_in 'Password', :with=>'pass3foo'
+    fill_in 'Password', :with=>'pass'
+    fill_in 'New Password', :with=>'pass3foo'
     fill_in 'Confirm Password', :with=>'pass3foo'
     click_button 'Change Password'
     page.html.must_match /Your password has been changed/
