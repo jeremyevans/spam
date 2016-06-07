@@ -11,7 +11,7 @@ module Spam
 class App < Roda
   opts[:root] = File.dirname(__FILE__)
 
-  unless secret = ENV['SECRET_TOKEN']
+  unless secret = ENV['SPAM_SESSION_SECRET'] || ENV['SECRET_TOKEN']
     if File.exist?('secret_token.txt')
       secret = File.read('secret_token.txt')
     else
