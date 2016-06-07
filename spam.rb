@@ -81,6 +81,7 @@ class App < Roda
   end
 
   plugin :rodauth do
+    db DB
     enable :login, :logout, :change_password
     session_key :user_id
     login_param 'username'
