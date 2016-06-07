@@ -48,6 +48,7 @@ class App < Roda
     association_links :all_except_mtm
 
     model Account do
+      class_display_name 'Account'
       columns [:name, :account_type, :hidden, :description]
       order :name
       display_name :short_name
@@ -56,6 +57,7 @@ class App < Roda
       session_value :user_id
     end
     model Entity do
+      class_display_name 'Entity'
       columns [:name]
       order :name
       display_name :short_name
@@ -64,6 +66,7 @@ class App < Roda
       session_value :user_id
     end
     model Entry do
+      class_display_name 'Entry'
       columns [:date, :reference, :entity, :credit_account, :debit_account, :amount, :memo, :cleared]
       order [:date, :reference, :amount].map{|s| Sequel.desc(s)}
       display_name :scaffold_name

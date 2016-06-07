@@ -41,7 +41,7 @@ class String
   end
 end
 
-Dir['models/*'].each{|f| require File.expand_path("../#{f}", __FILE__)}
+Dir[File.expand_path('../models/*', __FILE__)].each{|f| require f}
 
 if ENV['RACK_ENV'] == 'development'
   require 'logger'
