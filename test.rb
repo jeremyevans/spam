@@ -9,6 +9,8 @@ RESET_DRIVER = true
 require './spec_helper'
 require './spam'
 
+include Spam
+
 db_name = DB.get{current_database{}}
 raise "Doesn't look like a test database (#{db_name}), not running tests" unless db_name =~ /test\z/
 
@@ -32,9 +34,9 @@ DB[:entities] << {:user_id=>2, :name=>"Test", :id=>4}
 DB[:entries] << {:credit_account_id=>6, :reference=>"", :user_id=>2, :entity_id=>4, :cleared=>false, :amount=>100, :memo=>"", :date=>'2008-06-11', :debit_account_id=>5, :id=>1}
 Entries = DB[:entries].filter(:user_id => 1)
 
-Capybara.app = Spam.app
+Capybara.app = Spam::App.app
 
-Spam.not_found{raise "path not found: #{request.path_info}"}
+Spam::App.not_found{raise "path not found: #{request.path_info}"}
 
 class Minitest::Spec
   include Rack::Test::Methods

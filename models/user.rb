@@ -1,7 +1,9 @@
-class User < Sequel::Model
+module Spam
+class User < Sequel::Model(DB)
   def password=(new_password)
     self.password_hash = BCrypt::Password.create(new_password)
   end
+end
 end
 
 # Table: users

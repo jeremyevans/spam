@@ -7,7 +7,10 @@ rescue LoadError
   require 'tilt/erb'
 end
 
-class Spam < Roda
+module Spam
+class App < Roda
+  opts[:root] = File.dirname(__FILE__)
+
   unless secret = ENV['SECRET_TOKEN']
     if File.exist?('secret_token.txt')
       secret = File.read('secret_token.txt')
@@ -22,7 +25,7 @@ class Spam < Roda
 
   plugin :not_found
   plugin :error_handler
-  plugin :render, :cache=>(ENV['RACK_ENV'] != 'development'), :escape=>true
+  plugin :render, :escape=>true
   plugin :assets,
     :css=>%w'bootstrap.min.css jquery.autocomplete.css scaffold_associations_tree.css spam.scss',
     :js=>%w'jquery-1.11.1.min.js bootstrap.min.js jquery.autocomplete.js autoforme.js application.js scaffold_associations_tree.js',
@@ -30,7 +33,7 @@ class Spam < Roda
     :compiled_js_dir=>'javascripts',
     :compiled_css_dir=>'stylesheets',
     :compiled_path=>nil,
-    :precompiled=>'compiled_assets.json',
+    :precompiled=>File.expand_path('../compiled_assets.json', __FILE__),
     :prefix=>nil,
     :gzip=>nil
   plugin :render_each
@@ -456,4 +459,5 @@ class Spam < Roda
   def json_requested?
     env['HTTP_ACCEPT'] =~ /application\/json/
   end
+end
 end

@@ -1,7 +1,4 @@
-$: << '.'
-$: << 'lib'
-
-env_file = '.env.rb'
+env_file = File.expand_path('../.env.rb', __FILE__)
 if File.exists?(env_file)
   load(env_file)
 end
@@ -11,17 +8,18 @@ require 'subset_sum'
 require 'bcrypt'
 require 'sequel'
 
-if ENV['RACK_ENV'] == 'test'
-  BCRYPT_COST = BCrypt::Engine::MIN_COST
-else
-  BCRYPT_COST = BCrypt::Engine::DEFAULT_COST
+module Spam
+  if ENV['RACK_ENV'] == 'test'
+    BCRYPT_COST = BCrypt::Engine::MIN_COST
+  else
+    BCRYPT_COST = BCrypt::Engine::DEFAULT_COST
+  end
 end
 
-require File.join(File.dirname(__FILE__), 'db')
+require File.expand_path('../db', __FILE__)
 
-DB.extension(:looser_typecasting)
+Spam::DB.extension(:looser_typecasting)
 
-Sequel::Model.raise_on_typecast_failure = false
 Sequel::Model.plugin :prepared_statements_safe
 Sequel::Model.plugin :prepared_statements_associations
 
@@ -43,9 +41,9 @@ class String
   end
 end
 
-Dir['models/*'].each{|f| require f}
+Dir['models/*'].each{|f| require File.expand_path("../#{f}", __FILE__)}
 
 if ENV['RACK_ENV'] == 'development'
   require 'logger'
-  DB.loggers << Logger.new($stdout)
+  Spam::DB.loggers << Logger.new($stdout)
 end

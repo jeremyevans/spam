@@ -1,6 +1,7 @@
 $: << '.'
 ENV['RACK_ENV'] = 'test'
 require 'models'
+include Spam
 db_name = DB.get{current_database{}}
 raise "Doesn't look like a test database (#{db_name}), not running tests" unless db_name =~ /test\z/
 
@@ -41,7 +42,7 @@ describe Account do
   end
 
   it ".for_select should be an array of arrays of names and ids" do
-    Account.for_select.must_equal [['BestAccount', @account2.id], ['TestAccount', @account.id]]
+    Account.for_select.sort.must_equal [['BestAccount', @account2.id], ['TestAccount', @account.id]]
     Account.filter(:user_id=>1).for_select.must_equal []
   end
 

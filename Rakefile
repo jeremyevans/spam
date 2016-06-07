@@ -35,6 +35,6 @@ namespace :assets do
   desc "Precompile the assets"
   task :precompile do
     require './spam'
-    Spam.compile_assets
+    Spam::App.compile_assets
   end
 end

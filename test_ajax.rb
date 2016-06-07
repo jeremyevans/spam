@@ -6,6 +6,9 @@ require 'headless'
 $: << '.'
 ENV['RACK_ENV'] = 'test'
 require 'models'
+
+include Spam
+
 db_name = DB.get{current_database{}}
 raise "Doesn't look like a test database (#{db_name}), not running tests" unless db_name =~ /test\z/
 

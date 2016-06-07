@@ -1,4 +1,6 @@
-class AccountType < Sequel::Model
+module Spam
+class AccountType < Sequel::Model(DB)
+end
 end
 
 # Table: account_types

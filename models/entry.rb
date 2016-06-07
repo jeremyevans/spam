@@ -1,6 +1,7 @@
-class Entry < Sequel::Model
-  many_to_one :credit_account, :class_name=>'Account', :key=>:credit_account_id, :reciprocal=>:credit_entries
-  many_to_one :debit_account, :class_name=>'Account', :key=>:debit_account_id, :reciprocal=>:debit_entries
+module Spam
+class Entry < Sequel::Model(DB)
+  many_to_one :credit_account, :class_name=>'Spam::Account', :key=>:credit_account_id, :reciprocal=>:credit_entries
+  many_to_one :debit_account, :class_name=>'Spam::Account', :key=>:debit_account_id, :reciprocal=>:debit_entries
   many_to_one :entity, :reciprocal=>:entries
   
   def self.user(user_id)
@@ -35,6 +36,7 @@ class Entry < Sequel::Model
       credit_account
     end
   end
+end
 end
 
 # Table: entries
