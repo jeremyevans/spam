@@ -82,7 +82,8 @@ class App < Roda
 
   plugin :rodauth do
     db DB
-    enable :login, :logout, :change_password
+    enable :login, :logout
+    enable :change_password unless ENV['SPAM_DEMO']
     session_key :user_id
     login_param 'username'
     login_label 'Username'
