@@ -1,5 +1,5 @@
 module Spam
-class Entry < Sequel::Model(DB)
+class Entry < Model
   many_to_one :credit_account, :class_name=>'Spam::Account', :key=>:credit_account_id, :reciprocal=>:credit_entries
   many_to_one :debit_account, :class_name=>'Spam::Account', :key=>:debit_account_id, :reciprocal=>:debit_entries
   many_to_one :entity, :reciprocal=>:entries

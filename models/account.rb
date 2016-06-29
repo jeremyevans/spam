@@ -1,5 +1,5 @@
 module Spam
-class Account < Sequel::Model(DB)
+class Account < Model
   many_to_one :account_type
   one_to_many :entries, :read_only=>true, :order=>[:date, :reference, :amount].map{|s| Sequel.desc(s)}, :dataset=>proc{|r| r.associated_dataset.with_account(id)}, :eager=>[:entity, :credit_account, :debit_account], :after_load=>:set_main_account, :reciprocal=>nil
   one_to_many :credit_entries, :class_name=>'Spam::Entry', :key=>:credit_account_id, :eager=>[:debit_account, :entity], :order=>Sequel.desc(:date)

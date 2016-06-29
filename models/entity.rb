@@ -1,5 +1,5 @@
 module Spam
-class Entity < Sequel::Model(DB)
+class Entity < Model
   one_to_many :entries
   one_to_many :recent_entries, :class_name=>'Spam::Entry', :eager=>[:credit_account, :debit_account], :order=>Sequel.desc(:date), :limit=>25
   

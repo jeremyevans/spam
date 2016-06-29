@@ -1,5 +1,5 @@
 module Spam
-class AccountType < Sequel::Model(DB)
+class AccountType < Model
 end
 end
 

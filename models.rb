@@ -14,14 +14,15 @@ module Spam
   else
     BCRYPT_COST = BCrypt::Engine::DEFAULT_COST
   end
+
+  require File.expand_path('../db', __FILE__)
+
+  DB.extension(:looser_typecasting)
+
+  Model = Class.new(Sequel::Model)
+  Model.plugin :prepared_statements_safe
+  Model.plugin :prepared_statements_associations
 end
-
-require File.expand_path('../db', __FILE__)
-
-Spam::DB.extension(:looser_typecasting)
-
-Sequel::Model.plugin :prepared_statements_safe
-Sequel::Model.plugin :prepared_statements_associations
 
 class BigDecimal
   def to_money
