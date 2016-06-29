@@ -21,8 +21,8 @@ class App < Roda
 
   use Rack::Session::Cookie, :secret=>secret, :key => '_spam_session'
   plugin :csrf
-  plugin :static, %w'/images /javascripts /stylesheets /favicon.ico', :gzip=>true
 
+  plugin :public, :gzip=>true
   plugin :not_found
   plugin :error_handler
   plugin :render, :escape=>true
@@ -35,7 +35,7 @@ class App < Roda
     :compiled_path=>nil,
     :precompiled=>File.expand_path('../compiled_assets.json', __FILE__),
     :prefix=>nil,
-    :gzip=>nil
+    :gzip=>true
   plugin :render_each
   plugin :flash
   plugin :h
@@ -98,6 +98,7 @@ class App < Roda
   BY_YEAR_COND = Proc.new{|k| Sequel.~(Sequel.extract(:year, :entries__date) => k)}
 
   route do |r|
+    r.public
     r.assets
     r.rodauth
 
