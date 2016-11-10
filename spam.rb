@@ -25,7 +25,7 @@ class App < Roda
   plugin :public, :gzip=>true
   plugin :not_found
   plugin :error_handler
-  plugin :render, :escape=>true
+  plugin :render, :escape=>:erubi
   plugin :assets,
     :css=>%w'bootstrap.min.css jquery.autocomplete.css scaffold_associations_tree.css spam.scss',
     :js=>%w'jquery-1.11.1.min.js bootstrap.min.js jquery.autocomplete.js autoforme.js application.js scaffold_associations_tree.js',
