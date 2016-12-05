@@ -325,7 +325,7 @@ class App < Roda
     negative_map = {:income=>true, :expense=>false, :assets=>true, :liabilities=>false}
     @months = accounts_entries_ds.select((Sequel.extract(:year, Sequel[:entries][:date]).cast_string + Sequel.function(:to_char, Sequel.extract(:month, Sequel[:entries][:date]) * -1, '00')).as(:month),
       *{3=>:income, 4=>:expense, 1=>:assets, 2=>:liabilities}.collect{|i, aliaz| Sequel.function(:sum, Sequel.case([[Sequel.~(:account_type_id=>i),0], [debit_cond, Sequel.*(:amount, (negative_map[aliaz] ? -1 : 1))]], Sequel.*(:amount, (negative_map[aliaz] ? 1 : -1)))).as(aliaz)}).
-      filter{entries__date > Sequel.cast('1 year 1 month', :interval) * -1 + ue.select(max(date))}.
+      filter{entries[:date] > Sequel.cast('1 year 1 month', :interval) * -1 + ue.select(max(date))}.
       group(:month).reverse_order(:month).all
     @months.pop if @months.length > 12
   end

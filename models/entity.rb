@@ -15,7 +15,7 @@ class Entity < Model
       order(Sequel.desc(Sequel[:entries][:date]), :name).
       limit(10).
       select_group(:name).
-      order{[max(entries__date).desc(:nulls=>:last), :name]}.
+      order{[max(entries[:date]).desc(:nulls=>:last), :name]}.
       map(:name)
     end
   end
