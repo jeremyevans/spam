@@ -12,7 +12,7 @@ class Entity < Model
       qualify.
       filter(Sequel.ilike(:name, "%#{name}%")).
       left_join(:entries, {:entity_id=>:id, account_id.to_i=>[:credit_account_id, :debit_account_id]}, :qualify=>:symbol).
-      order(Sequel.desc(:entries__date), :name).
+      order(Sequel.desc(Sequel[:entries][:date]), :name).
       limit(10).
       select_group(:name).
       order{[max(entries__date).desc(:nulls=>:last), :name]}.

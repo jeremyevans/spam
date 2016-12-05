@@ -101,7 +101,7 @@ class App < Roda
   ::Forme.register_config(:mine, :base=>:default, :labeler=>:explicit, :wrapper=>:div)
   ::Forme.default_config = :mine
 
-  BY_YEAR_COND = Proc.new{|k| Sequel.~(Sequel.extract(:year, :entries__date) => k)}
+  BY_YEAR_COND = Proc.new{|k| Sequel.~(Sequel.extract(:year, Sequel[:entries][:date]) => k)}
 
   route do |r|
     r.public
@@ -139,38 +139,38 @@ class App < Roda
       
       r.is 'earning_spending' do
         if setup_month_headers
-          @accounts = accounts_entries_ds.select(:accounts__name, *by_account_select{|k| Sequel.~(@age.extract(:month) => (@i+=1))}).
-           filter(:accounts__account_type_id=>[3,4]).
+          @accounts = accounts_entries_ds.select(Sequel[:accounts][:name], *by_account_select{|k| Sequel.~(@age.extract(:month) => (@i+=1))}).
+           filter(Sequel[:accounts][:account_type_id]=>[3,4]).
            filter(@age < Sequel.cast('1 year', :interval)).
-           group(:accounts__account_type_id, :accounts__name).order(Sequel.desc(:account_type_id), :name).all
+           group(Sequel[:accounts][:account_type_id], Sequel[:accounts][:name]).order(Sequel.desc(:account_type_id), :name).all
         end
         :earning_spending
       end
 
       r.is 'earning_spending_by_entity' do
         if setup_month_headers
-          @accounts = entities_entries_ds.select(:entities__name, *by_entity_select{|k| Sequel.~(@age.extract(:month) => (@i+=1))}).
+          @accounts = entities_entries_ds.select(Sequel[:entities][:name], *by_entity_select{|k| Sequel.~(@age.extract(:month) => (@i+=1))}).
            filter(@age < Sequel.cast('1 year', :interval)).
-           filter(Sequel.or(:d__account_type_id => [3,4], :c__account_type_id => [3,4]) & Sequel.or(:d__account_type_id => nil, :c__account_type_id => nil)).
-           group(:entities__name).order(:name).all
+           filter(Sequel.or(Sequel[:d][:account_type_id] => [3,4], Sequel[:c][:account_type_id] => [3,4]) & Sequel.or(Sequel[:d][:account_type_id] => nil, Sequel[:c][:account_type_id] => nil)).
+           group(Sequel[:entities][:name]).order(:name).all
         end
         :earning_spending
       end
 
       r.is 'yearly_earning_spending_by_entity' do
         if setup_year_headers
-          @accounts = entities_entries_ds.select(:entities__name, *by_entity_select(&BY_YEAR_COND)).
-           filter(Sequel.or(:d__account_type_id => [3,4], :c__account_type_id => [3,4]) & Sequel.or(:d__account_type_id => nil, :c__account_type_id => nil)).
-           group(:entities__name).order(:name).all
+          @accounts = entities_entries_ds.select(Sequel[:entities][:name], *by_entity_select(&BY_YEAR_COND)).
+           filter(Sequel.or(Sequel[:d][:account_type_id] => [3,4], Sequel[:c][:account_type_id] => [3,4]) & Sequel.or(Sequel[:d][:account_type_id] => nil, Sequel[:c][:account_type_id] => nil)).
+           group(Sequel[:entities][:name]).order(:name).all
         end
         :earning_spending
       end
 
       r.is 'yearly_earning_spending' do
         if setup_year_headers
-          @accounts = accounts_entries_ds.select(:accounts__name, *by_account_select(&BY_YEAR_COND)).
-           filter(:accounts__account_type_id=>[3,4]).
-           group(:accounts__account_type_id, :accounts__name).order(Sequel.desc(:account_type_id), :name).all
+          @accounts = accounts_entries_ds.select(Sequel[:accounts][:name], *by_account_select(&BY_YEAR_COND)).
+           filter(Sequel[:accounts][:account_type_id]=>[3,4]).
+           group(Sequel[:accounts][:account_type_id], Sequel[:accounts][:name]).order(Sequel.desc(:account_type_id), :name).all
         end
         :earning_spending
       end
@@ -323,7 +323,7 @@ class App < Roda
   def income_expense_report
     ue = userEntry
     negative_map = {:income=>true, :expense=>false, :assets=>true, :liabilities=>false}
-    @months = accounts_entries_ds.select((Sequel.extract(:year, :entries__date).cast_string + Sequel.function(:to_char, Sequel.extract(:month, :entries__date) * -1, '00')).as(:month),
+    @months = accounts_entries_ds.select((Sequel.extract(:year, Sequel[:entries][:date]).cast_string + Sequel.function(:to_char, Sequel.extract(:month, Sequel[:entries][:date]) * -1, '00')).as(:month),
       *{3=>:income, 4=>:expense, 1=>:assets, 2=>:liabilities}.collect{|i, aliaz| Sequel.function(:sum, Sequel.case([[Sequel.~(:account_type_id=>i),0], [debit_cond, Sequel.*(:amount, (negative_map[aliaz] ? -1 : 1))]], Sequel.*(:amount, (negative_map[aliaz] ? 1 : -1)))).as(aliaz)}).
       filter{entries__date > Sequel.cast('1 year 1 month', :interval) * -1 + ue.select(max(date))}.
       group(:month).reverse_order(:month).all
@@ -331,11 +331,11 @@ class App < Roda
   end
 
   def accounts_ds
-    DB[:accounts].filter(:accounts__user_id=>session[:user_id])
+    DB[:accounts].filter(Sequel[:accounts][:user_id]=>session[:user_id])
   end
 
   def accounts_entries_ds
-    accounts_ds.join(:entries, Sequel.or(:debit_account_id => :accounts__id, :credit_account_id => :accounts__id))
+    accounts_ds.join(:entries, Sequel.or(:debit_account_id => Sequel[:accounts][:id], :credit_account_id => Sequel[:accounts][:id]))
   end
 
   def account_sums(accounts)
@@ -347,17 +347,17 @@ class App < Roda
   end
 
   def by_entity_select
-    @headers.map{|k, v| Sequel.function(:sum, Sequel.case([[yield(k), 0], [{:c__account_type_id => nil}, Sequel.*(:amount, -1)]], :amount)).as(v)}
+    @headers.map{|k, v| Sequel.function(:sum, Sequel.case([[yield(k), 0], [{Sequel[:c][:account_type_id] => nil}, Sequel.*(:amount, -1)]], :amount)).as(v)}
   end
 
   def debit_cond
-    {:debit_account_id=>:accounts__id}
+    {:debit_account_id=>Sequel[:accounts][:id]}
   end
 
   def entities_entries_ds
     DB[:entities].join(:entries, :entity_id=>:id).
-      left_join(:accounts___d, :id=>:entries__debit_account_id, :account_type_id=>[3,4]).
-      left_join(:accounts___c, :id=>:entries__credit_account_id, :account_type_id=>[3,4])
+      left_join(Sequel[:accounts].as(:d), :id=>Sequel[:entries][:debit_account_id], :account_type_id=>[3,4]).
+      left_join(Sequel[:accounts].as(:c), :id=>Sequel[:entries][:credit_account_id], :account_type_id=>[3,4])
   end
 
   def setup_month_headers
@@ -365,7 +365,7 @@ class App < Roda
     if max_date = userEntry.get{max(date)}
       @headers = (0...12).map{|i| [(max_date << i).strftime('%B %Y'), :"month_#{i}"]}
       md = Sequel.cast(max_date.to_s, Date)
-      @age = Sequel.function(:age, md + 1 - md.extract(:day).cast_numeric, Sequel.+(:entries__date, 1) - Sequel.extract(:day, :entries__date).cast_numeric)
+      @age = Sequel.function(:age, md + 1 - md.extract(:day).cast_numeric, Sequel.+(Sequel[:entries][:date], 1) - Sequel.extract(:day, Sequel[:entries][:date]).cast_numeric)
       @i = -1
       true
     else
