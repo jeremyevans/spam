@@ -84,12 +84,12 @@ describe Account do
   end
 
   it "#entries_reconciling_to should return nil if no entries reconcile" do
-    @account.entries_reconciling_to(75).must_equal nil
+    @account.entries_reconciling_to(75).must_be_nil
   end
 
   it "#entries_reconciling_to should take a definite entries argument" do
     @account.entries_reconciling_to(100, [@entry.id]).collect(&:id).must_equal [@entry.id]
-    @account.entries_reconciling_to(-50, [@entry.id]).must_equal nil
+    @account.entries_reconciling_to(-50, [@entry.id]).must_be_nil
     @account.entries_reconciling_to(50, [@entry2.id]).sort_by(&:amount).collect(&:id).must_equal [@entry2.id, @entry.id]
   end
 
@@ -114,11 +114,11 @@ describe Account do
     @entry2.update(:entity=>nil)
     @account.last_entry_for_entity("blah").must_equal @entry
     @entry.update(:entity=>nil)
-    @account.last_entry_for_entity("blah").must_equal nil
+    @account.last_entry_for_entity("blah").must_be_nil
   end
 
   it "#last_entry_for_entity should return nil for a non matching entity name" do
-    @account.last_entry_for_entity("lah").must_equal nil
+    @account.last_entry_for_entity("lah").must_be_nil
   end
 
   it "#money_balance should be a string giving the balance as a dollar figure" do
