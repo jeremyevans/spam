@@ -6,4 +6,4 @@ when 'production'
 else
   "postgres:///spam_development?user=spam"
 end
-Spam::DB = Sequel.connect(ENV['SPAM_DATABASE_URL'] || ENV['DATABASE_URL'] || url)
+Spam::DB = Sequel.connect(ENV['SPAM_DATABASE_URL'] || ENV['DATABASE_URL'] || url, :identifier_mangling=>false)

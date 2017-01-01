@@ -17,6 +17,7 @@ module Spam
 
   require File.expand_path('../db', __FILE__)
 
+  DB.extension(:freeze_datasets)
   DB.extension(:looser_typecasting)
 
   Model = Class.new(Sequel::Model)
