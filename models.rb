@@ -23,7 +23,6 @@ module Spam
   Model = Class.new(Sequel::Model)
   Model.db = DB
   Model.plugin :prepared_statements_safe
-  Model.plugin :prepared_statements_associations
 end
 
 class BigDecimal
