@@ -48,4 +48,6 @@ Dir[File.expand_path('../models/*', __FILE__)].each{|f| require f}
 if ENV['RACK_ENV'] == 'development'
   require 'logger'
   Spam::DB.loggers << Logger.new($stdout)
+else
+  Spam::DB.freeze
 end
