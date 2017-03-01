@@ -22,6 +22,8 @@ module Spam
 
   Model = Class.new(Sequel::Model)
   Model.db = DB
+  Model.plugin :subclasses
+  Model.plugin :forme
   Model.plugin :prepared_statements_safe
 end
 
@@ -49,5 +51,6 @@ if ENV['RACK_ENV'] == 'development'
   require 'logger'
   Spam::DB.loggers << Logger.new($stdout)
 else
+  Spam::Model.freeze_descendents
   Spam::DB.freeze
 end
