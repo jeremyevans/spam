@@ -14,6 +14,13 @@ require './spam'
 db_name = Spam::DB.get{current_database{}}
 raise "Doesn't look like a test database (#{db_name}), not running tests" unless db_name =~ /test\z/
 
+begin
+  require 'refrigerator'
+rescue LoadError
+else
+  Refrigerator.freeze_core(:except=>[(Object.superclass || Object).name])
+end
+
 [:entries, :entities, :accounts, :account_types, :users].each{|x| Spam::DB[x].delete}
 Spam::DB[:users] << {:password_hash=>BCrypt::Password.create("pass"), :name=>"default", :num_register_entries=>35, :id=>1}
 Spam::DB[:users] << {:password_hash=>BCrypt::Password.create("pass2"), :name=>"test", :num_register_entries=>35, :id=>2}
@@ -37,6 +44,7 @@ entries = Spam::DB[:entries].filter(:user_id => 1)
 Capybara.app = Spam::App.app
 
 Spam::App.not_found{raise "path not found: #{request.path_info}"}
+Spam::App.freeze
 
 class Minitest::Spec
   include Rack::Test::Methods
