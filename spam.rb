@@ -2,16 +2,6 @@ require ::File.expand_path('../models',  __FILE__)
 
 require 'roda'
 
-begin
-  require 'tilt/erubi'
-rescue LoadError
-  begin
-    require 'tilt/erubis'
-  rescue LoadError
-    require 'tilt/erb'
-  end
-end
-
 module Spam
 class App < Roda
   opts[:root] = File.dirname(__FILE__)
