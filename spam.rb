@@ -90,6 +90,7 @@ class App < Roda
     account_password_hash_column :password_hash
     title_instance_variable :@pagetitle
   end
+  precompile_rodauth_templates
 
   ::Forme.register_config(:mine, :base=>:default, :labeler=>:explicit, :wrapper=>:div)
   ::Forme.default_config = :mine
