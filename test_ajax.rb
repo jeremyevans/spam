@@ -40,6 +40,9 @@ require 'minitest/autorun'
 Capybara.default_driver = :webkit
 Capybara.default_selector = :css
 Capybara.server_port = PORT
+#Capybara::Webkit.configure do |config|
+#  config.debug = true
+#end
 
 class Minitest::Spec
   include Capybara::DSL
