@@ -9,6 +9,8 @@ class App < Roda
   opts[:unsupported_matcher] = :raise
   opts[:verbatim_string_matcher] = true
 
+  plugin :strip_path_prefix if ENV['SPAM_STRIP_PATH_PREFIX']
+
   unless secret = ENV['SPAM_SESSION_SECRET'] || ENV['SECRET_TOKEN']
     if File.exist?('secret_token.txt')
       secret = File.read('secret_token.txt')
@@ -39,7 +41,7 @@ class App < Roda
   plugin :h
   plugin :json
   plugin :symbol_views
-  plugin :symbol_matchers
+  plugin :disallow_file_uploads
 
   plugin :autoforme do
     inline_mtm_associations :all
@@ -172,7 +174,7 @@ class App < Roda
 
     r.on 'update' do
       r.get do
-        r.is 'auto_complete_for_entity_name', :d do |id|
+        r.is 'auto_complete_for_entity_name', Integer do |id|
           userEntity.auto_complete(r['q'], id).join("\n")
         end
         
@@ -181,6 +183,7 @@ class App < Roda
         end
         
         r.is /modify_entry(?:\/(\d+))?/ do |id|
+          id = id.to_i if id
           @account = user_account(r['register_account_id'])
           @accounts = userAccount.for_select
           @selected_entry_id = r['selected_entry_id'].to_i if r['selected_entry_id'].to_i > 0
@@ -214,7 +217,7 @@ class App < Roda
           end
         end
 
-        r.is 'other_account_for_entry', :d do |id|
+        r.is 'other_account_for_entry', Integer do |id|
           h = {}
           if r['entity'] and account = user_account(id) and entry = account.last_entry_for_entity(r['entity'])
             entry.main_account = account
@@ -223,12 +226,12 @@ class App < Roda
           h
         end
 
-        r.is 'reconcile', :d do |id|
+        r.is 'reconcile', Integer do |id|
           @account = user_account(id)
           :reconcile
         end
 
-        r.is 'register', :d do |id|
+        r.is 'register', Integer do |id|
           @account = user_account(id)
           @accounts = userAccount.for_select
           @show_num_entries = ((r['show'] and r['show'].to_i != 0) ? r['show'].to_i : num_register_entries)
