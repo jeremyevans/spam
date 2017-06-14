@@ -11,7 +11,7 @@ Gem.suffix_pattern
 require './spec_helper'
 require './spam'
 
-db_name = Spam::DB.get{current_database{}}
+db_name = Spam::DB.get{current_database.function}
 raise "Doesn't look like a test database (#{db_name}), not running tests" unless db_name =~ /test\z/
 
 begin
