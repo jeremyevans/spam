@@ -8,13 +8,12 @@ class Account < Model
   one_to_many :recent_debit_entries, :class_name=>'Spam::Entry', :key=>:debit_account_id, :eager=>[:credit_account, :entity], :order=>Sequel.desc(:date), :limit=>25
   
   dataset_module do
+    subset(:register_accounts, :account_type_id=>[1,2])
+    subset(:unhidden, Sequel.~(:hidden))
     def for_select
       all.collect{|account|[account.short_name, account.id]}
     end
   end
-  
-  subset(:register_accounts, :account_type_id=>[1,2])
-  subset(:unhidden, Sequel.~(:hidden))
 
   def self.user(user_id)
     filter(:user_id=>user_id).order(:name)
