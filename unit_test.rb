@@ -2,7 +2,7 @@ $: << '.'
 ENV['RACK_ENV'] = 'test'
 require 'models'
 include Spam
-db_name = DB.get{current_database{}}
+db_name = DB.get{current_database.function}
 raise "Doesn't look like a test database (#{db_name}), not running tests" unless db_name =~ /test\z/
 
 [:entries, :entities, :accounts, :account_types, :users].each{|x| DB[x].delete}
