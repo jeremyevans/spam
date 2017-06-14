@@ -201,7 +201,7 @@ function setup_register_form() {
 function setup_reconcile_form() {
   $('#auto_reconcile').click(function() {
     $.getJSON('/update/auto_reconcile',
-    $(this.form).serialize(),
+    $(this.form).serialize().replace(/_csrf=[^\&]+\&/, ''),
     function(data){
       handle_actions(data);
     });
