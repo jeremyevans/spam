@@ -74,7 +74,7 @@ describe Account do
     @account.entries.first.amount.must_equal -50
     @account.entries.last.amount.must_equal 100
     DB[:entries].delete
-    @account.entries(true).must_equal []
+    @account.entries(:reload=>true).must_equal []
   end
 
   it "#entries_reconciling_to should return all unreconciled entries reconciling to a given amount" do
