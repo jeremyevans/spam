@@ -6,12 +6,12 @@ db_name = DB.get{current_database.function}
 raise "Doesn't look like a test database (#{db_name}), not running tests" unless db_name =~ /test\z/
 
 [:entries, :entities, :accounts, :account_types, :users].each{|x| DB[x].delete}
-DB[:users] << {:password_hash=>BCrypt::Password.create("blah"), :name=>"default", :num_register_entries=>35, :id=>1}
-DB[:users] << {:password_hash=>BCrypt::Password.create("blah2"), :name=>"test", :num_register_entries=>35, :id=>2}
-DB[:account_types] << {:name=>"Asset", :id=>1}
-DB[:account_types] << {:name=>"Liability", :id=>2}
-DB[:account_types] << {:name=>"Income", :id=>3}
-DB[:account_types] << {:name=>"Expense", :id=>4}
+DB[:users].insert(:password_hash=>BCrypt::Password.create("blah"), :name=>"default", :num_register_entries=>35, :id=>1)
+DB[:users].insert(:password_hash=>BCrypt::Password.create("blah2"), :name=>"test", :num_register_entries=>35, :id=>2)
+DB[:account_types].insert(:name=>"Asset", :id=>1)
+DB[:account_types].insert(:name=>"Liability", :id=>2)
+DB[:account_types].insert(:name=>"Income", :id=>3)
+DB[:account_types].insert(:name=>"Expense", :id=>4)
 
 require './spec_helper'
 
