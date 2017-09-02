@@ -1,6 +1,5 @@
-env_file = File.expand_path('../.env.rb', __FILE__)
-if File.exists?(env_file)
-  load(env_file)
+if File.exists?(File.expand_path('../.env.rb', __FILE__))
+  require_relative '.env'
 end
 
 require 'rubygems'
@@ -15,9 +14,8 @@ module Spam
     BCRYPT_COST = BCrypt::Engine::DEFAULT_COST
   end
 
-  require File.expand_path('../db', __FILE__)
+  require_relative 'db'
 
-  DB.extension(:freeze_datasets)
   DB.extension(:looser_typecasting)
 
   Model = Class.new(Sequel::Model)
@@ -45,7 +43,7 @@ class String
   end
 end
 
-Dir[File.expand_path('../models/*', __FILE__)].each{|f| require f}
+Dir[File.expand_path('../models/*', __FILE__)].each{|f| require_relative "models/#{File.basename(f)}"}
 
 if ENV['RACK_ENV'] == 'development'
   require 'logger'

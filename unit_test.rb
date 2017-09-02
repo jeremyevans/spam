@@ -1,6 +1,5 @@
-$: << '.'
 ENV['RACK_ENV'] = 'test'
-require 'models'
+require_relative 'models'
 include Spam
 db_name = DB.get{current_database.function}
 raise "Doesn't look like a test database (#{db_name}), not running tests" unless db_name =~ /test\z/
@@ -13,7 +12,7 @@ DB[:account_types].insert(:name=>"Liability", :id=>2)
 DB[:account_types].insert(:name=>"Income", :id=>3)
 DB[:account_types].insert(:name=>"Expense", :id=>4)
 
-require './spec_helper'
+require_relative 'spec_helper'
 
 describe Account do
   before(:all) do

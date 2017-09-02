@@ -7,12 +7,12 @@ task :default=>default_specs
 
 desc "Run unit tests"
 task :spec do
-  sh "#{FileUtils::RUBY} -rubygems unit_test.rb"
+  sh "#{FileUtils::RUBY} unit_test.rb"
 end
 
 desc "Run integration tests"
 task :integration do
-  sh "#{FileUtils::RUBY} -rubygems test.rb"
+  sh "#{FileUtils::RUBY} test.rb"
 end
 
 desc "Run ajax tests"

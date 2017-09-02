@@ -1,13 +1,10 @@
-require ::File.expand_path('../models',  __FILE__)
+require_relative 'models'
 
 require 'roda'
 
 module Spam
 class App < Roda
   opts[:root] = File.dirname(__FILE__)
-  opts[:unsupported_block_result] = :raise
-  opts[:unsupported_matcher] = :raise
-  opts[:verbatim_string_matcher] = true
 
   plugin :strip_path_prefix if ENV['SPAM_STRIP_PATH_PREFIX']
 
@@ -25,7 +22,7 @@ class App < Roda
   plugin :public, :gzip=>true
   plugin :not_found
   plugin :error_handler
-  plugin :render, :escape=>:erubi
+  plugin :render, :escape=>true
   plugin :assets,
     :css=>%w'bootstrap.min.css jquery.autocomplete.css scaffold_associations_tree.css spam.scss',
     :js=>%w'jquery-1.11.1.min.js bootstrap.min.js jquery.autocomplete.js autoforme.js application.js scaffold_associations_tree.js',

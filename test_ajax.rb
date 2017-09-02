@@ -3,9 +3,8 @@ require 'capybara-webkit'
 require 'capybara/dsl'
 require 'headless'
 
-$: << '.'
 ENV['RACK_ENV'] = 'test'
-require 'models'
+require_relative 'models'
 
 include Spam
 
