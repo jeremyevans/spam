@@ -37,8 +37,7 @@ This app can be easily cloned and run on heroku:
   git clone git://github.com/jeremyevans/spam.git
   cd spam
   heroku create
-  heroku config:set STDOUT_LOGGER=1 SECRET_TOKEN="your secret token" \
-    SECRET_KEY_BASE="another secret key"
+  heroku config:set SPAM_SESSION_SECRET="your secret token"
   heroku addons:add heroku-postgresql:dev
   heroku pg:promote HEROKU_POSTGRESQL_COLOR
   heroku pg:psql < schema.sql
@@ -61,7 +60,7 @@ Then you just need to push to heroku:
 == Requirements
 
 * PostgreSQL 9.0+
-* Ruby 1.8.7+
+* Ruby 1.9.3+
 * Gems mentioned in Gemfile
 
 == Installation
@@ -70,7 +69,7 @@ Running this outside of Heroku is fairly easy:
 
   git clone git://github.com/jeremyevans/spam.git
   cd spam
-  echo -n "your secret token" > secret_token.txt
+  vi .env.rb # Set DATABASE_URL and SPAM_SESSION_SECRET env vars
   bundle install
   createuser -U postgres spam
   createdb -U postgres -O spam spam

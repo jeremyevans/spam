@@ -1,12 +1,9 @@
 /.env.rb
 /compiled_assets.json
-/db_config.rb
 /log
 /public/javascripts/
 /public/stylesheets/app.*.css
 /public/stylesheets/app.*.css.gz
-/secret_key_base.txt
-/secret_token.txt
 /unicorn.conf
 /unicorn.test.log
 /unicorn.test.pid
