@@ -1,6 +1,7 @@
 require_relative 'models'
 
 require 'roda'
+require 'securerandom'
 
 module Spam
 class App < Roda
@@ -8,15 +9,7 @@ class App < Roda
 
   plugin :strip_path_prefix if ENV['SPAM_STRIP_PATH_PREFIX']
 
-  unless secret = ENV['SPAM_SESSION_SECRET'] || ENV['SECRET_TOKEN']
-    if File.exist?('secret_token.txt')
-      secret = File.read('secret_token.txt')
-    else
-      raise StandardError, "cannot load secret token"
-    end
-  end
-
-  use Rack::Session::Cookie, :secret=>secret, :key => '_spam_session'
+  use Rack::Session::Cookie, :secret=>(ENV.delete('SPAM_SESSION_SECRET') || ENV.delete('SECRET_TOKEN') || SecureRandom.hex(30)), :key => '_spam_session'
   plugin :csrf
 
   plugin :public, :gzip=>true
