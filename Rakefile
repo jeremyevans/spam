@@ -1,7 +1,7 @@
 require "rake"
 
 default_specs = [:spec, :integration]
-default_specs << :ajax if RUBY_VERSION > '2.1'
+default_specs << :ajax if RUBY_VERSION > '2.3'
 desc "Run the unit and integration specs"
 task :default=>default_specs
 
