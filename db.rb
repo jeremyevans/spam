@@ -1,7 +1,11 @@
+begin
+  require_relative '.env'
+rescue LoadError
+end
+
 require 'sequel'
 
-begin
-  require_relative 'db_config'
-rescue LoadError
-  Spam::DB = Sequel.connect(ENV['SPAM_DATABASE_URL'] || ENV['DATABASE_URL'] || "postgres:///#{'spam_test' if ENV['RACK_ENV'] == 'test'}?user=spam")
+module Spam
+  DB = Sequel.connect(ENV.delete('SPAM_DATABASE_URL') || ENV.delete('DATABASE_URL') || "postgres:///#{'spam_test' if ENV['RACK_ENV'] == 'test'}?user=spam")
+  DB.extension(:looser_typecasting)
 end

@@ -1,11 +1,7 @@
-if File.exists?(File.expand_path('../.env.rb', __FILE__))
-  require_relative '.env'
-end
+require_relative 'db'
 
-require 'rubygems'
 require 'subset_sum'
 require 'bcrypt'
-require 'sequel'
 
 module Spam
   if ENV['RACK_ENV'] == 'test'
@@ -13,10 +9,6 @@ module Spam
   else
     BCRYPT_COST = BCrypt::Engine::DEFAULT_COST
   end
-
-  require_relative 'db'
-
-  DB.extension(:looser_typecasting)
 
   Model = Class.new(Sequel::Model)
   Model.db = DB

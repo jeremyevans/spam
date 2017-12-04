@@ -1,9 +1,0 @@
-url = case ENV['RACK_ENV']
-when 'test'
-  "postgres:///spam_test?user=spam"
-when 'production'
-  "postgres:///spam_production?user=spam"
-else
-  "postgres:///spam_development?user=spam"
-end
-Spam::DB = Sequel.connect(ENV['SPAM_DATABASE_URL'] || ENV['DATABASE_URL'] || url, :identifier_mangling=>false)
