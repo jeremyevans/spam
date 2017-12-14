@@ -33,6 +33,7 @@ class App < Roda
   plugin :symbol_views
   plugin :disallow_file_uploads
   plugin :typecast_params
+  alias tp typecast_params
 
   plugin :autoforme do
     inline_mtm_associations :all
@@ -177,7 +178,7 @@ class App < Roda
     r.on 'update' do
       r.get do
         r.is 'auto_complete_for_entity_name', Integer do |id|
-          userEntity.auto_complete(typecast_params.str!('q'), id).join("\n")
+          userEntity.auto_complete(tp.str!('q'), id).join("\n")
         end
         
         r.is 'auto_reconcile' do
@@ -185,10 +186,10 @@ class App < Roda
         end
         
         r.is 'modify_entry', [Integer, true] do |id|
-          @account = user_account(typecast_params.pos_int!('register_account_id'))
+          @account = user_account(tp.pos_int!('register_account_id'))
           @accounts = userAccount.for_select
 
-          if @selected_entry_id = typecast_params.pos_int('selected_entry_id')
+          if @selected_entry_id = tp.pos_int('selected_entry_id')
             @other_entry = user_entry(@selected_entry_id)
             @other_entry.main_account = @account
           end
@@ -219,7 +220,7 @@ class App < Roda
 
         r.is 'other_account_for_entry', Integer do |id|
           h = {}
-          if (entity = typecast_params.nonempty_str('entity')) && (account = user_account(id)) && (entry = account.last_entry_for_entity(entity))
+          if (entity = tp.nonempty_str('entity')) && (account = user_account(id)) && (entry = account.last_entry_for_entity(entity))
             entry.main_account = account
             h = {:account_id=>entry.other_account.id, :amount=>entry.amount.to_s('F')}
           end
@@ -234,7 +235,7 @@ class App < Roda
         r.is 'register', Integer do |id|
           @account = user_account(id)
           @accounts = userAccount.for_select
-          @show_num_entries = typecast_params.pos_int('show', num_register_entries)
+          @show_num_entries = tp.pos_int('show', num_register_entries)
           @check_number = @account.next_check_number
           :register
         end
@@ -242,15 +243,15 @@ class App < Roda
 
       r.post do
         r.is 'add_entry' do
-          @account = user_account(typecast_params.pos_int!('register_account_id'))
+          @account = user_account(tp.pos_int!('register_account_id'))
           @accounts = userAccount.for_select
-          if typecast_params.present?('update')
+          if tp.present?('update')
             next update_register_entry
           end
-          @entry = Entry.new(typecast_params.Hash!('entry'))
+          @entry = Entry.new(tp.Hash!('entry'))
           @entry.user_id = session[:user_id]
           save_entry
-          ref = typecast_params['entry'].str!('reference')
+          ref = tp['entry'].str!('reference')
           @check_number = (ref =~ /\A\d+\z/) ? ref.next : ''
 
           if json_requested?
@@ -268,13 +269,13 @@ class App < Roda
         end
 
         r.is 'clear_entries' do
-          if typecast_params.present?('auto_reconcile') && !request.xhr?
+          if tp.present?('auto_reconcile') && !request.xhr?
             next auto_reconcile
           end
 
-          userEntry.filter(:id=>typecast_params.Hash!('entries').keys.collect(&:to_i)).update(:cleared => true)
+          userEntry.filter(:id=>tp.Hash!('entries').keys.collect(&:to_i)).update(:cleared => true)
 
-          next unless account_id = typecast_params.pos_int('id')
+          next unless account_id = tp.pos_int('id')
 
           if json_requested?
             @account = user_account(account_id)
@@ -385,11 +386,11 @@ class App < Roda
 
   def auto_reconcile
     r = request
-    id = typecast_params.pos_int!('id')
-    @reconcile_to = typecast_params.float!('reconcile_to')
+    id = tp.pos_int!('id')
+    @reconcile_to = tp.float!('reconcile_to')
     @account = user_account(id)
     begin
-      @entries = @account.entries_reconciling_to(@reconcile_to, (typecast_params.Hash('entries', {})).keys.collect(&:to_i), 15)
+      @entries = @account.entries_reconciling_to(@reconcile_to, (tp.Hash('entries', {})).keys.collect(&:to_i), 15)
       if @entries
         @reconcile_changes = @reconcile_to - @account.unreconciled_balance if @entries
         @entries = @entries.map(&:id)
@@ -421,13 +422,13 @@ class App < Roda
 
   def save_entry
     r = request
-    other_account = user_account(typecast_params['account'].pos_int!('id'))
-    amount = typecast_params['entry'].float!('amount')
+    other_account = user_account(tp['account'].pos_int!('id'))
+    amount = tp['entry'].float!('amount')
     @entry[:debit_account_id], @entry[:credit_account_id] = ((amount > 0) ? [@account.id, other_account.id] : [other_account.id, @account.id])
     @entry.amount = amount.abs
-    if entity_name = typecast_params['entity'].nonempty_str('name')
+    if entity_name = tp['entity'].nonempty_str('name')
       unless entity = userEntity[:name=>entity_name]
-        entity = Entity.new(typecast_params.Hash!('entity'))
+        entity = Entity.new(tp.Hash!('entity'))
         entity.user_id = session[:user_id]
         entity.save
       end
@@ -440,8 +441,8 @@ class App < Roda
 
   def update_register_entry
     r = request
-    entry = typecast_params.Hash!('entry')
-    entry_id = typecast_params['entry'].pos_int!('id')
+    entry = tp.Hash!('entry')
+    entry_id = tp['entry'].pos_int!('id')
     @entry = user_entry(entry_id)
     entry.delete('id')
     @entry.set(entry)
