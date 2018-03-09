@@ -32,6 +32,7 @@ class App < Roda
   plugin :json
   plugin :symbol_views
   plugin :disallow_file_uploads
+  plugin :request_aref, :raise
   plugin :typecast_params
   alias tp typecast_params
 
