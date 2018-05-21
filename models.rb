@@ -15,6 +15,7 @@ module Spam
   Model.plugin :subclasses
   Model.plugin :forme
   Model.plugin :prepared_statements_safe
+  Model.plugin :pg_auto_constraint_validations
 end
 
 class BigDecimal
