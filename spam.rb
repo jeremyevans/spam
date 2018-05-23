@@ -10,7 +10,7 @@ class App < Roda
   plugin :strip_path_prefix if ENV['SPAM_STRIP_PATH_PREFIX']
 
   use Rack::Session::Cookie, :secret=>(ENV.delete('SPAM_SESSION_SECRET') || ENV.delete('SECRET_TOKEN') || SecureRandom.hex(30)), :key => '_spam_session'
-  plugin :csrf
+  plugin :route_csrf
 
   plugin :public, :gzip=>true
   plugin :not_found
@@ -84,7 +84,7 @@ class App < Roda
     end
   end
 
-  plugin :rodauth do
+  plugin :rodauth, :csrf=>:route_csrf do
     db DB
     enable :login, :logout
     enable :change_password unless ENV['SPAM_DEMO']
@@ -106,6 +106,7 @@ class App < Roda
   route do |r|
     r.public
     r.assets
+    check_csrf!
     r.rodauth
 
     unless session[:user_id]

@@ -1,7 +1,7 @@
 <% @pagetitle = "#{@account.name} Register" %>
 <h3 id="results" class="text-center">Showing <%= @show_num_entries == -1 ? 'All' : "#{@show_num_entries} Most Recent" %> Entries</h3>
 <form id="register_form" action="/update/add_entry" method="post">
-  <%== csrf_tag %>
+  <%== csrf_tag("/update/add_entry") %>
   <input type="hidden" id="selected_entry_id" name="selected_entry_id" value="<%= @entry_id %>" />
   <input type="hidden" id="register_account_id" name="register_account_id" value="<%= @account.id %>" />
 <table id="register" class="table table-condensed">

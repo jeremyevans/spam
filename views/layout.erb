@@ -86,7 +86,7 @@
         </ul>
 
         <form action="/logout" method="post" class="navbar-form">
-          <%== csrf_tag %>
+          <%== csrf_tag("/logout") %>
           <input type="submit" value="Logout" class="btn btn-warning pull-right form-control">
         </form>
         <% end %>

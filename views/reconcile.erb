@@ -2,7 +2,7 @@
 <h1 class="centered"><%= @pagetitle = "Reconciling #{@account.name}" %></h1>
 <h3 id="results" class="centered"><%= @error_message %></h3>
 <form action="/update/clear_entries" method="post">
-<%== csrf_tag %>
+<%== csrf_tag("/update/clear_entries") %>
 <input type="hidden" name="id" value="<%= @account.id %>" />
 <div class="row">
   <div class="col-md-4 col-md-offset-4">
