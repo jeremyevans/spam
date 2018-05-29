@@ -170,7 +170,7 @@ function handle_action(action) {
   }
 }
 
-function setup_register_form() {
+if ($('#register_form')[0]) {
   $('#register_form').submit(function() {
     $.ajax({
       type: 'POST',
@@ -198,7 +198,13 @@ function setup_register_form() {
   handle_actions([])
 }
 
-function setup_reconcile_form() {
+if ($('#reconcile_form')[0]) {
+  $('#reconcile_to').change(updatedReconcileTo);
+
+  $('.reconcile_checkbox').click(function(e) {
+    updateOffBy(e.target);
+  });
+
   $('#auto_reconcile').click(function() {
     $.getJSON('/update/auto_reconcile',
     $(this.form).serialize().replace(/_csrf=[^\&]+\&/, ''),
@@ -206,7 +212,7 @@ function setup_reconcile_form() {
       handle_actions(data);
     });
     return false;
-  })
+  });
 
   $('#clear_entries').click(function() {
     $.ajax({

@@ -1,7 +1,8 @@
 /.env.rb
 /compiled_assets.json
 /log
-/public/javascripts/
+/public/javascripts/app.*.js
+/public/javascripts/app.*.js.gz
 /public/stylesheets/app.*.css
 /public/stylesheets/app.*.css.gz
 /unicorn.conf

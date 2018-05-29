@@ -17,7 +17,7 @@ class App < Roda
   plugin :error_handler
   plugin :render, :escape=>true
   plugin :assets,
-    :css=>%w'bootstrap.min.css jquery.autocomplete.css scaffold_associations_tree.css spam.scss',
+    :css=>%w'bootstrap-3.3.7.customized.min.css jquery.autocomplete.css scaffold_associations_tree.css spam.scss',
     :js=>%w'jquery-1.11.1.min.js bootstrap.min.js jquery.autocomplete.js autoforme.js application.js scaffold_associations_tree.js',
     :css_opts=>{:style=>:compressed, :cache=>false},
     :compiled_js_dir=>'javascripts',
@@ -102,6 +102,17 @@ class App < Roda
   ::Forme.default_config = :mine
 
   BY_YEAR_COND = Proc.new{|k| Sequel.~(Sequel.extract(:year, Sequel[:entries][:date]) => k)}
+
+  plugin :content_security_policy do |csp|
+    csp.default_src :none
+    csp.style_src :self, :unsafe_inline
+    csp.script_src :self
+    csp.connect_src :self
+    csp.img_src :self
+    csp.form_action :self
+    csp.base_uri :none
+    csp.frame_ancestors :none
+  end
 
   route do |r|
     r.public

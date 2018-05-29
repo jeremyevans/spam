@@ -29,7 +29,7 @@
 }
 
 .acLoading {
-	background : url('indicator.gif') right center no-repeat;
+	background : url('/stylesheets/indicator.gif') right center no-repeat;
 }
 
 .acSelect {
