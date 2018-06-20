@@ -31,10 +31,17 @@ function processULELC(ul) {
             }
             if (subul) {
                 item.className = 'sat_closed'
-                item.innerHTML = '<a href="#" class="treestatus" onclick=\'this.parentNode.className = (this.parentNode.className=="sat_open") ? "sat_closed" : "sat_open"; return false;\'></a>' + item.innerHTML
+                item.innerHTML = '<a href="#" class="treestatus"></a>' + item.innerHTML
+                addEvent(item.children[0], "click", function(e){
+                  item.className = (item.className=="sat_open") ? "sat_closed" : "sat_open";
+                  e.preventDefault();
+                });
             } else {
                 item.className = "sat_bullet";
-                item.innerHTML = '<a href="#" class="treestatus" onclick=\'return false;\'></a>' + item.innerHTML
+                item.innerHTML = '<a href="#" class="treestatus"></a>' + item.innerHTML
+                addEvent(item.children[0], "click", function(e){
+                  e.preventDefault();
+                });
             }
         }
     }
