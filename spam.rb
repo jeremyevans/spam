@@ -47,7 +47,7 @@ class App < Roda
       display_name :short_name
       column_options :description=>{:as=>:textarea, :cols=>'50', :rows=>'4'}
       association_links [:recent_credit_entries, :recent_debit_entries]
-      session_value :user_id
+      session_value 'user_id'
     end
     model Entity do
       class_display_name 'Entity'
@@ -56,7 +56,7 @@ class App < Roda
       display_name :short_name
       association_links [:recent_entries]
       autocomplete_options({})
-      session_value :user_id
+      session_value 'user_id'
     end
     model Entry do
       class_display_name 'Entry'
@@ -65,7 +65,7 @@ class App < Roda
       display_name :scaffold_name
       eager_graph [:entity, :credit_account, :debit_account]
       autocomplete_options(:display=>Sequel.lit("reference || date::TEXT || entity.name ||  debit_account.name || credit_account.name || entries.amount::TEXT"))
-      session_value :user_id
+      session_value 'user_id'
     end
   end
 
@@ -88,7 +88,7 @@ class App < Roda
     db DB
     enable :login, :logout
     enable :change_password unless ENV['SPAM_DEMO']
-    session_key :user_id
+    session_key 'user_id'
     login_param 'username'
     login_label 'Username'
     login_column :name
@@ -120,7 +120,7 @@ class App < Roda
     check_csrf!
     r.rodauth
 
-    unless session[:user_id]
+    unless session['user_id']
       flash[:error] = 'You need to login' unless r.path_info == '/'
       r.redirect '/login'
     end
@@ -262,7 +262,7 @@ class App < Roda
             next update_register_entry
           end
           @entry = Entry.new(tp.Hash!('entry'))
-          @entry.user_id = session[:user_id]
+          @entry.user_id = session['user_id']
           save_entry
           ref = tp['entry'].str!('reference')
           @check_number = (ref =~ /\A\d+\z/) ? ref.next : ''
@@ -318,19 +318,19 @@ class App < Roda
   end
 
   def get_navigation_accounts
-    @navigation_accounts = userAccount.unhidden.register_accounts if session[:user_id]
+    @navigation_accounts = userAccount.unhidden.register_accounts if session['user_id']
   end
     
   def userAccount
-    Account.user(session[:user_id])
+    Account.user(session['user_id'])
   end 
 
   def userEntity
-    Entity.user(session[:user_id])
+    Entity.user(session['user_id'])
   end 
 
   def userEntry
-    Entry.user(session[:user_id])
+    Entry.user(session['user_id'])
   end
 
   def income_expense_report
@@ -344,7 +344,7 @@ class App < Roda
   end
 
   def accounts_ds
-    DB[:accounts].filter(Sequel[:accounts][:user_id]=>session[:user_id])
+    DB[:accounts].filter(Sequel[:accounts][:user_id]=>session['user_id'])
   end
 
   def accounts_entries_ds
@@ -394,7 +394,7 @@ class App < Roda
   end
 
   def num_register_entries
-    User[session[:user_id]].num_register_entries
+    User[session['user_id']].num_register_entries
   end
 
   def auto_reconcile
@@ -442,7 +442,7 @@ class App < Roda
     if entity_name = tp['entity'].nonempty_str('name')
       unless entity = userEntity[:name=>entity_name]
         entity = Entity.new(tp.Hash!('entity'))
-        entity.user_id = session[:user_id]
+        entity.user_id = session['user_id']
         entity.save
       end
       @entry[:entity_id] = entity.id

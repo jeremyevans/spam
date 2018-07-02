@@ -25,7 +25,7 @@
 
 
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-      <% if session[:user_id] %>
+      <% if session['user_id'] %>
         <% if @navigation_accounts && !@navigation_accounts.empty? %>
           <ul class="nav navbar-nav" id="nav-register">
             <li class="dropdown">
