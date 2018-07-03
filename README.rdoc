@@ -37,7 +37,9 @@ This app can be easily cloned and run on heroku:
   git clone git://github.com/jeremyevans/spam.git
   cd spam
   heroku create
-  heroku config:set SPAM_SESSION_SECRET="your secret token"
+  heroku config:set \
+    SPAM_SESSION_CIPHER_SECRET=`ruby -rsecurerandom -e 'puts SecureRandom.base64(24)'`
+    SPAM_SESSION_HMAC_SECRET=`ruby -rsecurerandom -e 'puts SecureRandom.base64(24)'`
   heroku addons:add heroku-postgresql:dev
   heroku pg:promote HEROKU_POSTGRESQL_COLOR
   heroku pg:psql < schema.sql
@@ -69,7 +71,7 @@ Running this outside of Heroku is fairly easy:
 
   git clone git://github.com/jeremyevans/spam.git
   cd spam
-  vi .env.rb # Set DATABASE_URL and SPAM_SESSION_SECRET env vars
+  vi .env.rb # Set DATABASE_URL, SPAM_SESSION_CIPHER_SECRET, SPAM_SESSION_HMAC_SECRET env vars
   bundle install
   createuser -U postgres spam
   createdb -U postgres -O spam spam

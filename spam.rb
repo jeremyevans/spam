@@ -9,7 +9,6 @@ class App < Roda
 
   plugin :strip_path_prefix if ENV['SPAM_STRIP_PATH_PREFIX']
 
-  use Rack::Session::Cookie, :secret=>(ENV.delete('SPAM_SESSION_SECRET') || ENV.delete('SECRET_TOKEN') || SecureRandom.hex(30)), :key => '_spam_session'
   plugin :route_csrf
 
   plugin :public, :gzip=>true
@@ -114,6 +113,11 @@ class App < Roda
     csp.frame_ancestors :none
   end
 
+  plugin :sessions,
+    :key=>'spam.session',
+    :cipher_secret=>ENV.delete('SPAM_SESSION_CIPHER_SECRET'),
+    :hmac_secret=>ENV.delete('SPAM_SESSION_HMAC_SECRET')
+
   route do |r|
     r.public
     r.assets
@@ -121,7 +125,7 @@ class App < Roda
     r.rodauth
 
     unless session['user_id']
-      flash[:error] = 'You need to login' unless r.path_info == '/'
+      flash["error"] = 'You need to login' unless r.path_info == '/'
       r.redirect '/login'
     end
 
