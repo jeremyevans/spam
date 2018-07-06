@@ -34,6 +34,8 @@ Entries = DB[:entries].filter(:user_id => 1)
 PORT = ENV['PORT'] || 8989
 SLEEP_TIME = Float(ENV['SLEEP_TIME'] || 0.5)
 
+ENV['MT_NO_PLUGINS'] = '1' # Work around stupid autoloading of plugins
+gem 'minitest'
 require 'minitest/autorun'
 
 Capybara.default_driver = :webkit
