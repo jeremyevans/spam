@@ -17,6 +17,7 @@ desc "Run ajax tests"
 task :ajax do
   begin
     ENV['RACK_ENV'] = 'test'
+    ENV['SPAM_SESSION_SECRET'] = '1'*64
     sh "echo -n '' > unicorn.test.log"
     unicorn_bin = File.basename(FileUtils::RUBY).sub(/\Aruby/, 'unicorn')
     sh "#{FileUtils::RUBY} -S #{unicorn_bin} -p 8989 -c unicorn.test.conf -D"
