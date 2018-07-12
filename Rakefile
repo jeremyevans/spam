@@ -1,36 +1,33 @@
 require "rake"
 
-default_specs = [:spec]
+default_specs = [:spec, :integration]
 
 desc "Run unit tests"
 task :spec do
   sh "#{FileUtils::RUBY} unit_test.rb"
 end
 
-if RUBY_VERSION >= '2'
-  default_specs << :integration
-  desc "Run integration tests"
-  task :integration do
-    sh "#{FileUtils::RUBY} test.rb"
-  end
+desc "Run integration tests"
+task :integration do
+  sh "#{FileUtils::RUBY} test.rb"
+end
 
-  default_specs << :ajax if RUBY_VERSION > '2.3'
-  desc "Run ajax tests"
-  task :ajax do
-    begin
-      ENV['RACK_ENV'] = 'test'
-      sh "echo -n '' > unicorn.test.log"
-      unicorn_bin = File.basename(FileUtils::RUBY).sub(/\Aruby/, 'unicorn')
-      sh "#{FileUtils::RUBY} -S #{unicorn_bin} -p 8989 -c unicorn.test.conf -D"
-      Rake::Task['_ajax'].invoke
-    ensure
-      sh "kill `cat unicorn.test.pid`"
-    end
+default_specs << :ajax if RUBY_VERSION > '2.3'
+desc "Run ajax tests"
+task :ajax do
+  begin
+    ENV['RACK_ENV'] = 'test'
+    sh "echo -n '' > unicorn.test.log"
+    unicorn_bin = File.basename(FileUtils::RUBY).sub(/\Aruby/, 'unicorn')
+    sh "#{FileUtils::RUBY} -S #{unicorn_bin} -p 8989 -c unicorn.test.conf -D"
+    Rake::Task['_ajax'].invoke
+  ensure
+    sh "kill `cat unicorn.test.pid`"
   end
+end
 
-  task :_ajax do
-    sh "#{FileUtils::RUBY} test_ajax.rb"
-  end
+task :_ajax do
+  sh "#{FileUtils::RUBY} test_ajax.rb"
 end
 
 desc "Run the unit and integration specs"
