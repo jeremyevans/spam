@@ -139,7 +139,7 @@ describe "SPAM" do
       click_on 'Auto-Reconcile'
 
       wait
-      page.find("input#credit_#{@entry_id}")[:checked].must_equal 'true'
+      page.find("input#credit_#{@entry_id}")[:checked].must_equal true
 
       click_on 'Clear Entries'
 

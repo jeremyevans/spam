@@ -172,7 +172,7 @@ describe "SPAM" do
 
       click_on 'Clear Entries'
       entries.first[:cleared].must_equal true
-      page.first("input#credit_#{@entry_id}").must_be_nil
+      page.body.wont_include("credit_#{@entry_id}")
       page.first('table').all('td').map{|x| x.text.strip}.must_equal "Unreconciled Balance/$-1000.00/Reconciling Changes/$0.00/Reconciled Balance/$-1000.00/Off By/$-1000.00/Reconcile To/// ".split('/')[0...-1]
     end
 
