@@ -145,31 +145,6 @@ function handle_actions(actions) {
   $('#entry_date').focus().select()
 }
 
-function handle_action(action) {
-  switch(action[0]) {
-  case 'set_value':
-    $(action[1]).val(action[2])
-    break;
-  case 'replace_html':
-    $(action[1]).html(action[2])
-    break;
-  case 'insert_html':
-    $(action[1]).after(action[2])
-    break;
-  case 'focus':
-    $(action[1]).focus()
-    break;
-  case 'autocompleter':
-    set_entity_autocompleter()
-    break;
-  case 'resort':
-    ts_resortTable()
-    break;
-  default:
-    alert('Unhandled action type: ' + action[0]);
-  }
-}
-
 if ($('#register_form')[0]) {
   $('#register_form').submit(function() {
     $.ajax({
@@ -198,19 +173,24 @@ if ($('#register_form')[0]) {
   handle_actions([])
 }
 
-if ($('#reconcile_form')[0]) {
-  $('#reconcile_to').change(updatedReconcileTo);
-
+function setup_reconcile_checkboxes() {
   $('.reconcile_checkbox').click(function(e) {
     updateOffBy(e.target);
   });
+}
+
+if ($('#reconcile_form')[0]) {
+  $('#reconcile_to').change(updatedReconcileTo);
+
+  setup_reconcile_checkboxes();
 
   $('#auto_reconcile').click(function() {
-    $.getJSON('/update/auto_reconcile',
-    $(this.form).serialize().replace(/_csrf=[^\&]+\&/, ''),
-    function(data){
-      handle_actions(data);
-    });
+    $.getJSON(
+      '/update/auto_reconcile',
+      $(this.form).serialize().replace(/_csrf=[^\&]+\&/, ''),
+      function(data){
+        handle_actions(data);
+      });
     return false;
   });
 
@@ -230,3 +210,33 @@ if ($('#reconcile_form')[0]) {
   document.forms[1].reconcile_to.select();
   document.forms[1].reconcile_to.focus();
 }
+
+
+function handle_action(action) {
+  switch(action[0]) {
+  case 'set_value':
+    $(action[1]).val(action[2])
+    break;
+  case 'replace_html':
+    $(action[1]).html(action[2])
+    break;
+  case 'insert_html':
+    $(action[1]).after(action[2])
+    break;
+  case 'focus':
+    $(action[1]).focus()
+    break;
+  case 'setup_reconcile':
+    setup_reconcile_checkboxes()
+    break;
+  case 'autocompleter':
+    set_entity_autocompleter()
+    break;
+  case 'resort':
+    ts_resortTable()
+    break;
+  default:
+    alert('Unhandled action type: ' + action[0]);
+  }
+}
+

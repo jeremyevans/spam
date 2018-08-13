@@ -295,11 +295,13 @@ class App < Roda
 
           if json_requested?
             @account = user_account(account_id)
+            reconciled_balance = @account.unreconciled_balance.to_money
             [
-              ['replace_html', '#off_by', @account.unreconciled_balance.to_money],
               ['replace_html', '#reconcile_changes', '$0.00'],
-              ['set_value', '#reconcile_to', '$0.00'],
-              ['replace_html', '#balance', @account.unreconciled_balance.to_money],
+              ['replace_html', '#balance', reconciled_balance],
+              ['replace_html', '#reconciled_balance', reconciled_balance],
+              ['set_value', '#reconcile_to', reconciled_balance],
+              ['replace_html', '#off_by', '$0.00'],
               ['replace_html', '#debit_entries', render('_reconcile_table', :locals=>{:entry_type=>'debit'})],
               ['replace_html', '#credit_entries', render('_reconcile_table', :locals=>{:entry_type=>'credit'})],
               ['replace_html', '#results', 'Cleared entries']
@@ -430,6 +432,7 @@ class App < Roda
         json = []
       end
       json << ['replace_html', '#results', @error_message]
+      json << ['setup_reconcile']
       json
     else
       view 'reconcile'

@@ -160,7 +160,7 @@ describe "SPAM" do
     it "should have working reconcile page" do
       visit('/update/reconcile/1')
       form = find('div#content form')
-      form.first('table').all('tr td').map{|x| x.text.strip}.must_equal "Unreconciled Balance/$0.00/Reconciling Changes/$0.00/Reconciled Balance/$0.00/Off By/$0.00/Reconcile To/// ".split('/')[0...-1]
+      form.first('table').all('tr td').map{|x| x.text.strip}.must_equal "Previous Reconciled Balance/$0.00/Reconciling Changes/$0.00/New Reconciled Balance/$0.00/Expected Reconciled Balance//Off By/$0.00// ".split('/')[0...-1]
       form.all('caption').map(&:text).must_equal 'Debit Entries/Credit Entries'.split('/')
       form.all('table').last.all('thead th').map(&:text).must_equal %w'C Date Num Entity Amount'
       form.all('table').last.all('tbody td').map(&:text).must_equal '/2008-06-07/1000/Card/$1000.00'.split('/')
@@ -173,7 +173,7 @@ describe "SPAM" do
       click_on 'Clear Entries'
       entries.first[:cleared].must_equal true
       page.body.wont_include("credit_#{@entry_id}")
-      page.first('table').all('td').map{|x| x.text.strip}.must_equal "Unreconciled Balance/$-1000.00/Reconciling Changes/$0.00/Reconciled Balance/$-1000.00/Off By/$-1000.00/Reconcile To/// ".split('/')[0...-1]
+      page.first('table').all('tr td').map{|x| x.text.strip}.must_equal "Previous Reconciled Balance/$-1000.00/Reconciling Changes/$0.00/New Reconciled Balance/$-1000.00/Expected Reconciled Balance//Off By/$0.00// ".split('/')[0...-1]
     end
 
     it "should have correct reports" do
