@@ -72,6 +72,14 @@ class App < Roda
     File.read("public/404.html")
   end
 
+  logger = case ENV['RACK_ENV']
+  when 'development', 'test' # Remove development after Unicorn 5.5+
+    Class.new{def write(_) end}.new
+  else
+    $stderr
+  end
+  plugin :common_logger, logger
+
   error do |e|
     case e
     when Roda::RodaPlugins::TypecastParams::Error
