@@ -12,7 +12,7 @@ task :integration do
   sh "#{FileUtils::RUBY} test.rb"
 end
 
-default_specs << :ajax if RUBY_VERSION > '2.3'
+default_specs << :ajax if RUBY_VERSION > '2.4'
 desc "Run ajax tests"
 task :ajax do
   begin
