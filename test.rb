@@ -122,7 +122,7 @@ describe "SPAM" do
     click_button 'Add'
 
     entry = entries.first
-    remove_id(entry).must_equal(:date=>Date.new(2008,6,6), :reference=>'DEP', :entity_id=>1, :credit_account_id=>3, :debit_account_id=>1, :memo=>'Check', :amount=>BigDecimal.new('1000'), :cleared=>false, :user_id=>1)
+    remove_id(entry).must_equal(:date=>Date.new(2008,6,6), :reference=>'DEP', :entity_id=>1, :credit_account_id=>3, :debit_account_id=>1, :memo=>'Check', :amount=>BigDecimal('1000'), :cleared=>false, :user_id=>1)
 
     page.all("div#content form table tbody tr").last.all('td').map(&:text).must_equal '2008-06-06/DEP/Employer/Salary/Check//$1000.00/$1000.00/Modify'.split('/')
     click_on 'Modify'
@@ -135,7 +135,7 @@ describe "SPAM" do
     check 'entry[cleared]'
     click_on 'Update'
 
-    entries[:id => entry[:id]].must_equal(:date=>Date.new(2008,6,7), :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal.new('1000'), :cleared=>true, :user_id=>1, :id=>entry[:id])
+    entries[:id => entry[:id]].must_equal(:date=>Date.new(2008,6,7), :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal('1000'), :cleared=>true, :user_id=>1, :id=>entry[:id])
     page.all("div#content form table tbody tr").last.all('td').map(&:text).must_equal '2008-06-07/1000/Card/Credit Card/Payment/R/$-1000.00/$-1000.00/Modify'.split('/')
     
     click_on 'Modify'
@@ -148,13 +148,13 @@ describe "SPAM" do
     fill_in "entry[memo]", :with=>'Payment'
     fill_in "entry[amount]", :with=>'-1001'
     click_on 'Add'
-    remove_id(entries.order(:id).last).must_equal(:date=>Date.new(2008,6,8), :reference=>'1001', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal.new('1001'), :cleared=>false, :user_id=>1)
+    remove_id(entries.order(:id).last).must_equal(:date=>Date.new(2008,6,8), :reference=>'1001', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal('1001'), :cleared=>false, :user_id=>1)
   end
 
   describe 'with existing entry' do
     before do
       login
-      @entry_id = entries.insert(:date=>Date.new(2008,06,07), :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal.new('1000'), :cleared=>false, :user_id=>1)
+      @entry_id = entries.insert(:date=>Date.new(2008,06,07), :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal('1000'), :cleared=>false, :user_id=>1)
     end
 
     it "should have working reconcile page" do
