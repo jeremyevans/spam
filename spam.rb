@@ -6,6 +6,10 @@ require 'securerandom'
 module Spam
 class App < Roda
   opts[:root] = File.dirname(__FILE__)
+  opts[:check_dynamic_arity] = false
+  opts[:check_arity] = :warn
+
+  plugin :direct_call
 
   plugin :strip_path_prefix if ENV['SPAM_STRIP_PATH_PREFIX']
 
