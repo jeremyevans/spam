@@ -316,7 +316,8 @@ class App < Roda
               ['replace_html', '#off_by', '$0.00'],
               ['replace_html', '#debit_entries', render('_reconcile_table', :locals=>{:entry_type=>'debit'})],
               ['replace_html', '#credit_entries', render('_reconcile_table', :locals=>{:entry_type=>'credit'})],
-              ['replace_html', '#results', 'Cleared entries']
+              ['replace_html', '#results', 'Cleared entries'],
+              ['setup_reconcile']
             ]
           elsif 
             r.redirect "/update/reconcile/#{account_id}"
