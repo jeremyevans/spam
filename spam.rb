@@ -129,203 +129,212 @@ class App < Roda
     :key=>'spam.session',
     :secret=>ENV.delete('SPAM_SESSION_SECRET')
 
+  plugin :hash_routes
+
+  hash_routes :root do
+    view "", :content=>''
+  end
+
+  hash_routes :reports do
+    dispatch_from :root, "reports"
+
+    get 'balance_sheet' do
+      @assets, @liabilities = userAccount.register_accounts.exclude(Sequel.&(:hidden, :balance=>0)).all.partition{|x| x.account_type_id == 1}
+      :balance_sheet
+    end
+
+    get 'income_expense' do
+      income_expense_report
+      :income_expense
+    end
+        
+    get 'net_worth' do
+      account = accounts_ds.select(*account_sums(1=>:assets, 2=>:liabilities)).first
+      @assets, @liabilities = account[:assets].to_f, -account[:liabilities].to_f
+      income_expense_report
+      :net_worth
+    end
+
+    get 'earning_spending' do
+      if setup_month_headers
+        @accounts = accounts_entries_ds.select(Sequel[:accounts][:name], *by_account_select{|k| Sequel.~(@age.extract(:month) => (@i+=1))}).
+         filter(Sequel[:accounts][:account_type_id]=>[3,4]).
+         filter(@age < Sequel.cast('1 year', :interval)).
+         group(Sequel[:accounts][:account_type_id], Sequel[:accounts][:name]).order(Sequel.desc(:account_type_id), :name).all
+      end
+      :earning_spending
+    end
+
+    get 'earning_spending_by_entity' do
+      if setup_month_headers
+        @accounts = entities_entries_ds.select(Sequel[:entities][:name], *by_entity_select{|k| Sequel.~(@age.extract(:month) => (@i+=1))}).
+         filter(@age < Sequel.cast('1 year', :interval)).
+         filter(Sequel.or(Sequel[:d][:account_type_id] => [3,4], Sequel[:c][:account_type_id] => [3,4]) & Sequel.or(Sequel[:d][:account_type_id] => nil, Sequel[:c][:account_type_id] => nil)).
+         group(Sequel[:entities][:name]).order(:name).all
+      end
+      :earning_spending
+    end
+
+    get 'yearly_earning_spending_by_entity' do
+      if setup_year_headers
+        @accounts = entities_entries_ds.select(Sequel[:entities][:name], *by_entity_select(&BY_YEAR_COND)).
+         filter(Sequel.or(Sequel[:d][:account_type_id] => [3,4], Sequel[:c][:account_type_id] => [3,4]) & Sequel.or(Sequel[:d][:account_type_id] => nil, Sequel[:c][:account_type_id] => nil)).
+         group(Sequel[:entities][:name]).order(:name).all
+      end
+      :earning_spending
+    end
+
+    get 'yearly_earning_spending' do
+      if setup_year_headers
+        @accounts = accounts_entries_ds.select(Sequel[:accounts][:name], *by_account_select(&BY_YEAR_COND)).
+         filter(Sequel[:accounts][:account_type_id]=>[3,4]).
+         group(Sequel[:accounts][:account_type_id], Sequel[:accounts][:name]).order(Sequel.desc(:account_type_id), :name).all
+      end
+      :earning_spending
+    end
+  end
+
+  hash_routes :update do
+    dispatch_from :root, 'update'
+
+    on 'auto_complete_for_entity_name' do |r|
+      r.get Integer do |id|
+        userEntity.auto_complete(tp.str!('q'), id).join("\n")
+      end
+    end
+  
+    get 'auto_reconcile' do
+      auto_reconcile
+    end
+    
+    on 'modify_entry' do |r|
+      r.get [Integer, true] do |id|
+        @account = user_account(tp.pos_int!('register_account_id'))
+        @accounts = userAccount.for_select
+
+        if @selected_entry_id = tp.pos_int('selected_entry_id')
+          @other_entry = user_entry(@selected_entry_id)
+          @other_entry.main_account = @account
+        end
+
+        if id
+          @entry = user_entry(id)
+          @entry.main_account = @account
+          @selected_entry_id = @entry.id
+        else
+          @selected_entry_id = nil
+        end
+
+        if json_requested?
+          json = []
+          json << ['set_value', '#selected_entry_id', @selected_entry_id]
+          json << ['replace_html', '#new_entry', render("_#{@entry ? 'blank' : 'new'}_register_entry", :locals=>{:entry=>@entry})]
+          json << ['replace_html', "#entry_#{@other_entry.id}", render('_register_entry', :locals=>{:entry=>@other_entry})] if @other_entry
+          json << ['resort']
+          json << ['replace_html', "#entry_#{@entry.id}", render('_modify_register_entry', :locals=>{:entry=>@entry})] if @entry
+          json << ['replace_html', '#results', @entry ? 'Modify entry' : 'Add entry']
+          json << ['autocompleter']
+          json
+        else
+          @show_num_entries = num_register_entries
+          :register
+        end
+      end
+    end
+
+    on 'other_account_for_entry' do |r|
+      r.get Integer do |id|
+        h = {}
+        if (entity = tp.nonempty_str('entity')) && (account = user_account(id)) && (entry = account.last_entry_for_entity(entity))
+          entry.main_account = account
+          h = {:account_id=>entry.other_account.id, :amount=>entry.amount.to_s('F')}
+        end
+        h
+      end
+    end
+
+    on 'reconcile' do |r|
+      r.get Integer do |id|
+        @account = user_account(id)
+        :reconcile
+      end
+    end
+
+    on 'register' do |r|
+      r.get Integer do |id|
+        @account = user_account(id)
+        @accounts = userAccount.for_select
+        @show_num_entries = tp.pos_int('show', num_register_entries)
+        @check_number = @account.next_check_number
+        :register
+      end
+    end
+
+    post 'add_entry' do
+      @account = user_account(tp.pos_int!('register_account_id'))
+      @accounts = userAccount.for_select
+      if tp.present?('update')
+        next update_register_entry
+      end
+      @entry = Entry.new(tp.Hash!('entry'))
+      @entry.user_id = session['user_id']
+      save_entry
+      ref = tp['entry'].str!('reference')
+      @check_number = (ref =~ /\A\d+\z/) ? ref.next : ''
+
+      if json_requested?
+        [
+          ['set_value', '#selected_entry_id', ''],
+          ['replace_html', '#new_entry', render('_new_register_entry', :locals=>{:time=>@entry.date})],
+          ['insert_html', '#new_entry', "<tr id='entry_#{@entry.id}'>#{render('_register_entry', :locals=>{:entry=>@entry})}</tr>"],
+          ['replace_html', '#results', 'Added entry'],
+          ['autocompleter'],
+          ['resort']
+        ]
+      else
+        request.redirect "/update/register/#{@account.id}"
+      end
+    end
+
+    post 'clear_entries' do
+      if tp.present?('auto_reconcile') && !request.xhr?
+        next auto_reconcile
+      end
+
+      userEntry.filter(:id=>tp.Hash!('entries').keys.collect(&:to_i)).update(:cleared => true)
+
+      next unless account_id = tp.pos_int('id')
+
+      if json_requested?
+        @account = user_account(account_id)
+        reconciled_balance = @account.unreconciled_balance.to_money
+        [
+          ['replace_html', '#reconcile_changes', '$0.00'],
+          ['replace_html', '#balance', reconciled_balance],
+          ['replace_html', '#reconciled_balance', reconciled_balance],
+          ['set_value', '#reconcile_to', reconciled_balance],
+          ['replace_html', '#off_by', '$0.00'],
+          ['replace_html', '#debit_entries', render('_reconcile_table', :locals=>{:entry_type=>'debit'})],
+          ['replace_html', '#credit_entries', render('_reconcile_table', :locals=>{:entry_type=>'credit'})],
+          ['replace_html', '#results', 'Cleared entries'],
+          ['setup_reconcile']
+        ]
+      elsif 
+        request.redirect "/update/reconcile/#{account_id}"
+      end
+    end
+  end
+
   route do |r|
     r.public
     r.assets
     check_csrf!
     r.rodauth
-
-    unless session['user_id']
-      flash["error"] = 'You need to login' unless r.path_info == '/'
-      r.redirect '/login'
-    end
+    rodauth.require_authentication
 
     @navigation_accounts = userAccount.unhidden.register_accounts
 
-    r.root do
-      view :content=>""
-    end
-
-    r.on 'reports', :method=>:get do
-      r.is 'balance_sheet' do
-        @assets, @liabilities = userAccount.register_accounts.exclude(Sequel.&(:hidden, :balance=>0)).all.partition{|x| x.account_type_id == 1}
-        :balance_sheet
-      end
-      
-      r.is 'income_expense' do
-        income_expense_report
-        :income_expense
-      end
-      
-      r.is 'net_worth' do
-        account = accounts_ds.select(*account_sums(1=>:assets, 2=>:liabilities)).first
-        @assets, @liabilities = account[:assets].to_f, -account[:liabilities].to_f
-        income_expense_report
-        :net_worth
-      end
-      
-      r.is 'earning_spending' do
-        if setup_month_headers
-          @accounts = accounts_entries_ds.select(Sequel[:accounts][:name], *by_account_select{|k| Sequel.~(@age.extract(:month) => (@i+=1))}).
-           filter(Sequel[:accounts][:account_type_id]=>[3,4]).
-           filter(@age < Sequel.cast('1 year', :interval)).
-           group(Sequel[:accounts][:account_type_id], Sequel[:accounts][:name]).order(Sequel.desc(:account_type_id), :name).all
-        end
-        :earning_spending
-      end
-
-      r.is 'earning_spending_by_entity' do
-        if setup_month_headers
-          @accounts = entities_entries_ds.select(Sequel[:entities][:name], *by_entity_select{|k| Sequel.~(@age.extract(:month) => (@i+=1))}).
-           filter(@age < Sequel.cast('1 year', :interval)).
-           filter(Sequel.or(Sequel[:d][:account_type_id] => [3,4], Sequel[:c][:account_type_id] => [3,4]) & Sequel.or(Sequel[:d][:account_type_id] => nil, Sequel[:c][:account_type_id] => nil)).
-           group(Sequel[:entities][:name]).order(:name).all
-        end
-        :earning_spending
-      end
-
-      r.is 'yearly_earning_spending_by_entity' do
-        if setup_year_headers
-          @accounts = entities_entries_ds.select(Sequel[:entities][:name], *by_entity_select(&BY_YEAR_COND)).
-           filter(Sequel.or(Sequel[:d][:account_type_id] => [3,4], Sequel[:c][:account_type_id] => [3,4]) & Sequel.or(Sequel[:d][:account_type_id] => nil, Sequel[:c][:account_type_id] => nil)).
-           group(Sequel[:entities][:name]).order(:name).all
-        end
-        :earning_spending
-      end
-
-      r.is 'yearly_earning_spending' do
-        if setup_year_headers
-          @accounts = accounts_entries_ds.select(Sequel[:accounts][:name], *by_account_select(&BY_YEAR_COND)).
-           filter(Sequel[:accounts][:account_type_id]=>[3,4]).
-           group(Sequel[:accounts][:account_type_id], Sequel[:accounts][:name]).order(Sequel.desc(:account_type_id), :name).all
-        end
-        :earning_spending
-      end
-    end
-
-    r.on 'update' do
-      r.get do
-        r.is 'auto_complete_for_entity_name', Integer do |id|
-          userEntity.auto_complete(tp.str!('q'), id).join("\n")
-        end
-        
-        r.is 'auto_reconcile' do
-          auto_reconcile
-        end
-        
-        r.is 'modify_entry', [Integer, true] do |id|
-          @account = user_account(tp.pos_int!('register_account_id'))
-          @accounts = userAccount.for_select
-
-          if @selected_entry_id = tp.pos_int('selected_entry_id')
-            @other_entry = user_entry(@selected_entry_id)
-            @other_entry.main_account = @account
-          end
-
-          if id
-            @entry = user_entry(id)
-            @entry.main_account = @account
-            @selected_entry_id = @entry.id
-          else
-            @selected_entry_id = nil
-          end
-
-          if json_requested?
-            json = []
-            json << ['set_value', '#selected_entry_id', @selected_entry_id]
-            json << ['replace_html', '#new_entry', render("_#{@entry ? 'blank' : 'new'}_register_entry", :locals=>{:entry=>@entry})]
-            json << ['replace_html', "#entry_#{@other_entry.id}", render('_register_entry', :locals=>{:entry=>@other_entry})] if @other_entry
-            json << ['resort']
-            json << ['replace_html', "#entry_#{@entry.id}", render('_modify_register_entry', :locals=>{:entry=>@entry})] if @entry
-            json << ['replace_html', '#results', @entry ? 'Modify entry' : 'Add entry']
-            json << ['autocompleter']
-            json
-          else
-            @show_num_entries = num_register_entries
-            :register
-          end
-        end
-
-        r.is 'other_account_for_entry', Integer do |id|
-          h = {}
-          if (entity = tp.nonempty_str('entity')) && (account = user_account(id)) && (entry = account.last_entry_for_entity(entity))
-            entry.main_account = account
-            h = {:account_id=>entry.other_account.id, :amount=>entry.amount.to_s('F')}
-          end
-          h
-        end
-
-        r.is 'reconcile', Integer do |id|
-          @account = user_account(id)
-          :reconcile
-        end
-
-        r.is 'register', Integer do |id|
-          @account = user_account(id)
-          @accounts = userAccount.for_select
-          @show_num_entries = tp.pos_int('show', num_register_entries)
-          @check_number = @account.next_check_number
-          :register
-        end
-      end
-
-      r.post do
-        r.is 'add_entry' do
-          @account = user_account(tp.pos_int!('register_account_id'))
-          @accounts = userAccount.for_select
-          if tp.present?('update')
-            next update_register_entry
-          end
-          @entry = Entry.new(tp.Hash!('entry'))
-          @entry.user_id = session['user_id']
-          save_entry
-          ref = tp['entry'].str!('reference')
-          @check_number = (ref =~ /\A\d+\z/) ? ref.next : ''
-
-          if json_requested?
-            [
-              ['set_value', '#selected_entry_id', ''],
-              ['replace_html', '#new_entry', render('_new_register_entry', :locals=>{:time=>@entry.date})],
-              ['insert_html', '#new_entry', "<tr id='entry_#{@entry.id}'>#{render('_register_entry', :locals=>{:entry=>@entry})}</tr>"],
-              ['replace_html', '#results', 'Added entry'],
-              ['autocompleter'],
-              ['resort']
-            ]
-          else
-            r.redirect "/update/register/#{@account.id}"
-          end
-        end
-
-        r.is 'clear_entries' do
-          if tp.present?('auto_reconcile') && !request.xhr?
-            next auto_reconcile
-          end
-
-          userEntry.filter(:id=>tp.Hash!('entries').keys.collect(&:to_i)).update(:cleared => true)
-
-          next unless account_id = tp.pos_int('id')
-
-          if json_requested?
-            @account = user_account(account_id)
-            reconciled_balance = @account.unreconciled_balance.to_money
-            [
-              ['replace_html', '#reconcile_changes', '$0.00'],
-              ['replace_html', '#balance', reconciled_balance],
-              ['replace_html', '#reconciled_balance', reconciled_balance],
-              ['set_value', '#reconcile_to', reconciled_balance],
-              ['replace_html', '#off_by', '$0.00'],
-              ['replace_html', '#debit_entries', render('_reconcile_table', :locals=>{:entry_type=>'debit'})],
-              ['replace_html', '#credit_entries', render('_reconcile_table', :locals=>{:entry_type=>'credit'})],
-              ['replace_html', '#results', 'Cleared entries'],
-              ['setup_reconcile']
-            ]
-          elsif 
-            r.redirect "/update/reconcile/#{account_id}"
-          end
-        end
-      end
-    end
-
+    r.hash_routes(:root)
     autoforme
   end
 
