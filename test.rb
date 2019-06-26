@@ -7,8 +7,8 @@ TRANSACTIONAL_TESTS = true
 RESET_DRIVER = true
 Gem.suffix_pattern
 
-require_relative 'spec_helper'
 require_relative 'spam'
+require_relative 'spec_helper'
 
 db_name = Spam::DB.get{current_database.function}
 raise "Doesn't look like a test database (#{db_name}), not running tests" unless db_name =~ /test\z/
