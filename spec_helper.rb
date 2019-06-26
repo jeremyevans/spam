@@ -2,6 +2,7 @@ ENV['MT_NO_PLUGINS'] = '1' # Work around stupid autoloading of plugins
 gem 'minitest'
 require 'minitest/autorun'
 require 'minitest/hooks/default'
+SPAM_TEST_SETUP.call if defined?(SPAM_TEST_SETUP)
 
 class Minitest::HooksSpec
   around(:all) do |&block|
