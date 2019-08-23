@@ -106,6 +106,13 @@ class App < Roda
     accounts_table :users
     account_password_hash_column :password_hash
     title_instance_variable :@pagetitle
+    update_session do
+      super()
+      session['subusers'] = DB[:users].where(:id=>DB[:subusers].where(:user_id=>session['user_id']).select(:sub_user_id)).
+        order(:name).
+        select_map([:id, :name]).
+        each{|a| a[1] = a[1].split(':', 2)[1]}
+    end
   end
   precompile_rodauth_templates
 
@@ -131,8 +138,59 @@ class App < Roda
 
   plugin :hash_routes
 
+  def subuser?
+    session['original_user']
+  end
+
   hash_routes :root do
-    view "", :content=>''
+    view "", :switch_user
+
+    is 'create-subuser' do |r|
+      next if subuser?
+      @user = User.new
+
+      r.get do
+        :create_subuser
+      end
+
+      r.post do
+        @user.name = if name = tp.nonempty_str('name')
+          "#{session['user_id']}:#{name}"
+        end
+
+        @user.password_hash = '*' # No direct login
+        DB.transaction do
+          if name && @user.save
+            DB[:subusers].insert(:user_id=>session['user_id'], :sub_user_id=>@user.id)
+            session['subusers'] ||= []
+            session['subusers'] << [@user.id, name]
+            flash['notice'] = "User created: #{name}"
+            r.redirect '/'
+          else
+            flash.now['error'] = "User not created"
+            :create_subuser
+          end
+        end
+      end
+    end
+
+    post 'switch-user' do
+      if subuser?
+        session['user_id'] = session.delete('original_user')
+        session.delete('user_name')
+        flash['notice'] = 'Switched Back to Main User'
+        request.redirect '/'
+      elsif session['subusers'] && (to = tp.Integer("switch_to")) && (val = session['subusers'].find{|id, _| id == to})
+        session['original_user'] = session['user_id']
+        session['user_id'] = to
+        session['user_name'] = val[1]
+        flash['notice'] = "Switched to User #{val[1]}"
+        request.redirect '/'
+      else
+        flash['error'] = 'Unable to Switch to User'
+        request.redirect '/'
+      end
+    end
   end
 
   hash_routes :reports do

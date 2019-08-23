@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SPAM<%= " - #{@pagetitle || (@autoforme_action.title if @autoforme_action)}" if @pagetitle || @autoforme_action %></title>
+<title>SPAM<%= ":#{session['user_name']}" if session['user_name'] %><%= " - #{@pagetitle || (@autoforme_action.title if @autoforme_action)}" if @pagetitle || @autoforme_action %></title>
 <link rel="shortcut icon" href="/favicon.ico" />
 <%== assets(:css) %>
 </head>
@@ -20,7 +20,7 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a href="/" class="navbar-brand"><acronym title="Simple Personal Accounting Manager">SPAM</acronym></a>
+      <a href="/" class="navbar-brand"><acronym title="Simple Personal Accounting Manager">SPAM</acronym><%= ":#{session['user_name']}" if session['user_name'] %></a>
     </div>
 
 
@@ -73,8 +73,11 @@
               <li><a href="/Account/browse">Manage Accounts</a></li>
               <li><a href="/Entity/browse">Manage Entities</a></li>
               <li><a href="/Entry/browse">Manage Entries</a></li>
-              <% unless ENV['SPAM_DEMO'] %>
-                <li><a href="/change-password">Change Password</a></li>
+              <% unless subuser? %>
+                <% if !ENV['SPAM_DEMO'] %>
+                  <li><a href="/change-password">Change Password</a></li>
+                <% end %>
+                <li><a href="/create-subuser">Create User</a></li>
               <% end %>
             </ul>
           </li>

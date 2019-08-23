@@ -48,6 +48,12 @@ CREATE TABLE entries (
     CHECK (debit_account_id != credit_account_id)
 ) WITHOUT OIDS;
 
+CREATE TABLE subusers (
+    user_id INTEGER REFERENCES users NOT NULL,
+    sub_user_id INTEGER REFERENCES users NOT NULL,
+    PRIMARY KEY (user_id, sub_user_id)
+) WITHOUT OIDS;
+
 CREATE UNIQUE INDEX accounts_namei ON accounts (user_id, lower(name));
 CREATE UNIQUE INDEX entities_namei ON entities (user_id, lower(name));
 CREATE INDEX entries_user_date ON entries (user_id, date);

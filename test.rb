@@ -20,7 +20,7 @@ else
   Refrigerator.freeze_core(:except=>['BasicObject'])
 end
 
-[:entries, :entities, :accounts, :account_types, :users].each{|x| Spam::DB[x].delete}
+[:entries, :entities, :accounts, :account_types, :subusers, :users].each{|x| Spam::DB[x].delete}
 Spam::DB[:users].insert(:password_hash=>BCrypt::Password.create("pass"), :name=>"default", :num_register_entries=>35, :id=>1)
 Spam::DB[:users].insert(:password_hash=>BCrypt::Password.create("pass2"), :name=>"test", :num_register_entries=>35, :id=>2)
 Spam::DB[:account_types].insert(:name=>"Asset", :id=>1)
@@ -39,6 +39,9 @@ Spam::DB[:entities].insert(:user_id=>1, :name=>"Card", :id=>3)
 Spam::DB[:entities].insert(:user_id=>2, :name=>"Test", :id=>4)
 Spam::DB[:entries].insert(:credit_account_id=>6, :reference=>"", :user_id=>2, :entity_id=>4, :cleared=>false, :amount=>100, :memo=>"", :date=>'2008-06-11', :debit_account_id=>5, :id=>1)
 entries = Spam::DB[:entries].filter(:user_id => 1)
+Spam::DB.reset_primary_key_sequence(:users)
+Spam::DB.reset_primary_key_sequence(:accounts)
+Spam::DB.reset_primary_key_sequence(:entities)
 
 Capybara.app = Spam::App.app
 
@@ -100,6 +103,74 @@ describe "SPAM" do
     click_button 'Change Password'
     page.html.must_match /Your password has been changed/
     BCrypt::Password.new(Spam::User[1].password_hash).must_be :==, 'pass3foo'
+  end
+
+  it "should be able to create and switch to sub-users" do 
+    login
+
+    page.html.wont_include "Switch User"
+    page.html.wont_include "Return to Main User"
+
+    click_link 'Create User'
+    click_button 'Create User'
+    page.html.must_include 'User not created'
+    Spam::DB[:subusers].where(:user_id=>1).get(:sub_user_id).must_be_nil
+
+    fill_in 'Name', :with=>'Foo1'
+    click_button 'Create User'
+    page.html.must_include 'User created: Foo1'
+    Spam::User[Spam::DB[:subusers].where(:user_id=>1).get(:sub_user_id)].password_hash.must_equal '*'
+
+    click_link 'Create User'
+    fill_in 'Name', :with=>'Bar2'
+    click_button 'Create User'
+    page.html.must_include 'User created: Bar2'
+    Spam::User[Spam::DB[:subusers].where(:user_id=>1).reverse(:sub_user_id).get(:sub_user_id)].password_hash.must_equal '*'
+
+    page.title.must_equal "SPAM"
+    page.html.must_include "Switch User"
+    page.html.wont_include "Return to Main User"
+    page.html.must_include "Credit Card"
+    select "Foo1"
+    click_button 'Switch to User'
+
+    page.title.must_equal "SPAM:Foo1"
+    page.html.wont_include "Switch User"
+    page.html.must_include "Return to Main User"
+    page.html.wont_include "Credit Card"
+    page.html.wont_include "Create User"
+
+    click_link 'Manage Accounts'
+    page.all('td').must_be_empty
+    click_link 'New'
+    fill_in 'Name', :with=>'CC Foo'
+    select 'Liability'
+    select 'False'
+    click_button 'Create'
+    page.html.must_include "CC Foo"
+    find('#nav-register').click_link 'CC Foo'
+    page.all('td').length.must_equal 9
+
+    click_link 'SPAM:Foo1'
+    click_button 'Return to Main User'
+    page.html.must_include "Credit Card"
+    page.html.wont_include "CC Foo"
+
+    select "Bar2"
+    click_button 'Switch to User'
+    page.html.wont_include "Credit Card"
+    page.html.wont_include "CC Foo"
+
+    click_link 'Manage Accounts'
+    page.all('td').must_be_empty
+    click_link 'New'
+    fill_in 'Name', :with=>'CC Bar'
+    select 'Liability'
+    select 'False'
+    click_button 'Create'
+    page.html.must_include "CC Bar"
+    find('#nav-register').click_link 'CC Bar'
+    page.all('td').length.must_equal 9
   end
 
   it "should have a working register form" do 

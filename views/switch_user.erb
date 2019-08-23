@@ -1,0 +1,21 @@
+
+<% if subuser? %>
+  <h1>Return to Main User</h1>
+
+  <form action="/switch-user" method="post">
+    <%== csrf_tag("/switch-user") %>
+    <input type="submit" value="Return to Main User" class="btn btn-primary" />
+  </form>
+<% elsif session['subusers'] && !session['subusers'].empty? %>
+  <h1>Switch User</h1>
+
+  <form action="/switch-user" method="post">
+    <%== csrf_tag("/switch-user") %>
+    <label>User: <select name="switch_to">
+      <% session['subusers'].each do |id, name| %>
+        <option value="<%= id %>"><%= name %></option>
+      <% end %>
+    </select></label>
+    <input type="submit" value="Switch to User" class="btn btn-primary" />
+  </form>
+<% end %>
