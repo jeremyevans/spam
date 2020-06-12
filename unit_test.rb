@@ -1,4 +1,5 @@
 ENV['RACK_ENV'] = 'test'
+require_relative 'warnings_helper'
 require_relative 'models'
 include Spam
 db_name = DB.get{current_database.function}

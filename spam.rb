@@ -11,8 +11,6 @@ class App < Roda
 
   plugin :direct_call
 
-  plugin :strip_path_prefix if ENV['SPAM_STRIP_PATH_PREFIX']
-
   plugin :route_csrf
 
   plugin :public, :gzip=>true
@@ -377,7 +375,7 @@ class App < Roda
           ['replace_html', '#results', 'Cleared entries'],
           ['setup_reconcile']
         ]
-      elsif 
+      else
         request.redirect "/update/reconcile/#{account_id}"
       end
     end
@@ -419,7 +417,6 @@ class App < Roda
   end
 
   def income_expense_report
-    ue = userEntry
     negative_map = {:income=>true, :expense=>false, :assets=>true, :liabilities=>false}
     @months = accounts_entries_ds.select((Sequel.extract(:year, Sequel[:entries][:date]).cast_string + Sequel.function(:to_char, Sequel.extract(:month, Sequel[:entries][:date]) * -1, '00')).as(:month),
       *{3=>:income, 4=>:expense, 1=>:assets, 2=>:liabilities}.collect{|i, aliaz| Sequel.function(:sum, Sequel.case([[Sequel.~(:account_type_id=>i),0], [debit_cond, Sequel.*(:amount, (negative_map[aliaz] ? -1 : 1))]], Sequel.*(:amount, (negative_map[aliaz] ? 1 : -1)))).as(aliaz)}).
@@ -482,7 +479,6 @@ class App < Roda
   end
 
   def auto_reconcile
-    r = request
     id = tp.pos_int!('id')
     @reconcile_to = tp.float!('reconcile_to')
     @account = user_account(id)
@@ -519,7 +515,6 @@ class App < Roda
   end
 
   def save_entry
-    r = request
     other_account = user_account(tp['account'].pos_int!('id'))
     amount = tp['entry'].float!('amount')
     @entry[:debit_account_id], @entry[:credit_account_id] = ((amount > 0) ? [@account.id, other_account.id] : [other_account.id, @account.id])
