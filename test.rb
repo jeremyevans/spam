@@ -2,6 +2,7 @@ require_relative 'warnings_helper'
 require 'capybara'
 require 'capybara/dsl'
 require 'rack/test'
+require 'rack/mock'
 ENV['RACK_ENV'] = 'test'
 
 TRANSACTIONAL_TESTS = true
