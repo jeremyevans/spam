@@ -30,6 +30,7 @@ class App < Roda
   plugin :render_each
   plugin :flash
   plugin :h
+  plugin :r
   plugin :json
   plugin :symbol_views
   plugin :disallow_file_uploads
@@ -177,16 +178,16 @@ class App < Roda
         session['user_id'] = session.delete('original_user')
         session.delete('user_name')
         flash['notice'] = 'Switched Back to Main User'
-        request.redirect '/'
+        r.redirect '/'
       elsif session['subusers'] && (to = tp.Integer("switch_to")) && (val = session['subusers'].find{|id, _| id == to})
         session['original_user'] = session['user_id']
         session['user_id'] = to
         session['user_name'] = val[1]
         flash['notice'] = "Switched to User #{val[1]}"
-        request.redirect '/'
+        r.redirect '/'
       else
         flash['error'] = 'Unable to Switch to User'
-        request.redirect '/'
+        r.redirect '/'
       end
     end
   end
@@ -348,12 +349,12 @@ class App < Roda
           ['resort']
         ]
       else
-        request.redirect "/update/register/#{@account.id}"
+        r.redirect "/update/register/#{@account.id}"
       end
     end
 
     post 'clear_entries' do
-      if tp.present?('auto_reconcile') && !request.xhr?
+      if tp.present?('auto_reconcile') && !r.xhr?
         next auto_reconcile
       end
 
@@ -376,7 +377,7 @@ class App < Roda
           ['setup_reconcile']
         ]
       else
-        request.redirect "/update/reconcile/#{account_id}"
+        r.redirect "/update/reconcile/#{account_id}"
       end
     end
   end
@@ -533,7 +534,6 @@ class App < Roda
   end
 
   def update_register_entry
-    r = request
     entry = tp.Hash!('entry')
     entry_id = tp['entry'].pos_int!('id')
     @entry = user_entry(entry_id)
