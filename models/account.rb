@@ -94,4 +94,4 @@ end
 #  entries | entries_credit_account_id_fkey | (credit_account_id) REFERENCES accounts(id)
 #  entries | entries_debit_account_id_fkey  | (debit_account_id) REFERENCES accounts(id)
 # Triggers:
-#  no_updating_accounts_user_id | BEFORE UPDATE ON accounts FOR EACH ROW EXECUTE PROCEDURE no_updating_user_id()
+#  no_updating_accounts_user_id | BEFORE UPDATE ON accounts FOR EACH ROW EXECUTE FUNCTION no_updating_user_id()

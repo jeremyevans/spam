@@ -39,4 +39,4 @@ end
 # Referenced By:
 #  entries | entries_entity_id_fkey | (entity_id) REFERENCES entities(id)
 # Triggers:
-#  no_updating_entities_user_id | BEFORE UPDATE ON entities FOR EACH ROW EXECUTE PROCEDURE no_updating_user_id()
+#  no_updating_entities_user_id | BEFORE UPDATE ON entities FOR EACH ROW EXECUTE FUNCTION no_updating_user_id()

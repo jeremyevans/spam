@@ -63,6 +63,6 @@ end
 #  entries_entity_id_fkey         | (entity_id) REFERENCES entities(id)
 #  entries_user_id_fkey           | (user_id) REFERENCES users(id)
 # Triggers:
-#  check_entity_and_accounts   | BEFORE INSERT ON entries FOR EACH ROW EXECUTE PROCEDURE check_entity_and_accounts()
-#  no_updating_entries_user_id | BEFORE UPDATE ON entries FOR EACH ROW EXECUTE PROCEDURE no_updating_user_id()
-#  update_account_balance      | BEFORE INSERT OR DELETE OR UPDATE ON entries FOR EACH ROW EXECUTE PROCEDURE update_account_balance()
+#  check_entity_and_accounts   | BEFORE INSERT ON entries FOR EACH ROW EXECUTE FUNCTION check_entity_and_accounts()
+#  no_updating_entries_user_id | BEFORE UPDATE ON entries FOR EACH ROW EXECUTE FUNCTION no_updating_user_id()
+#  update_account_balance      | BEFORE INSERT OR DELETE OR UPDATE ON entries FOR EACH ROW EXECUTE FUNCTION update_account_balance()

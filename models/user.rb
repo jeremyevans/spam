@@ -16,6 +16,8 @@ end
 #  users_pkey     | PRIMARY KEY btree (id)
 #  users_name_key | UNIQUE btree (name)
 # Referenced By:
-#  accounts | accounts_user_id_fkey | (user_id) REFERENCES users(id)
-#  entities | entities_user_id_fkey | (user_id) REFERENCES users(id)
-#  entries  | entries_user_id_fkey  | (user_id) REFERENCES users(id)
+#  accounts | accounts_user_id_fkey     | (user_id) REFERENCES users(id)
+#  entities | entities_user_id_fkey     | (user_id) REFERENCES users(id)
+#  entries  | entries_user_id_fkey      | (user_id) REFERENCES users(id)
+#  subusers | subusers_sub_user_id_fkey | (sub_user_id) REFERENCES users(id)
+#  subusers | subusers_user_id_fkey     | (user_id) REFERENCES users(id)
