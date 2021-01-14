@@ -17,6 +17,7 @@ desc "Run ajax tests"
 task :ajax do
   begin
     ENV['RACK_ENV'] = 'test'
+    ENV['AJAX_TESTS'] = '1'
     ENV['SPAM_SESSION_SECRET'] = '1'*64
     sh "echo -n '' > unicorn.test.log"
     unicorn_bin = File.basename(FileUtils::RUBY).sub(/\Aruby/, 'unicorn')
@@ -37,6 +38,7 @@ task :default=>default_specs
 namespace :assets do
   desc "Precompile the assets"
   task :precompile do
+    ENV["ASSETS_PRECOMPILE"] = '1'
     require './spam'
     Spam::App.compile_assets
   end

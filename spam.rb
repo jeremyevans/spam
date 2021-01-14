@@ -72,11 +72,10 @@ class App < Roda
   end
 
   plugin :not_found do
-    File.read("public/404.html")
+    view(:content=>'<h1>File Not Found</h1>')
   end
 
-  logger = case ENV['RACK_ENV']
-  when 'development', 'test' # Remove development after Unicorn 5.5+
+  logger = if ENV['RACK_ENV'] == "test" && ENV['AJAX_TESTS'] != '1'
     Class.new{def write(_) end}.new
   else
     $stderr
@@ -140,6 +139,15 @@ class App < Roda
   def subuser?
     session['original_user']
   end
+
+  plugin :precompile_templates
+  precompile_views [:switch_user, :create_subuser, :reconcile, :register, :net_worth, :income_expense, :balance_sheet, :earning_spending]
+  precompile_views :_reconcile_table, [:entry_type]
+  precompile_views :_reconcile_entry, [:entry_type, :reconcile_entry]
+  precompile_views %w'_blank_register_entry _new_register_entry'
+  precompile_views %w'_modify_register_entry _register_entry', [:entry]
+  precompile_views %w'_new_register_entry', [:time]
+  freeze_template_caches! unless ENV["ASSETS_PRECOMPILE"] == '1'
 
   hash_routes :root do
     view "", :switch_user
@@ -285,7 +293,7 @@ class App < Roda
         if json_requested?
           json = []
           json << ['set_value', '#selected_entry_id', @selected_entry_id]
-          json << ['replace_html', '#new_entry', render("_#{@entry ? 'blank' : 'new'}_register_entry", :locals=>{:entry=>@entry})]
+          json << ['replace_html', '#new_entry', render("_#{@entry ? 'blank' : 'new'}_register_entry")]
           json << ['replace_html', "#entry_#{@other_entry.id}", render('_register_entry', :locals=>{:entry=>@other_entry})] if @other_entry
           json << ['resort']
           json << ['replace_html', "#entry_#{@entry.id}", render('_modify_register_entry', :locals=>{:entry=>@entry})] if @entry
@@ -371,8 +379,8 @@ class App < Roda
           ['replace_html', '#reconciled_balance', reconciled_balance],
           ['set_value', '#reconcile_to', reconciled_balance],
           ['replace_html', '#off_by', '$0.00'],
-          ['replace_html', '#debit_entries', render('_reconcile_table', :locals=>{:entry_type=>'debit'})],
-          ['replace_html', '#credit_entries', render('_reconcile_table', :locals=>{:entry_type=>'credit'})],
+          ['replace_html', '#debit_entries', render(:_reconcile_table, :locals=>{:entry_type=>'debit'})],
+          ['replace_html', '#credit_entries', render(:_reconcile_table, :locals=>{:entry_type=>'credit'})],
           ['replace_html', '#results', 'Cleared entries'],
           ['setup_reconcile']
         ]
@@ -501,8 +509,8 @@ class App < Roda
         json = [
           ['replace_html', '#off_by', '$0.00'],
           ['replace_html', '#reconcile_changes', @reconcile_changes.to_money],
-          ['replace_html', '#debit_entries', render('_reconcile_table', :locals=>{:entry_type=>'debit'})],
-          ['replace_html', '#credit_entries', render('_reconcile_table', :locals=>{:entry_type=>'credit'})]
+          ['replace_html', '#debit_entries', render(:_reconcile_table, :locals=>{:entry_type=>'debit'})],
+          ['replace_html', '#credit_entries', render(:_reconcile_table, :locals=>{:entry_type=>'credit'})]
         ]
       else
         json = []
@@ -511,7 +519,7 @@ class App < Roda
       json << ['setup_reconcile']
       json
     else
-      view 'reconcile'
+      view :reconcile
     end
   end
 

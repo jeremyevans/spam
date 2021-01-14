@@ -21,10 +21,10 @@
 </div>
 <div class="row">
   <div id="debit_entries" class="col-md-5">
-    <%== render('_reconcile_table', :locals=>{:entry_type=>'debit'}) %>
+    <%== render(:_reconcile_table, :locals=>{:entry_type=>'debit'}) %>
   </div>
   <div id="credit_entries" class="col-md-5 col-md-offset-1">
-    <%== render('_reconcile_table', :locals=>{:entry_type=>'credit'}) %>
+    <%== render(:_reconcile_table, :locals=>{:entry_type=>'credit'}) %>
   </div>
 </div>
 </form>
