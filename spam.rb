@@ -225,7 +225,9 @@ class App < Roda
         @accounts = accounts_entries_ds.select(Sequel[:accounts][:name], *by_account_select{|k| Sequel.~(@age.extract(:month) => (@i+=1))}).
          filter(Sequel[:accounts][:account_type_id]=>[3,4]).
          filter(@age < Sequel.cast('1 year', :interval)).
-         group(Sequel[:accounts][:account_type_id], Sequel[:accounts][:name]).order(Sequel.desc(:account_type_id), :name).all
+         group(Sequel[:accounts][:account_type_id], Sequel[:accounts][:name]).
+         order(Sequel.desc(:account_type_id), :name).
+         all
       end
       :earning_spending
     end
@@ -235,7 +237,8 @@ class App < Roda
         @accounts = entities_entries_ds.select(Sequel[:entities][:name], *by_entity_select{|k| Sequel.~(@age.extract(:month) => (@i+=1))}).
          filter(@age < Sequel.cast('1 year', :interval)).
          filter(Sequel.or(Sequel[:d][:account_type_id] => [3,4], Sequel[:c][:account_type_id] => [3,4]) & Sequel.or(Sequel[:d][:account_type_id] => nil, Sequel[:c][:account_type_id] => nil)).
-         group(Sequel[:entities][:name]).order(:name).all
+         group(Sequel[:entities][:name]).order(:name).
+         all
       end
       :earning_spending
     end
@@ -253,7 +256,9 @@ class App < Roda
       if setup_year_headers
         @accounts = accounts_entries_ds.select(Sequel[:accounts][:name], *by_account_select(&BY_YEAR_COND)).
          filter(Sequel[:accounts][:account_type_id]=>[3,4]).
-         group(Sequel[:accounts][:account_type_id], Sequel[:accounts][:name]).order(Sequel.desc(:account_type_id), :name).all
+         group(Sequel[:accounts][:account_type_id], Sequel[:accounts][:name]).
+         order(Sequel.desc(:account_type_id), :name).
+         all
       end
       :earning_spending
     end
