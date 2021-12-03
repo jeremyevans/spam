@@ -16,6 +16,9 @@ module Spam
   Model.plugin :forme
   Model.plugin :prepared_statements_safe
   Model.plugin :pg_auto_constraint_validations
+  if ENV['UNUSED_ASSOCIATION_COVERAGE']
+    Model.plugin :unused_associations, :coverage_file=>'unused_associations_coverage.json', :file=>'unused_associations.json'
+  end
   if ENV['RACK_ENV'] == 'test'
     Model.plugin :forbid_lazy_load
     Model.plugin :instance_specific_default, :warn

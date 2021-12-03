@@ -1,7 +1,7 @@
 module Spam
 class Entity < Model
-  one_to_many :entries
-  one_to_many :recent_entries, :class_name=>'Spam::Entry', :eager=>[:credit_account, :debit_account], :order=>Sequel.desc(:date), :limit=>25
+  one_to_many :entries, :read_only=>true
+  one_to_many :recent_entries, :class_name=>'Spam::Entry', :eager=>[:credit_account, :debit_account], :order=>Sequel.desc(:date), :limit=>25, :read_only=>true
   
   def self.user(user_id)
     filter(:user_id=>user_id).order(:name)
