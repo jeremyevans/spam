@@ -38,7 +38,7 @@ describe Account do
     @account.credit_entries.must_equal [@entry2]
     @account.debit_entries.must_equal [@entry]
     @account.recent_credit_entries.must_equal [@entry2]
-    @account.debit_entries.must_equal [@entry]
+    @account.recent_debit_entries.must_equal [@entry]
   end
 
   it ".for_select should be an array of arrays of names and ids" do
