@@ -119,20 +119,36 @@ function updateOffBy(element) {
 }
 
 function set_entity_autocompleter() {
-  var reg_account_id = $('#register_account_id').val();
-  $('#entity_name').autocomplete('/update/auto_complete_for_entity_name/' + reg_account_id,
-    {
-      sortResults: false,
-      onFinish: function() {
-        $.getJSON('/update/other_account_for_entry/' + reg_account_id,
-         {entity: $('#entity_name').val()},
-         function(data){
-          if(data.account_id){$('#account_id').val(data.account_id)}
-          if(data.amount){$('#entry_amount').val(data.amount)}
-         });
-      }
+  var reg_account_id = document.getElementById('register_account_id').value;
+  var xhr_headers = {'X-Requested-With': 'XMLHttpRequest'};
+  new autoComplete({
+    selector: '#entity_name',
+    source: function(term, suggest) {
+      fetch(('/update/auto_complete_for_entity_name/' + reg_account_id + '?q=' + term), {headers: xhr_headers}).
+        then(function(response) {
+          return response.text();
+        }).
+        then(function(body) {
+          suggest(body.split("\n"));
+        });
+    },
+    onSelect: function(ev, term, item) {
+      fetch(('/update/other_account_for_entry/' + reg_account_id + '?entity=' + document.getElementById('entity_name').value), {headers: xhr_headers}).
+        then(function(response) {
+          return response.text();
+        }).
+        then(function(data) {
+          data = JSON.parse(data);
+          if(data.account_id) {
+            document.getElementById('account_id').value = data.account_id;
+          }
+          if(data.amount) {
+            document.getElementById('entry_amount').value = data.amount;
+          }
+        });
     }
-  );
+  });
+
   document.forms[1].entry_date.focus();
 }
 
@@ -240,3 +256,19 @@ function handle_action(action) {
   }
 }
 
+(function() {
+  var button = document.getElementById('toggle-nav');
+  var nav = document.getElementById('bs-example-navbar-collapse-1');
+  button.onclick = function(){nav.classList.toggle('display');};
+
+  var details = document.querySelectorAll("#bs-example-navbar-collapse-1 details");
+  details.forEach((detail) => {
+    detail.onclick = () => {
+      details.forEach((d) => {
+        if (d !== detail) {
+          d.removeAttribute("open");
+        };
+      });
+    };
+  });
+})();

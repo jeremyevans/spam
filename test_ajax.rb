@@ -58,20 +58,24 @@ class Minitest::Spec
     h.delete(:id)
     h
   end
+
+  def visit(path)
+    super("http://127.0.0.1:#{PORT}#{path}")
+  end
 end
 
 describe "SPAM" do
   it "should have a working ajax" do 
     Headless.ly do
-      visit("http://127.0.0.1:#{PORT}/")
+      visit "/"
       fill_in 'Username', :with=>'default'
       fill_in 'Password', :with=>'pass'
-      click_on 'Login'
+      click_button 'Login'
+      page.title.must_equal 'SPAM'
 
-      find('#nav-register').click_link('Registers')
-      find('#nav-register').click_link('Checking')
+      visit '/update/register/1'
       page.title.must_equal 'SPAM - Checking Register'
-      find('h3').text.must_equal 'Showing 35 Most Recent Entries'
+      find('h2').text.must_equal 'Showing 35 Most Recent Entries'
       form = find('div#content form')
       form.all('tr').length.must_equal 2
       form.all("table thead tr th").map(&:text).must_equal 'Date/Num/Entity/Other Account/Memo/C/Amount/Balance/Modify'.split('/')
@@ -127,11 +131,10 @@ describe "SPAM" do
       Entries.delete
       @entry_id = Entries.insert(:date=>Date.new(2008,06,07), :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal('1000'), :cleared=>false, :user_id=>1)
 
-      find('#nav-reconcile').click_link('Reconcile')
-      find('#nav-reconcile').click_link('Checking')
+      visit '/update/reconcile/1'
       form = find('div#content form')
       form.first('table').all('tr td').map{|x| x.text.strip}.must_equal "Previous Reconciled Balance/$0.00/Reconciling Changes/$0.00/New Reconciled Balance/$0.00/Expected Reconciled Balance//Off By/$0.00// ".split('/')[0...-1]
-      form.all('caption').map(&:text).must_equal 'Debit Entries/Credit Entries'.split('/')
+      form.all('caption').map(&:text).must_equal ['Credit Entries']
       form.all('table').last.all('thead th').map(&:text).must_equal %w'C Date Num Entity Amount'
       form.all('table').last.all('tbody td').map(&:text).must_equal '/2008-06-07/1000/Card/$1000.00'.split('/')
 

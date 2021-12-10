@@ -66,6 +66,17 @@ class Minitest::Spec
     fill_in 'Password', :with=>'pass'
     click_on 'Login'
   end
+
+  def click_nav(link)
+    allow_invisible{click_link link}
+  end
+
+  def allow_invisible
+    Capybara.ignore_hidden_elements = false
+    yield
+  ensure
+    Capybara.ignore_hidden_elements = true
+  end
 end
 
 describe "SPAM" do
@@ -86,7 +97,7 @@ describe "SPAM" do
   it "should have working change password" do 
     login
 
-    click_link 'Change Password'
+    click_nav 'Change Password'
     fill_in 'Password', :with=>'pass'
     fill_in 'New Password', :with=>'pass3foo'
     fill_in 'Confirm Password', :with=>'pass2foo'
@@ -113,7 +124,7 @@ describe "SPAM" do
     page.html.wont_include "Switch User"
     page.html.wont_include "Return to Main User"
 
-    click_link 'Create User'
+    click_nav 'Create User'
     click_button 'Create User'
     page.html.must_include 'User not created'
     Spam::DB[:subusers].where(:user_id=>1).get(:sub_user_id).must_be_nil
@@ -123,7 +134,7 @@ describe "SPAM" do
     page.html.must_include 'User created: Foo1'
     Spam::User[Spam::DB[:subusers].where(:user_id=>1).get(:sub_user_id)].password_hash.must_equal '*'
 
-    click_link 'Create User'
+    click_nav 'Create User'
     fill_in 'Name', :with=>'Bar2'
     click_button 'Create User'
     page.html.must_include 'User created: Bar2'
@@ -142,7 +153,7 @@ describe "SPAM" do
     page.html.wont_include "Credit Card"
     page.html.wont_include "Create User"
 
-    click_link 'Manage Accounts'
+    click_nav 'Manage Accounts'
     page.all('td').must_be_empty
     click_link 'New'
     fill_in 'Name', :with=>'CC Foo'
@@ -150,7 +161,7 @@ describe "SPAM" do
     select 'False'
     click_button 'Create'
     page.html.must_include "CC Foo"
-    find('#nav-register').click_link 'CC Foo'
+    allow_invisible{find('#nav-register').click_link 'CC Foo'}
     page.all('td').length.must_equal 9
 
     click_link 'SPAM:Foo1'
@@ -163,7 +174,7 @@ describe "SPAM" do
     page.html.wont_include "Credit Card"
     page.html.wont_include "CC Foo"
 
-    click_link 'Manage Accounts'
+    allow_invisible{click_link 'Manage Accounts'}
     page.all('td').must_be_empty
     click_link 'New'
     fill_in 'Name', :with=>'CC Bar'
@@ -171,7 +182,7 @@ describe "SPAM" do
     select 'False'
     click_button 'Create'
     page.html.must_include "CC Bar"
-    find('#nav-register').click_link 'CC Bar'
+    allow_invisible{find('#nav-register').click_link 'CC Bar'}
     page.all('td').length.must_equal 9
   end
 
@@ -180,7 +191,7 @@ describe "SPAM" do
 
     visit('/update/register/1')
     page.title.must_equal "SPAM - Checking Register"
-    find('h3').text.must_equal 'Showing 35 Most Recent Entries'
+    find('h2').text.must_equal 'Showing 35 Most Recent Entries'
     form = find('div#content form')
     form.all('tr').length.must_equal 2
     form.all("table thead tr th").map(&:text).must_equal 'Date/Num/Entity/Other Account/Memo/C/Amount/Balance/Modify'.split('/')
@@ -234,7 +245,7 @@ describe "SPAM" do
       visit('/update/reconcile/1')
       form = find('div#content form')
       form.first('table').all('tr td').map{|x| x.text.strip}.must_equal "Previous Reconciled Balance/$0.00/Reconciling Changes/$0.00/New Reconciled Balance/$0.00/Expected Reconciled Balance//Off By/$0.00// ".split('/')[0...-1]
-      form.all('caption').map(&:text).must_equal 'Debit Entries/Credit Entries'.split('/')
+      form.all('caption').map(&:text).must_equal ['Credit Entries']
       form.all('table').last.all('thead th').map(&:text).must_equal %w'C Date Num Entity Amount'
       form.all('table').last.all('tbody td').map(&:text).must_equal '/2008-06-07/1000/Card/$1000.00'.split('/')
 
