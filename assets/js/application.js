@@ -1,3 +1,26 @@
+(function() {
+  var button = document.getElementById('toggle-nav');
+  var nav = document.getElementById('bs-example-navbar-collapse-1');
+  button.onclick = function(){nav.classList.toggle('display');};
+
+  var details = document.querySelectorAll("#bs-example-navbar-collapse-1 details");
+  details.forEach((detail) => {
+    detail.onclick = () => {
+      details.forEach((d) => {
+        if (d !== detail) {
+          d.removeAttribute("open");
+        };
+      });
+    };
+  });
+
+  document.querySelectorAll(".alert-dismissible button").forEach((button) => {
+    button.onclick = () => {
+      button.parentElement.remove();
+    };
+  });
+})();
+
 function ts_getInnerText(el) {
     if (typeof el == "string") return el;
     if (typeof el == "undefined") { return el };
@@ -104,146 +127,177 @@ function ts_displayCurrency(amount) {
     return s;
 }
 
-function updatedReconcileTo() {
-    $('#off_by').text(ts_displayCurrency(parseCurrency($('#balance').text()) + parseCurrency($('#reconcile_changes').text()) - parseCurrency($('#reconcile_to').val())))
-}
-
-function updateOffBy(element) {
-    var type = element.id.split('_')[0]
-    var amount_id = element.id.split('_')[1]
-    var amount = parseCurrency($('#amount_'+ amount_id).text())
-    if(type == 'debit' ^ element.checked) { amount *= -1; }
-    $('#reconciled_balance').text(ts_displayCurrency(parseCurrency($('#reconciled_balance').text()) + amount))
-    $('#reconcile_changes').text(ts_displayCurrency(parseCurrency($('#reconcile_changes').text()) + amount))
-    updatedReconcileTo()
-}
-
-function set_entity_autocompleter() {
-  var reg_account_id = document.getElementById('register_account_id').value;
-  var xhr_headers = {'X-Requested-With': 'XMLHttpRequest'};
-  new autoComplete({
-    selector: '#entity_name',
-    source: function(term, suggest) {
-      fetch(('/update/auto_complete_for_entity_name/' + reg_account_id + '?q=' + term), {headers: xhr_headers}).
-        then(function(response) {
-          return response.text();
-        }).
-        then(function(body) {
-          suggest(body.split("\n"));
-        });
-    },
-    onSelect: function(ev, term, item) {
-      fetch(('/update/other_account_for_entry/' + reg_account_id + '?entity=' + document.getElementById('entity_name').value), {headers: xhr_headers}).
-        then(function(response) {
-          return response.text();
-        }).
-        then(function(data) {
-          data = JSON.parse(data);
-          if(data.account_id) {
-            document.getElementById('account_id').value = data.account_id;
-          }
-          if(data.amount) {
-            document.getElementById('entry_amount').value = data.amount;
-          }
-        });
-    }
-  });
-
-  document.forms[1].entry_date.focus();
-}
-
 function handle_actions(actions) {
   var l = actions.length;
   var i;
   for(i=0; i<l; i++) {
     handle_action(actions[i]);
   }
-  $('#entry_date').focus().select()
+  var entry_date = document.getElementById('entry_date');
+  if (entry_date) {
+    entry_date.focus();
+    entry_date.select();
+  }
 }
 
-if ($('#register_form')[0]) {
-  $('#register_form').submit(function() {
-    $.ajax({
+function ajax(options) {
+  var fetch_opts = {
+    method: options.type,
+    headers: {'X-Requested-With': 'XMLHttpRequest'}
+  }
+
+  if (options.dataType == 'json') {
+    fetch_opts.headers.Accept = 'application/json';
+  }
+
+  if (options.type == 'GET') {
+     options.url += (options.url.includes('?') ? '&' : '?') + new URLSearchParams(options.data).toString();
+  } else {
+     fetch_opts.body = options.data;
+  }
+  fetch(options.url, fetch_opts).
+    then(function(response) {
+      return response.text();
+    }).
+    then(function(body) {
+      handle_actions(JSON.parse(body));
+    });
+}
+
+function getJSON(url, data) {
+  ajax({type: 'GET', url: url, data: data, dataType: 'json'});
+}
+
+var register_form = document.getElementById('register_form');
+if (register_form) {
+  function set_entity_autocompleter() {
+    var reg_account_id = document.getElementById('register_account_id').value;
+    var xhr_headers = {'X-Requested-With': 'XMLHttpRequest'};
+    new autoComplete({
+      selector: '#entity_name',
+      source: function(term, suggest) {
+        fetch(('/update/auto_complete_for_entity_name/' + reg_account_id + '?q=' + term), {headers: xhr_headers}).
+          then(function(response) {
+            return response.text();
+          }).
+          then(function(body) {
+            suggest(body.split("\n"));
+          });
+      },
+      onSelect: function(ev, term, item) {
+        fetch(('/update/other_account_for_entry/' + reg_account_id + '?entity=' + document.getElementById('entity_name').value), {headers: xhr_headers}).
+          then(function(response) {
+            return response.text();
+          }).
+          then(function(data) {
+            data = JSON.parse(data);
+            if(data.account_id) {
+              document.getElementById('account_id').value = data.account_id;
+            }
+            if(data.amount) {
+              document.getElementById('entry_amount').value = data.amount;
+            }
+          });
+      }
+    });
+
+    register_form.entry_date.focus();
+  }
+
+  register_form.onsubmit = function(e) {
+    e.preventDefault();
+    var data = new FormData(register_form);
+    data.append(document.querySelector('#register_form input[type=submit]').getAttribute('name'), '1');
+    ajax({
       type: 'POST',
       url: '/update/add_entry',
       dataType: 'json',
-      data: $(this).serialize() + '&' + $('#register_form :submit').attr('name') + '=1',
-      success: function(data){
-        handle_actions(data);
-      }
+      data: data
     });
-    return false;
-  })
+  };
 
-  $(document).on('click', 'a.modify', function() {
-    $.getJSON($(this).attr('href'),
-    {selected_entry_id: $('#selected_entry_id').val()},
-    function(data){
-      handle_actions(data);
-    });
-
-    return false;
-  })
+  register_form.addEventListener('click', (e) => {
+    var target = e.target;
+    if (target.tagName == 'A' && target.classList.contains('modify')){
+      e.preventDefault();
+      getJSON(e.target.getAttribute('href'),
+        {selected_entry_id: document.getElementById('selected_entry_id').value});
+    }
+  });
 
   set_entity_autocompleter() 
   handle_actions([])
 }
 
-function setup_reconcile_checkboxes() {
-  $('.reconcile_checkbox').click(function(e) {
-    updateOffBy(e.target);
-  });
-}
+var reconcile_form = document.getElementById('reconcile_form');
+if (reconcile_form) {
+  function updatedReconcileTo() {
+      document.getElementById('off_by').innerText = ts_displayCurrency(
+        parseCurrency(document.getElementById('balance').innerText) +
+        parseCurrency(document.getElementById('reconcile_changes').innerText) -
+        parseCurrency(document.getElementById('reconcile_to').value)
+      );
+  }
 
-if ($('#reconcile_form')[0]) {
-  $('#reconcile_to').change(updatedReconcileTo);
+  function updateOffBy(element) {
+    var type = element.id.split('_')[0]
+    var amount_id = element.id.split('_')[1]
+    var amount = parseCurrency(document.getElementById('amount_'+ amount_id).innerText);
+    if(type == 'debit' ^ element.checked) { amount *= -1; }
+    var reconciled_balance = document.getElementById('reconciled_balance');
+    var reconciled_changes = document.getElementById('reconcile_changes');
+    reconciled_balance.innerText = ts_displayCurrency(
+      parseCurrency(reconciled_balance.innerText) + amount
+    );
+    reconcile_changes.innerText = ts_displayCurrency(
+      parseCurrency(reconcile_changes.innerText) + amount
+    );
+    updatedReconcileTo();
+  }
 
-  setup_reconcile_checkboxes();
+  document.getElementById('reconcile_to').onchange = updatedReconcileTo;
 
-  $('#auto_reconcile').click(function() {
-    $.getJSON(
-      '/update/auto_reconcile',
-      $(this.form).serialize().replace(/_csrf=[^\&]+\&/, ''),
-      function(data){
-        handle_actions(data);
-      });
-    return false;
-  });
+  reconcile_form.onchange = function(e) {
+    var target = e.target;
+    if (target.tagName == 'INPUT' && target.classList.contains('reconcile_checkbox')) {
+      updateOffBy(target);
+    }
+  };
 
-  $('#clear_entries').click(function() {
-    $.ajax({
+  document.getElementById('auto_reconcile').onclick = function(e) {
+    e.preventDefault();
+    var data = new FormData(reconcile_form);
+    data.delete('_csrf');
+    getJSON('/update/auto_reconcile', data);
+  };
+
+  document.getElementById('clear_entries').onclick = function() {
+    ajax({
       type: 'POST',
       url: '/update/clear_entries',
       dataType: 'json',
-      data: $(this.form).serialize(),
-      success: function(data){
-        handle_actions(data);
-      }
+      data: new FormData(reconcile_form)
     });
     return false;
-  })
+  };
 
-  document.forms[1].reconcile_to.select();
-  document.forms[1].reconcile_to.focus();
+  reconcile_form.reconcile_to.select();
+  reconcile_form.reconcile_to.focus();
 }
-
 
 function handle_action(action) {
   switch(action[0]) {
   case 'set_value':
-    $(action[1]).val(action[2])
+    document.querySelectorAll(action[1]).forEach((e) => {e.value = action[2];})
     break;
   case 'replace_html':
-    $(action[1]).html(action[2])
+    document.querySelectorAll(action[1]).forEach((e) => {e.innerHTML = action[2];});
     break;
   case 'insert_html':
-    $(action[1]).after(action[2])
+    document.querySelectorAll(action[1]).forEach((e) => {e.insertAdjacentHTML('afterend',action[2]);});
     break;
   case 'focus':
-    $(action[1]).focus()
-    break;
-  case 'setup_reconcile':
-    setup_reconcile_checkboxes()
+    document.querySelector(action[1]).focus();
     break;
   case 'autocompleter':
     set_entity_autocompleter()
@@ -255,20 +309,3 @@ function handle_action(action) {
     alert('Unhandled action type: ' + action[0]);
   }
 }
-
-(function() {
-  var button = document.getElementById('toggle-nav');
-  var nav = document.getElementById('bs-example-navbar-collapse-1');
-  button.onclick = function(){nav.classList.toggle('display');};
-
-  var details = document.querySelectorAll("#bs-example-navbar-collapse-1 details");
-  details.forEach((detail) => {
-    detail.onclick = () => {
-      details.forEach((d) => {
-        if (d !== detail) {
-          d.removeAttribute("open");
-        };
-      });
-    };
-  });
-})();

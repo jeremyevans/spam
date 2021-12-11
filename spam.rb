@@ -19,7 +19,7 @@ class App < Roda
   plugin :render, :escape=>true
   plugin :assets,
     :css=>%w'scaffold_associations_tree.css auto-complete.css spam.scss',
-    :js=>%w'jquery-1.11.1.min.js auto-complete.min.js autoforme.js application.js scaffold_associations_tree.js',
+    :js=>%w'auto-complete.min.js autoforme.js application.js scaffold_associations_tree.js',
     :css_opts=>{:style=>:compressed, :cache=>false},
     :compiled_js_dir=>'javascripts',
     :compiled_css_dir=>'stylesheets',
@@ -387,7 +387,6 @@ class App < Roda
           ['replace_html', '#debit_entries', render(:_reconcile_table, :locals=>{:entry_type=>'debit'})],
           ['replace_html', '#credit_entries', render(:_reconcile_table, :locals=>{:entry_type=>'credit'})],
           ['replace_html', '#results', 'Cleared entries'],
-          ['setup_reconcile']
         ]
       else
         r.redirect "/update/reconcile/#{account_id}"
@@ -495,6 +494,12 @@ class App < Roda
   def auto_reconcile
     id = tp.pos_int!('id')
     @reconcile_to = tp.float!('reconcile_to')
+    if @reconcile_to == 0
+      reconcile_to = tp.str!('reconcile_to')
+      if reconcile_to[0] == '$'
+        @reconcile_to = reconcile_to[1..-1].to_f;
+      end
+    end
     @account = user_account(id)
     begin
       @entries = @account.entries_reconciling_to(@reconcile_to, (tp.Hash('entries', {})).keys.collect(&:to_i), 15)
@@ -521,7 +526,6 @@ class App < Roda
         json = []
       end
       json << ['replace_html', '#results', @error_message]
-      json << ['setup_reconcile']
       json
     else
       view :reconcile
