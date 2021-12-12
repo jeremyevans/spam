@@ -175,8 +175,9 @@ if (register_form) {
     var xhr_headers = {'X-Requested-With': 'XMLHttpRequest'};
     new autoComplete({
       selector: '#entity_name',
+      minChars: 2,
       source: function(term, suggest) {
-        fetch(('/update/auto_complete_for_entity_name/' + reg_account_id + '?q=' + term), {headers: xhr_headers}).
+        fetch(('/update/auto_complete_for_entity_name/' + reg_account_id + '?q=' + encodeURIComponent(term)), {headers: xhr_headers}).
           then(function(response) {
             return response.text();
           }).
@@ -185,7 +186,7 @@ if (register_form) {
           });
       },
       onSelect: function(ev, term, item) {
-        fetch(('/update/other_account_for_entry/' + reg_account_id + '?entity=' + document.getElementById('entity_name').value), {headers: xhr_headers}).
+        fetch(('/update/other_account_for_entry/' + reg_account_id + '?entity=' + encodeURIComponent(document.getElementById('entity_name').value)), {headers: xhr_headers}).
           then(function(response) {
             return response.text();
           }).
