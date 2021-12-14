@@ -1,5 +1,7 @@
-require "rake"
+require 'rake'
+require "rake/clean"
 
+CLEAN.include ["compiled_assets.json", "public/stylesheets/app.*.css", "public/stylesheets/app.*.css.gz", "public/javascripts/app.*.js", "public/javascripts/app.*.js.gz", "unicorn.test.pid", "unicorn.test.log"]
 default_specs = [:spec, :integration]
 
 desc "Run unit tests"
