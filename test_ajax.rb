@@ -1,4 +1,3 @@
-require_relative 'warnings_helper'
 require 'capybara'
 require 'capybara-webkit'
 require 'capybara/dsl'

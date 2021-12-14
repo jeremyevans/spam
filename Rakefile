@@ -2,16 +2,14 @@ require 'rake'
 require "rake/clean"
 
 CLEAN.include ["compiled_assets.json", "public/stylesheets/app.*.css", "public/stylesheets/app.*.css.gz", "public/javascripts/app.*.js", "public/javascripts/app.*.js.gz", "unicorn.test.pid", "unicorn.test.log"]
-default_specs = [:spec, :integration]
 
-desc "Run unit tests"
+default_specs = [:spec]
+test_flags = '-w' if RUBY_VERSION >= '3'
+
+desc "Run specs"
 task :spec do
-  sh "#{FileUtils::RUBY} unit_test.rb"
-end
-
-desc "Run integration tests"
-task :integration do
-  sh "#{FileUtils::RUBY} test.rb"
+  sh "#{FileUtils::RUBY} #{test_flags} unit_test.rb"
+  sh "#{FileUtils::RUBY} #{test_flags} test.rb"
 end
 
 default_specs << :ajax if RUBY_VERSION > '2.7'
@@ -31,7 +29,7 @@ task :ajax do
 end
 
 task :_ajax do
-  sh "#{FileUtils::RUBY} test_ajax.rb"
+  sh "#{FileUtils::RUBY} #{test_flags} test_ajax.rb"
 end
 
 desc "Run the unit and integration specs"

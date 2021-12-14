@@ -1,5 +1,4 @@
 ENV['RACK_ENV'] = 'test'
-require_relative 'warnings_helper'
 require_relative 'models'
 include Spam
 db_name = DB.get{current_database.function}
@@ -71,7 +70,7 @@ describe Account do
 
   it "#entries should return all entries for this account" do
     @account.entries.length.must_equal 2
-    @account.entries.first.amount.must_equal -50
+    @account.entries.first.amount.must_equal(-50)
     @account.entries.last.amount.must_equal 100
     DB[:entries].delete
     @account.entries(:reload=>true).must_equal []
@@ -95,11 +94,11 @@ describe Account do
 
   it "#entries_to_reconcile should be an array of cleared entries" do
     @account.entries_to_reconcile.length.must_equal 2
-    @account.entries_to_reconcile.first.amount.must_equal -50
+    @account.entries_to_reconcile.first.amount.must_equal(-50)
     @account.entries_to_reconcile.last.amount.must_equal 100
     @entry.update(:cleared=>true)
     @account.entries_to_reconcile.length.must_equal 1
-    @account.entries_to_reconcile.first.amount.must_equal -50
+    @account.entries_to_reconcile.first.amount.must_equal(-50)
   end
 
   it "#entries_to_reconcile should restrict the entries to either debit or credit entries if given an argument" do
@@ -143,7 +142,7 @@ describe Account do
     @entry2.update(:cleared=>true)
     @account.unreconciled_balance.must_equal 50
     @entry.update(:cleared=>false)
-    @account.unreconciled_balance.must_equal -50
+    @account.unreconciled_balance.must_equal(-50)
   end
 end
 
@@ -242,7 +241,7 @@ describe Entry do
     @entry.amount.must_equal 100
     @entry.other_account.must_equal @account2
     @entry2.main_account = @account
-    @entry2.amount.must_equal -50
+    @entry2.amount.must_equal(-50)
     @entry2.other_account.must_equal @account2
   end
 end
