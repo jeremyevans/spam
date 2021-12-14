@@ -119,7 +119,7 @@ describe "SPAM" do
       fill_in "entity[name]", :with=>'Card'
 
       wait
-      find('div.acResults ul li').click
+      find("#entity_name").send_keys(:left, :down, :tab)
 
       wait
       fill_in "entry[memo]", :with=>'Payment2'
@@ -150,6 +150,8 @@ describe "SPAM" do
       Entries.first[:cleared].must_equal true
       page.all("input#credit_#{@entry_id}").size.must_equal 0
       page.first('table').all('tr td').map{|x| x.text.strip}.must_equal "Previous Reconciled Balance/$-1000.00/Reconciling Changes/$0.00/New Reconciled Balance/$-1000.00/Expected Reconciled Balance//Off By/$0.00// ".split('/')[0...-1]
+#ensure
+#p page.driver.browser.error_messages
     end
   end
 end    
