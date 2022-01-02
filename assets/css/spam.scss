@@ -72,7 +72,7 @@ table#register {
   input, select { padding: 2px;}
 }
 table#reconcile, .reconcile_entries table {
-  margin: auto;
+  margin: 0 auto;
   input { margin: 2px; }
 }
 
@@ -99,6 +99,7 @@ table#earning_spending input {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  align-items: flex-start;
   gap: 20px;
 }
 
