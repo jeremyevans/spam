@@ -176,7 +176,9 @@ var ajax = function(options){
     var i;
     for (i = 0; i < options.form.length; i++) {
       var elem = options.form[i];
-      options.data[elem.name] = elem.value;
+      if (elem.tagName !== 'INPUT' || elem.type !== "checkbox" || elem.checked) {
+        options.data[elem.name] = elem.value;
+      }
     }
     options.data = serialize(options.data);
   }
