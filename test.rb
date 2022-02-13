@@ -44,6 +44,7 @@ Spam::DB.reset_primary_key_sequence(:users)
 Spam::DB.reset_primary_key_sequence(:accounts)
 Spam::DB.reset_primary_key_sequence(:entities)
 
+Capybara.exact = true
 Capybara.app = Spam::App.app
 
 Spam::App.not_found{raise "path not found: #{request.path_info}"}
@@ -155,7 +156,7 @@ describe "SPAM" do
     click_nav 'Manage Accounts'
     page.all('td').must_be_empty
     click_link 'New'
-    fill_in 'Name', :with=>'CC Foo'
+    fill_in 'Name*', :with=>'CC Foo'
     select 'Liability'
     select 'False'
     click_button 'Create'
@@ -176,7 +177,7 @@ describe "SPAM" do
     allow_invisible{click_link 'Manage Accounts'}
     page.all('td').must_be_empty
     click_link 'New'
-    fill_in 'Name', :with=>'CC Bar'
+    fill_in 'Name*', :with=>'CC Bar'
     select 'Liability'
     select 'False'
     click_button 'Create'

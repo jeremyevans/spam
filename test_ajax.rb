@@ -38,6 +38,7 @@ ENV['MT_NO_PLUGINS'] = '1' # Work around stupid autoloading of plugins
 gem 'minitest'
 require 'minitest/global_expectations/autorun'
 
+Capybara.exact = true
 Capybara.default_driver = :webkit
 Capybara.default_selector = :css
 Capybara.server_port = PORT

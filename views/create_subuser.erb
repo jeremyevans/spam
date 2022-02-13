@@ -1,7 +1,7 @@
 <% @pagetitle = "Create User" %>
 
-<form method="post">
+<form method="post" id="user-form">
   <%== csrf_tag("/create-subuser") %>
-  <label>Name: <input type="text" name="name" value="<%= @user.name %>" /> <%= (@user.errors['name']||[]).join(', ') %></label>
+  <label for="user-name">Name</label>: <input type="text" id="user-name" name="name" value="<%= @user.name %>" /> <%= (@user.errors['name']||[]).join(', ') %>
   <input type="submit" value="Create User" class="btn btn-primary" />
 </form>
