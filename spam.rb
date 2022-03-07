@@ -432,10 +432,6 @@ class App < Roda
     accounts.collect{|account| "<tr><td class='account_name'>#{h account.name}</td><td class='money'>#{account.money_balance}</td></tr>" }.join("\n")
   end
 
-  def get_navigation_accounts
-    @navigation_accounts = userAccount.unhidden.register_accounts if session['user_id']
-  end
-    
   def userAccount
     Account.user(session['user_id'])
   end 
