@@ -420,7 +420,7 @@ class App < Roda
     check_csrf!
     rodauth.require_authentication
 
-    @navigation_accounts = userAccount.unhidden.register_accounts
+    @navigation_accounts = userAccount.unhidden.register_accounts.order(:account_type_id, :name).all
 
     r.hash_routes(:root)
     autoforme
