@@ -18,8 +18,8 @@ class App < Roda
   plugin :error_handler
   plugin :render, :escape=>true
   plugin :assets,
-    :css=>%w'scaffold_associations_tree.css auto-complete.css spam.scss',
-    :js=>%w'auto-complete.min.js autoforme.js application.js scaffold_associations_tree.js',
+    :css=>%w'auto-complete.css spam.scss',
+    :js=>%w'auto-complete.min.js autoforme.js application.js',
     :css_opts=>{:style=>:compressed, :cache=>false},
     :compiled_js_dir=>'javascripts',
     :compiled_css_dir=>'stylesheets',
