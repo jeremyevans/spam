@@ -292,6 +292,16 @@ describe "SPAM" do
       visit('/reports/yearly_earning_spending_by_entity')
       page.all('th').map(&:text).must_equal 'Account/2008'.split('/')
       page.all('td').map(&:text).must_equal 'Restaurant/$-100.00'.split('/')
+
+      Spam::DB[:entries].insert(:date=>Date.new(2008,05,07), :reference=>'1002', :entity_id=>1, :credit_account_id=>3, :debit_account_id=>1, :amount=>200, :cleared=>false, :user_id=>1)
+
+      visit('/reports/income_expense')
+      page.all('th').map(&:text).must_equal 'Month|Income|Expense|Profit/Loss'.split('|')
+      page.all('td').map(&:text).must_equal '2008-06|$0.00|$0.00|$0.00|2008-05|$200.00|$0.00|$200.00|2008-04|$0.00|$100.00|$-100.00'.split('|')
+
+      click_link '2008-05'
+      page.all('th').map(&:text).must_equal 'Date|Entity|Debit Account|Credit Account|Amount'.split('|')
+      page.all('td').map(&:text).must_equal '2008-05-07|Employer|Checking|Salary|$200.00'.split('|')
     end
   end
 end

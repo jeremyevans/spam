@@ -6,7 +6,7 @@
     <thead><tr><th>Month</th><th>Income</th><th>Expense</th><th>Profit/Loss</th></tr></thead>
     <tbody>
     <% @months.each do |month| %>
-      <tr><td><%= month[:month] %></td><td class="money"><%= month[:income].to_money %></td><td class="money"><%= month[:expense].to_money %></td><td class="money"><%= (month[:income] - month[:expense]).to_money %></td></tr>
+      <tr><td><a href="/reports/income_expense/<%= month[:month].tr('-', '/') %>"><%= month[:month] %></a></td><td class="money"><%= month[:income].to_money %></td><td class="money"><%= month[:expense].to_money %></td><td class="money"><%= (month[:income] - month[:expense]).to_money %></td></tr>
     <% end%>
     </tbody></table>
   </div>

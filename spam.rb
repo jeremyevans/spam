@@ -141,7 +141,7 @@ class App < Roda
   end
 
   plugin :precompile_templates
-  precompile_views [:switch_user, :create_subuser, :reconcile, :register, :net_worth, :income_expense, :balance_sheet, :earning_spending]
+  precompile_views [:switch_user, :create_subuser, :reconcile, :register, :net_worth, :income_expense, :balance_sheet, :earning_spending, :income_expense_month]
   precompile_views :_reconcile_table, [:entry_type]
   precompile_views :_reconcile_entry, [:entry_type, :reconcile_entry]
   precompile_views %w'_blank_register_entry _new_register_entry'
@@ -208,9 +208,28 @@ class App < Roda
       :balance_sheet
     end
 
-    get 'income_expense' do
-      income_expense_report
-      :income_expense
+    on 'income_expense' do |r|
+      r.get true do
+        income_expense_report
+        :income_expense
+      end
+
+      r.get Integer, Integer do |year, month|
+        @year = year
+        @month = month
+        date = Date.new(year, month)
+        @entries = Entry.
+          where(Sequel[:entries][:user_id] =~ session['user_id']).
+          eager_graph(:debit_account, :credit_account, :entity).
+          where(:date=>date...(date >> 1)).
+          where do
+            ((debit_account[:account_type_id] =~ [3, 4]) & (credit_account[:account_type_id] =~ [1, 2])) |
+            ((credit_account[:account_type_id] =~ [3, 4]) & (debit_account[:account_type_id] =~ [1, 2]))
+          end.
+          order(:date, :amount, :debit_account_id, :credit_account_id).
+          all
+        :income_expense_month
+      end
     end
         
     get 'net_worth' do
