@@ -416,8 +416,8 @@ class App < Roda
   route do |r|
     r.public
     r.assets
-    check_csrf!
     r.rodauth
+    check_csrf!
     rodauth.require_authentication
 
     @navigation_accounts = userAccount.unhidden.register_accounts
