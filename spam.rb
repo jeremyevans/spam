@@ -218,9 +218,10 @@ class App < Roda
         @year = year
         @month = month
         date = Date.new(year, month)
-        @entries = Entry.
-          where(Sequel[:entries][:user_id] =~ session['user_id']).
-          eager_graph(:debit_account, :credit_account, :entity).
+        @entries = userEntry.
+          qualify.
+          eager_graph(:debit_account, :credit_account).
+          eager(:entity).
           where(:date=>date...(date >> 1)).
           where do
             ((debit_account[:account_type_id] =~ [3, 4]) & (credit_account[:account_type_id] =~ [1, 2])) |
