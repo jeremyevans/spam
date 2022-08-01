@@ -23,6 +23,8 @@ class App < Roda
     :css_opts=>{:style=>:compressed, :cache=>false},
     :compiled_js_dir=>'javascripts',
     :compiled_css_dir=>'stylesheets',
+    :css_compressor=>:none,
+    :js_compressor=>:none,
     :compiled_path=>nil,
     :precompiled=>File.expand_path('../compiled_assets.json', __FILE__),
     :prefix=>nil,
