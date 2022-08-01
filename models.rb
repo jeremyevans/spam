@@ -17,6 +17,7 @@ module Spam
   Model.plugin :prepared_statements_safe
   Model.plugin :pg_auto_constraint_validations
   Model.plugin :auto_restrict_eager_graph
+  Model.plugin :require_valid_schema
   if ENV['UNUSED_ASSOCIATION_COVERAGE']
     Model.plugin :unused_associations, :coverage_file=>'unused_associations_coverage.json', :file=>'unused_associations.json'
   end
