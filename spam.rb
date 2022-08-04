@@ -16,7 +16,7 @@ class App < Roda
   plugin :public, :gzip=>true
   plugin :not_found
   plugin :error_handler
-  plugin :render, :escape=>true
+  plugin :render, :escape=>true, :template_opts=>{:chain_appends=>true}
   plugin :assets,
     :css=>%w'auto-complete.css spam.scss',
     :js=>%w'auto-complete.min.js autoforme.js application.js',
