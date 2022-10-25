@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'roda', '>= 3.40'
+gem 'roda', '>= 3.62'
 gem 'rodauth', '>= 2'
 gem 'tilt', '>= 2.0.10'
 gem 'sassc', '>= 2'
