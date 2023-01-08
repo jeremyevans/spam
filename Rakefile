@@ -21,7 +21,7 @@ task :ajax do
     ENV['SPAM_SESSION_SECRET'] = '1'*64
     sh "echo -n '' > unicorn.test.log"
     unicorn_bin = File.basename(FileUtils::RUBY).sub(/\Aruby/, 'unicorn')
-    sh "#{FileUtils::RUBY} -S #{unicorn_bin} -p 8989 -c unicorn.test.conf -D"
+    sh "#{FileUtils::RUBY} -S #{unicorn_bin} -o 127.0.0.1 -p 8989 -c unicorn.test.conf -D"
     Rake::Task['_ajax'].invoke
   ensure
     sh "kill `cat unicorn.test.pid`"
