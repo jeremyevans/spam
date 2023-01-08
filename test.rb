@@ -45,11 +45,10 @@ Spam::DB.reset_primary_key_sequence(:users)
 Spam::DB.reset_primary_key_sequence(:accounts)
 Spam::DB.reset_primary_key_sequence(:entities)
 
-Capybara.exact = true
-Capybara.app = Spam::App.app
-
 Spam::App.not_found{raise "path not found: #{request.path_info}"}
-Spam::App.freeze
+
+Capybara.exact = true
+Capybara.app = Spam::App.freeze.app
 
 class Minitest::Spec
   include Rack::Test::Methods

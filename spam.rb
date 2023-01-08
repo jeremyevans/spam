@@ -5,6 +5,12 @@ require 'securerandom'
 
 module Spam
 class App < Roda
+  def self.freeze
+    Model.freeze_descendents
+    DB.freeze
+    super
+  end
+
   opts[:root] = File.dirname(__FILE__)
   opts[:check_dynamic_arity] = false
   opts[:check_arity] = :warn

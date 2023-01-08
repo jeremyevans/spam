@@ -1,6 +1,9 @@
 ENV['RACK_ENV'] = 'test'
 require_relative 'models'
 include Spam
+Model.freeze_descendents
+DB.freeze
+
 db_name = DB.get{current_database.function}
 raise "Doesn't look like a test database (#{db_name}), not running tests" unless db_name =~ /test\z/
 
