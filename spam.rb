@@ -472,7 +472,8 @@ class App < Roda
   end
 
   def entities_entries_ds
-    DB[:entities].join(:entries, :entity_id=>:id).
+    DB[:entities].where(Sequel[:entries][:user_id]=>session['user_id']).
+      join(:entries, :entity_id=>:id).
       left_join(Sequel[:accounts].as(:d), :id=>Sequel[:entries][:debit_account_id], :account_type_id=>INCOME_EXPENSE_TYPES).
       left_join(Sequel[:accounts].as(:c), :id=>Sequel[:entries][:credit_account_id], :account_type_id=>INCOME_EXPENSE_TYPES)
   end
