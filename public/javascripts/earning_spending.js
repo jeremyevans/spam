@@ -1,32 +1,50 @@
 window.addEventListener("load", function() {
-t = 0;
-f = $("#account_filter");
-cf = $(".column_filter");
-tr = $("tr.account");
-$(document).ready(function() {
-  f.keypress(function() {
-   if (t) {
-     clearTimeout(t);
-   } 
-   t = setTimeout(filter_accounts, 400);
-  });
-  cf.click(function() {
-    filter_accounts();   
-  });
-});
+  var t = 0;
+  var f = document.getElementById("account_filter");
+  var cfs = Array.from(document.getElementsByClassName("column_filter"));
+  var trs = Array.from(document.getElementsByClassName("account"));
+  var name_tds = Array.from(document.getElementsByClassName("account_name"));
 
-function filter_accounts() {
-  var v = f.val().toLowerCase();
-  tr.removeClass("hide");
-  cf.filter(":checked").each(function() {
-    $("td." + $(this).attr("id")).filter("td.empty").parent().addClass("hide");
+  f.addEventListener("keydown", function() {
+     if (t) {
+       clearTimeout(t);
+     } 
+     t = setTimeout(filter_accounts, 400);
   });
-  tr.filter(function() {
-    return $(this).children('td.account_name').html().toLowerCase().indexOf(v) == -1;
-  }).addClass("hide");
-  tr.filter(function() {
-    return !$(this).hasClass("hide");
-  }).show();
-  tr.filter('tr.hide').hide();
-}
+
+  cfs.forEach(function(cf) {
+    cf.addEventListener("click", filter_accounts);
+  });
+
+  function filter_accounts() {
+    var v = f.value.toLowerCase();
+
+    trs.forEach(function(tr) {
+      tr.classList.remove("hide");
+    });
+
+    cfs.forEach(function(cf) {
+      if (cf.checked) {
+        Array.from(document.getElementsByClassName(cf.id)).forEach(function(td) {
+          if (td.classList.contains('empty')) {
+            td.parentElement.classList.add('hide');
+          }
+        });
+      }
+    });
+
+    name_tds.forEach(function(td) {
+      if (td.innerHTML.toLowerCase().indexOf(v) == -1)  {
+        td.parentElement.classList.add('hide');
+      }
+    });
+
+    trs.forEach(function(tr) {
+      if (tr.classList.contains('hide')) {
+        tr.classList.add("hidden");
+      } else {
+        tr.classList.remove("hidden");
+      }
+    });
+  }
 }, false);
