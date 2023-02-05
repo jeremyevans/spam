@@ -11,6 +11,8 @@ class App < Roda
     super
   end
 
+  INCOME_EXPENSE_TYPES = [3,4].freeze
+
   opts[:root] = File.dirname(__FILE__)
   opts[:check_dynamic_arity] = false
   opts[:check_arity] = :warn
@@ -257,7 +259,7 @@ class App < Roda
       r.get 'earning_spending' do
         if setup_month_headers
           @accounts = accounts_entries_ds.select(Sequel[:accounts][:name], *by_account_select{|k| Sequel.~(@age.extract(:month) => (@i+=1))}).
-           filter(Sequel[:accounts][:account_type_id]=>[3,4]).
+           filter(Sequel[:accounts][:account_type_id]=>INCOME_EXPENSE_TYPES).
            filter(@age < Sequel.cast('1 year', :interval)).
            group(Sequel[:accounts][:account_type_id], Sequel[:accounts][:name]).
            order(Sequel.desc(:account_type_id), :name).
@@ -270,7 +272,7 @@ class App < Roda
         if setup_month_headers
           @accounts = entities_entries_ds.select(Sequel[:entities][:name], *by_entity_select{|k| Sequel.~(@age.extract(:month) => (@i+=1))}).
            filter(@age < Sequel.cast('1 year', :interval)).
-           filter(Sequel.or(Sequel[:d][:account_type_id] => [3,4], Sequel[:c][:account_type_id] => [3,4]) & Sequel.or(Sequel[:d][:account_type_id] => nil, Sequel[:c][:account_type_id] => nil)).
+           filter(Sequel.or(Sequel[:d][:account_type_id] => INCOME_EXPENSE_TYPES, Sequel[:c][:account_type_id] => INCOME_EXPENSE_TYPES) & Sequel.or(Sequel[:d][:account_type_id] => nil, Sequel[:c][:account_type_id] => nil)).
            group(Sequel[:entities][:name]).order(:name).
            all
         end
@@ -280,7 +282,7 @@ class App < Roda
       r.get 'yearly_earning_spending_by_entity' do
         if setup_year_headers
           @accounts = entities_entries_ds.select(Sequel[:entities][:name], *by_entity_select(&BY_YEAR_COND)).
-           filter(Sequel.or(Sequel[:d][:account_type_id] => [3,4], Sequel[:c][:account_type_id] => [3,4]) & Sequel.or(Sequel[:d][:account_type_id] => nil, Sequel[:c][:account_type_id] => nil)).
+           filter(Sequel.or(Sequel[:d][:account_type_id] => INCOME_EXPENSE_TYPES, Sequel[:c][:account_type_id] => INCOME_EXPENSE_TYPES) & Sequel.or(Sequel[:d][:account_type_id] => nil, Sequel[:c][:account_type_id] => nil)).
            group(Sequel[:entities][:name]).order(:name).all
         end
         :earning_spending
@@ -289,7 +291,7 @@ class App < Roda
       r.get 'yearly_earning_spending' do
         if setup_year_headers
           @accounts = accounts_entries_ds.select(Sequel[:accounts][:name], *by_account_select(&BY_YEAR_COND)).
-           filter(Sequel[:accounts][:account_type_id]=>[3,4]).
+           filter(Sequel[:accounts][:account_type_id]=>INCOME_EXPENSE_TYPES).
            group(Sequel[:accounts][:account_type_id], Sequel[:accounts][:name]).
            order(Sequel.desc(:account_type_id), :name).
            all
@@ -471,8 +473,8 @@ class App < Roda
 
   def entities_entries_ds
     DB[:entities].join(:entries, :entity_id=>:id).
-      left_join(Sequel[:accounts].as(:d), :id=>Sequel[:entries][:debit_account_id], :account_type_id=>[3,4]).
-      left_join(Sequel[:accounts].as(:c), :id=>Sequel[:entries][:credit_account_id], :account_type_id=>[3,4])
+      left_join(Sequel[:accounts].as(:d), :id=>Sequel[:entries][:debit_account_id], :account_type_id=>INCOME_EXPENSE_TYPES).
+      left_join(Sequel[:accounts].as(:c), :id=>Sequel[:entries][:credit_account_id], :account_type_id=>INCOME_EXPENSE_TYPES)
   end
 
   def setup_month_headers
