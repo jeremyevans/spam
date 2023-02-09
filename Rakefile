@@ -12,7 +12,7 @@ task :spec do
   sh "#{FileUtils::RUBY} #{test_flags} test.rb"
 end
 
-default_specs << :ajax if RUBY_VERSION > '2.7'
+default_specs << :ajax if RUBY_VERSION > '3.0'
 desc "Run ajax tests"
 task :ajax do
   begin
