@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Spam
 class Entry < Model
   many_to_one :credit_account, :class_name=>'Spam::Account', :key=>:credit_account_id, :reciprocal=>:credit_entries

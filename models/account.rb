@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Spam
 class Account < Model
   many_to_one :account_type

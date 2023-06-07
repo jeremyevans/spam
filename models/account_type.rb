@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Spam
 class AccountType < Model
 end

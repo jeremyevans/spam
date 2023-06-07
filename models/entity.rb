@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Spam
 class Entity < Model
   one_to_many :entries, :read_only=>true
