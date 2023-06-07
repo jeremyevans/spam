@@ -8,7 +8,7 @@ gem 'erubi', '>= 1.11.0'
 gem 'unicorn'
 gem 'pg'
 gem 'sequel', '>= 5.62'
-gem 'sequel_pg', '>= 1.7'
+gem 'sequel_pg', '>= 1.7', require: nil
 gem 'subset_sum'
 gem 'bcrypt'
 gem 'autoforme', '>= 1.9'
