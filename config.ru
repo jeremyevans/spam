@@ -9,6 +9,6 @@ unless ENV['RACK_ENV'] == 'development'
     require 'refrigerator'
   rescue LoadError
   else
-    Refrigerator.freeze_core(:except=>['BasicObject'])
+    Refrigerator.freeze_core
   end
 end

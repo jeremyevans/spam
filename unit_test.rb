@@ -18,6 +18,13 @@ DB[:account_types].insert(:name=>"Expense", :id=>4)
 
 require_relative 'spec_helper'
 
+begin
+  require 'refrigerator'
+rescue LoadError
+else
+  Refrigerator.freeze_core
+end
+
 describe Account do
   before(:all) do
     @account = Account.create(:name=>'TestAccount', :user_id=>2, :account_type_id=>1, :hidden=>false)

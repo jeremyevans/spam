@@ -22,7 +22,7 @@ begin
   require 'refrigerator'
 rescue LoadError
 else
-  Refrigerator.freeze_core(:except=>['BasicObject'])
+  Refrigerator.freeze_core
 end
 
 [:entries, :entities, :accounts, :account_types, :subusers, :users].each{|x| Spam::DB[x].delete}
