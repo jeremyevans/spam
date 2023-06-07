@@ -3,6 +3,9 @@ require_relative 'models'
 
 require 'roda'
 require 'securerandom'
+require 'tilt'
+require 'tilt/erubi'
+require 'tilt/string'
 
 module Spam
 class App < Roda
@@ -25,7 +28,7 @@ class App < Roda
   plugin :public, :gzip=>true
   plugin :not_found
   plugin :error_handler
-  plugin :render, :escape=>true, :template_opts=>{:chain_appends=>true}
+  plugin :render, :escape=>true, :template_opts=>{:chain_appends=>true, :freeze=>true, :skip_compiled_encoding_detection=>true}
   plugin :assets,
     :css=>%w'auto-complete.css spam.scss',
     :js=>%w'auto-complete.min.js autoforme.js application.js',

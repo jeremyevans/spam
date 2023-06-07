@@ -11,6 +11,8 @@ RESET_DRIVER = true
 Gem.suffix_pattern
 
 require_relative 'spam'
+Tilt.finalize!
+
 require_relative 'spec_helper'
 
 db_name = Spam::DB.get{current_database.function}
