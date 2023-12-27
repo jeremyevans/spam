@@ -102,9 +102,9 @@ brings you to the register for the account.  This screen is the usual way to
 add entries to the account.  Enter a date, an optional reference/check number,
 a name for the entity, the other account for the entry, an optional memo, and
 the amount of the entry.  If the entry is a debit to the current account and
-a credit to the other account the amount should be positive.  If the entry is
+a credit to the other account the amount should be negative.  If the entry is
 a credit to the current account and a debit to the other account, the amount
-should be negative.  For a typical checking account where you get paid once or
+should be positive.  For a typical checking account where you get paid once or
 twice a month but write many checks during the month, most amounts will be
 negative.
 
