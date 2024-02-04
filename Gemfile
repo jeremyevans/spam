@@ -16,6 +16,7 @@ gem 'autoforme', '>= 1.9'
 group :development, :test do
   gem "capybara", '>= 2'
   gem "capybara-validate_html5", '>= 1.1.0'
+  gem "cuprite"
   gem "minitest"
   gem "minitest-hooks", '>= 1.1.0'
   gem "minitest-global_expectations"
