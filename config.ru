@@ -4,6 +4,7 @@ run Spam::App.freeze.app
 unless ENV['RACK_ENV'] == 'development'
   require 'tilt/sass' unless File.exist?(File.expand_path('../compiled_assets.json', __FILE__))
   Tilt.finalize!
+  RubyVM::YJIT.enable if defined?(RubyVM::YJIT.enable)
 
   begin
     require 'refrigerator'
