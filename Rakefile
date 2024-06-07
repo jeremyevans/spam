@@ -1,7 +1,7 @@
 require 'rake'
 require "rake/clean"
 
-CLEAN.include ["compiled_assets.json", "public/stylesheets/app.*.css", "public/stylesheets/app.*.css.gz", "public/javascripts/app.*.js", "public/javascripts/app.*.js.gz", "unicorn.test.pid", "unicorn.test.log"]
+CLEAN.include ["compiled_assets.json", "public/stylesheets/app.*.css", "public/stylesheets/app.*.css.gz", "public/javascripts/app.*.js", "public/javascripts/app.*.js.gz"]
 
 default_specs = [:spec]
 test_flags = '-w' if RUBY_VERSION >= '3'
@@ -15,20 +15,6 @@ end
 default_specs << :ajax if RUBY_VERSION > '3.0'
 desc "Run ajax tests"
 task :ajax do
-  begin
-    ENV['RACK_ENV'] = 'test'
-    ENV['AJAX_TESTS'] = '1'
-    ENV['SPAM_SESSION_SECRET'] = '1'*64
-    sh "echo -n '' > unicorn.test.log"
-    unicorn_bin = File.basename(FileUtils::RUBY).sub(/\Aruby/, 'unicorn')
-    sh "#{FileUtils::RUBY} -S #{unicorn_bin} -o 127.0.0.1 -p 8989 -c unicorn.test.conf -D"
-    Rake::Task['_ajax'].invoke
-  ensure
-    sh "kill `cat unicorn.test.pid`"
-  end
-end
-
-task :_ajax do
   sh "#{FileUtils::RUBY} #{test_flags} test_ajax.rb"
 end
 

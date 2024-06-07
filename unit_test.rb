@@ -8,14 +8,6 @@ DB.freeze
 db_name = DB.get{current_database.function}
 raise "Doesn't look like a test database (#{db_name}), not running tests" unless db_name =~ /test\z/
 
-[:entries, :entities, :accounts, :account_types, :users].each{|x| DB[x].delete}
-DB[:users].insert(:password_hash=>BCrypt::Password.create("blah"), :name=>"default", :num_register_entries=>35, :id=>1)
-DB[:users].insert(:password_hash=>BCrypt::Password.create("blah2"), :name=>"test", :num_register_entries=>35, :id=>2)
-DB[:account_types].insert(:name=>"Asset", :id=>1)
-DB[:account_types].insert(:name=>"Liability", :id=>2)
-DB[:account_types].insert(:name=>"Income", :id=>3)
-DB[:account_types].insert(:name=>"Expense", :id=>4)
-
 require_relative 'spec_helper'
 
 begin
@@ -23,6 +15,21 @@ begin
 rescue LoadError
 else
   Refrigerator.freeze_core
+end
+
+class Minitest::HooksSpec
+  before(:all) do
+    DB[:users].insert(:password_hash=>BCrypt::Password.create("blah"), :name=>"default", :num_register_entries=>35, :id=>1)
+    DB[:users].insert(:password_hash=>BCrypt::Password.create("blah2"), :name=>"test", :num_register_entries=>35, :id=>2)
+    DB[:account_types].insert(:name=>"Asset", :id=>1)
+    DB[:account_types].insert(:name=>"Liability", :id=>2)
+    DB[:account_types].insert(:name=>"Income", :id=>3)
+    DB[:account_types].insert(:name=>"Expense", :id=>4)
+
+    DB.reset_primary_key_sequence(:users)
+    DB.reset_primary_key_sequence(:accounts)
+    DB.reset_primary_key_sequence(:entities)
+  end
 end
 
 describe Account do

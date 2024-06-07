@@ -2,55 +2,78 @@
 require 'capybara'
 require 'capybara/dsl'
 require "capybara/cuprite"
+require 'puma/cli'
+require 'nio'
+require 'securerandom'
 
 ENV['RACK_ENV'] = 'test'
-require_relative 'models'
+ENV['AJAX_TESTS'] = '1'
+ENV['SPAM_SESSION_SECRET'] = SecureRandom.base64(48)
 
-include Spam
+require_relative 'spam'
+require_relative 'test_data'
+require_relative 'spec_helper'
 
-db_name = DB.get{current_database.function}
+port = 8989
+db_name = Spam::DB.get{current_database.function}
 raise "Doesn't look like a test database (#{db_name}), not running tests" unless db_name =~ /test\z/
 
-[:entries, :entities, :accounts, :account_types, :users].each{|x| DB[x].delete}
-DB[:users].insert(:password_hash=>BCrypt::Password.create("pass"), :name=>"default", :num_register_entries=>35, :id=>1)
-DB[:users].insert(:password_hash=>BCrypt::Password.create("pass2"), :name=>"test", :num_register_entries=>35, :id=>2)
-DB[:account_types].insert(:name=>"Asset", :id=>1)
-DB[:account_types].insert(:name=>"Liability", :id=>2)
-DB[:account_types].insert(:name=>"Income", :id=>3)
-DB[:account_types].insert(:name=>"Expense", :id=>4)
-DB[:accounts].insert(:user_id=>2, :balance=>0, :account_type_id=>1, :name=>"Test", :hidden=>false, :description=>"", :id=>5)
-DB[:accounts].insert(:user_id=>2, :balance=>0, :account_type_id=>2, :name=>"Test Liability", :hidden=>false, :description=>"", :id=>6)
-DB[:accounts].insert(:user_id=>1, :balance=>0, :account_type_id=>2, :name=>"Credit Card", :hidden=>false, :description=>"", :id=>2)
-DB[:accounts].insert(:user_id=>1, :balance=>0, :account_type_id=>1, :name=>"Checking", :hidden=>false, :description=>"", :id=>1)
-DB[:accounts].insert(:user_id=>1, :balance=>0, :account_type_id=>4, :name=>"Food", :hidden=>false, :description=>"", :id=>4)
-DB[:accounts].insert(:user_id=>1, :balance=>0, :account_type_id=>3, :name=>"Salary", :hidden=>false, :description=>"", :id=>3)
-DB[:entities].insert(:user_id=>1, :name=>"Restaurant", :id=>2)
-DB[:entities].insert(:user_id=>1, :name=>"Employer", :id=>1)
-DB[:entities].insert(:user_id=>1, :name=>"Card", :id=>3)
-DB[:entities].insert(:user_id=>2, :name=>"Test", :id=>4)
-DB[:entries].insert(:credit_account_id=>6, :reference=>"", :user_id=>2, :entity_id=>4, :cleared=>false, :amount=>100, :memo=>"", :date=>'2008-06-11', :debit_account_id=>5, :id=>1)
-Entries = DB[:entries].filter(:user_id => 1)
-
-PORT = ENV['PORT'] || 8989
-SLEEP_TIME = Float(ENV['SLEEP_TIME'] || 0.5)
-
-ENV['MT_NO_PLUGINS'] = '1' # Work around stupid autoloading of plugins
-gem 'minitest'
-require 'minitest/global_expectations/autorun'
+entries = Spam::DB[:entries].filter(:user_id => 1)
 
 Capybara.exact = true
 Capybara.default_selector = :css
-Capybara.server_port = PORT
+Capybara.server_port = port
 Capybara.register_driver(:cuprite) do |app|
   Capybara::Cuprite::Driver.new(app, window_size: [1200, 800], xvfb: true)
 end
 Capybara.current_driver = :cuprite
 
-class Minitest::Spec
+queue = Queue.new
+server = Puma::CLI.new(['-s', '-b', "tcp://127.0.0.1:#{port}", '-t', '1:1', 'config.ru'])
+server.launcher.events.on_booted{queue.push(nil)}
+Thread.new do
+  server.launcher.run
+end
+queue.pop
+
+if ENV['UNUSED_ASSOCIATION_COVERAGE']
+  at_exit do
+    require 'coverage'
+    Coverage.start(methods: true)
+    at_exit do
+      Spam::Model.update_associations_coverage(Coverage.result)
+    end
+  end
+end
+
+class Minitest::HooksSpec
+  remove_method(:around)
+  around do |&block|
+    Spam::DB.transaction(:rollback=>:always, :savepoint=>true, :auto_savepoint=>true) do |c|
+      Spam::DB.temporarily_release_connection(c) do
+        super(&block)
+      end
+    end
+  end
+end
+
+describe "SPAM" do
   include Capybara::DSL
+  include Spam::TestData
 
   def wait
-    sleep SLEEP_TIME
+    sleep(Float(ENV['SLEEP_TIME'] || 0.5))
+  end
+
+  before(:all) do |&block|
+    load_test_data
+  end
+
+  def log
+    Spam::DB.loggers.first.level = Logger::INFO
+    yield
+  ensure
+    Spam::DB.loggers.first.level = Logger::WARN
   end
 
   def remove_id(hash)
@@ -59,12 +82,10 @@ class Minitest::Spec
     h
   end
 
-  def visit(path)
-    super("http://127.0.0.1:#{PORT}#{path}")
+  define_method(:visit) do |path|
+    super("http://127.0.0.1:#{port}#{path}")
   end
-end
 
-describe "SPAM" do
   it "should have working ajax" do 
     visit "/"
     fill_in 'Username', :with=>'default'
@@ -89,7 +110,7 @@ describe "SPAM" do
     click_on 'Add'
 
     wait
-    entry = Entries.first
+    entry = entries.first
     remove_id(entry).must_equal(:date=>Date.new(2008,6,6), :reference=>'DEP', :entity_id=>1, :credit_account_id=>3, :debit_account_id=>1, :memo=>'Check', :amount=>BigDecimal('1000'), :cleared=>false, :user_id=>1)
 
     page.all("div#content form table tbody tr").last.all('td').map(&:text).must_equal '2008-06-06/DEP/Employer/Salary/Check//$1000.00/$1000.00/Modify'.split('/')
@@ -106,7 +127,7 @@ describe "SPAM" do
     click_on 'Update'
 
     wait
-    Entries[:id => entry[:id]].must_equal(:date=>Date.new(2008,6,7), :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal('1000'), :cleared=>true, :user_id=>1, :id=>entry[:id])
+    entries[:id => entry[:id]].must_equal(:date=>Date.new(2008,6,7), :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal('1000'), :cleared=>true, :user_id=>1, :id=>entry[:id])
     page.all("div#content form table tbody tr").last.all('td').map(&:text).must_equal '2008-06-07/1000/Card/Credit Card/Payment/R/$-1000.00/$-1000.00/Modify'.split('/')
     
     click_on 'Modify'
@@ -126,9 +147,9 @@ describe "SPAM" do
     click_on 'Add'
 
     wait
-    remove_id(Entries.order(:id).last).must_equal(:date=>Date.new(2008,6,8), :reference=>'1001', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment2', :amount=>BigDecimal('1000'), :cleared=>false, :user_id=>1)
-    Entries.delete
-    @entry_id = Entries.insert(:date=>Date.new(2008,06,07), :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal('1000'), :cleared=>false, :user_id=>1)
+    remove_id(entries.order(:id).last).must_equal(:date=>Date.new(2008,6,8), :reference=>'1001', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment2', :amount=>BigDecimal('1000'), :cleared=>false, :user_id=>1)
+    entries.delete
+    @entry_id = entries.insert(:date=>Date.new(2008,06,07), :reference=>'1000', :entity_id=>3, :credit_account_id=>1, :debit_account_id=>2, :memo=>'Payment', :amount=>BigDecimal('1000'), :cleared=>false, :user_id=>1)
 
     visit '/update/reconcile/1'
     form = find('div#content form')
@@ -147,7 +168,7 @@ describe "SPAM" do
     click_on 'Clear Entries'
 
     wait
-    Entries.first[:cleared].must_equal true
+    entries.first[:cleared].must_equal true
     page.all("input#credit_#{@entry_id}").size.must_equal 0
     page.first('table').all('tr td').map{|x| x.text.strip}.must_equal "Previous Reconciled Balance/$-1000.00/Reconciling Changes/$0.00/New Reconciled Balance/$-1000.00/Expected Reconciled Balance//Off By/$0.00// ".split('/')[0...-1]
 #ensure

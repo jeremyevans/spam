@@ -23,7 +23,7 @@ class App < Roda
 
   plugin :direct_call
 
-  plugin :route_csrf
+  plugin :route_csrf, :csrf_failure=>:clear_session
 
   plugin :public, :gzip=>true
   plugin :not_found
@@ -90,7 +90,9 @@ class App < Roda
     view(:content=>'<h1>File Not Found</h1>')
   end
 
-  logger = if ENV['RACK_ENV'] == "test" && ENV['AJAX_TESTS'] != '1'
+  logger = if ENV['AJAX_TESTS'] == '1'
+    Logger.new('puma.test.log')
+  elsif ENV['RACK_ENV'] == "test"
     Class.new{def write(_) end}.new
   else
     $stderr
@@ -133,6 +135,8 @@ class App < Roda
   ::Forme.default_config = :mine
 
   BY_YEAR_COND = Proc.new{|k| Sequel.~(Sequel.extract(:year, Sequel[:entries][:date]) => k)}
+
+  plugin :permissions_policy, :default=>:none
 
   plugin :content_security_policy do |csp|
     csp.default_src :none

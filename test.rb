@@ -14,6 +14,7 @@ require_relative 'spam'
 Tilt.finalize!
 
 require_relative 'spec_helper'
+require_relative 'test_data'
 
 db_name = Spam::DB.get{current_database.function}
 raise "Doesn't look like a test database (#{db_name}), not running tests" unless db_name =~ /test\z/
@@ -25,37 +26,21 @@ else
   Refrigerator.freeze_core
 end
 
-[:entries, :entities, :accounts, :account_types, :subusers, :users].each{|x| Spam::DB[x].delete}
-Spam::DB[:users].insert(:password_hash=>BCrypt::Password.create("pass"), :name=>"default", :num_register_entries=>35, :id=>1)
-Spam::DB[:users].insert(:password_hash=>BCrypt::Password.create("pass2"), :name=>"test", :num_register_entries=>35, :id=>2)
-Spam::DB[:account_types].insert(:name=>"Asset", :id=>1)
-Spam::DB[:account_types].insert(:name=>"Liability", :id=>2)
-Spam::DB[:account_types].insert(:name=>"Income", :id=>3)
-Spam::DB[:account_types].insert(:name=>"Expense", :id=>4)
-Spam::DB[:accounts].insert(:user_id=>2, :balance=>0, :account_type_id=>1, :name=>"Test", :hidden=>false, :description=>"", :id=>5)
-Spam::DB[:accounts].insert(:user_id=>2, :balance=>0, :account_type_id=>2, :name=>"Test Liability", :hidden=>false, :description=>"", :id=>6)
-Spam::DB[:accounts].insert(:user_id=>1, :balance=>0, :account_type_id=>2, :name=>"Credit Card", :hidden=>false, :description=>"", :id=>2)
-Spam::DB[:accounts].insert(:user_id=>1, :balance=>0, :account_type_id=>1, :name=>"Checking", :hidden=>false, :description=>"", :id=>1)
-Spam::DB[:accounts].insert(:user_id=>1, :balance=>0, :account_type_id=>4, :name=>"Food", :hidden=>false, :description=>"", :id=>4)
-Spam::DB[:accounts].insert(:user_id=>1, :balance=>0, :account_type_id=>3, :name=>"Salary", :hidden=>false, :description=>"", :id=>3)
-Spam::DB[:entities].insert(:user_id=>1, :name=>"Restaurant", :id=>2)
-Spam::DB[:entities].insert(:user_id=>1, :name=>"Employer", :id=>1)
-Spam::DB[:entities].insert(:user_id=>1, :name=>"Card", :id=>3)
-Spam::DB[:entities].insert(:user_id=>2, :name=>"Test", :id=>4)
-Spam::DB[:entries].insert(:credit_account_id=>6, :reference=>"", :user_id=>2, :entity_id=>4, :cleared=>false, :amount=>100, :memo=>"", :date=>'2008-06-11', :debit_account_id=>5, :id=>1)
 entries = Spam::DB[:entries].filter(:user_id => 1)
-Spam::DB.reset_primary_key_sequence(:users)
-Spam::DB.reset_primary_key_sequence(:accounts)
-Spam::DB.reset_primary_key_sequence(:entities)
 
 Spam::App.not_found{raise "path not found: #{request.path_info}"}
 
 Capybara.exact = true
 Capybara.app = Spam::App.freeze.app
 
-class Minitest::Spec
+class Minitest::HooksSpec
   include Rack::Test::Methods
   include Capybara::DSL
+  include Spam::TestData
+
+  before(:all) do
+    load_test_data
+  end
 
   def remove_id(hash)
     h = hash.dup

@@ -11,7 +11,7 @@ class Minitest::HooksSpec
   end
 
   around do |&block|
-    Spam::DB.transaction(:rollback=>:always, :savepoint=>true){super(&block)}
+    Spam::DB.transaction(:rollback=>:always, :savepoint=>true, :auto_savepoint=>true){super(&block)}
   end
 
   if defined?(Capybara)
