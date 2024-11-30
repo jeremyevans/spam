@@ -53,6 +53,11 @@ class App < Roda
   plugin :typecast_params_sized_integers, :sizes=>[64], :default_size=>64
   alias tp typecast_params
 
+  plugin :class_matchers
+  class_matcher Account, Integer do |id|
+    user_account(id)
+  end
+
   plugin :autoforme do
     inline_mtm_associations :all
     association_links :all_except_mtm
@@ -350,22 +355,22 @@ class App < Roda
         end
       end
 
-      r.get 'other_account_for_entry', Integer do |id|
+      r.get 'other_account_for_entry', Account do |account|
         h = {}
-        if (entity = tp.nonempty_str('entity')) && (account = user_account(id)) && (entry = account.last_entry_for_entity(entity))
+        if (entity = tp.nonempty_str('entity')) && (entry = account.last_entry_for_entity(entity))
           entry.main_account = account
           h = {:account_id=>entry.other_account.id, :amount=>entry.amount.to_s('F')}
         end
         h
       end
 
-      r.get 'reconcile', Integer do |id|
-        @account = user_account(id)
+      r.get 'reconcile', Account do |account|
+        @account = account
         :reconcile
       end
 
-      r.get 'register', Integer do |id|
-        @account = user_account(id)
+      r.get 'register', Account do |account|
+        @account = account
         @accounts = userAccount.for_select
         @show_num_entries = tp.pos_int('show', num_register_entries)
         @check_number = @account.next_check_number
