@@ -6,4 +6,5 @@
 /public/stylesheets/app.*.css
 /public/stylesheets/app.*.css.gz
 /unicorn.conf
+/puma.conf
 /puma.test.log
