@@ -28,7 +28,7 @@ class App < Roda
   plugin :public, :gzip=>true
   plugin :not_found
   plugin :error_handler
-  plugin :render, :escape=>true, :template_opts=>{:chain_appends=>true, :freeze=>true, :skip_compiled_encoding_detection=>true}
+  plugin :render, :escape=>true, :template_opts=>{:chain_appends=>true, :freeze=>true, :skip_compiled_encoding_detection=>true, scope_class: self, default_fixed_locals: '()', extract_fixed_locals: true}
   plugin :assets,
     :css=>%w'auto-complete.css spam.scss',
     :js=>%w'auto-complete.min.js autoforme.js application.js',
@@ -166,8 +166,8 @@ class App < Roda
   precompile_views [:switch_user, :create_subuser, :reconcile, :register, :net_worth, :income_expense, :balance_sheet, :earning_spending, :income_expense_month]
   precompile_views :_reconcile_table, [:entry_type]
   precompile_views :_reconcile_entry, [:entry_type, :reconcile_entry]
-  precompile_views %w'_blank_register_entry _new_register_entry'
-  precompile_views %w'_modify_register_entry _register_entry', [:entry]
+  precompile_views %w'_blank_register_entry _new_register_entry _modify_register_entry'
+  precompile_views %w'_register_entry', [:entry]
   precompile_views %w'_new_register_entry', [:time]
   freeze_template_caches! unless ENV["ASSETS_PRECOMPILE"] == '1'
 
@@ -345,7 +345,7 @@ class App < Roda
           json << ['replace_html', '#new_entry', render("_#{@entry ? 'blank' : 'new'}_register_entry")]
           json << ['replace_html', "#entry_#{@other_entry.id}", render('_register_entry', :locals=>{:entry=>@other_entry})] if @other_entry
           json << ['resort']
-          json << ['replace_html', "#entry_#{@entry.id}", render('_modify_register_entry', :locals=>{:entry=>@entry})] if @entry
+          json << ['replace_html', "#entry_#{@entry.id}", render('_modify_register_entry')] if @entry
           json << ['replace_html', '#results', @entry ? 'Modify entry' : 'Add entry']
           json << ['autocompleter']
           json

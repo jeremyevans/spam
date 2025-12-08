@@ -1,3 +1,4 @@
+<%# locals: (entry_type:) %>
 <% unless (entries = @account.send("entries_to_reconcile", entry_type)).empty? %>
 <table id="<%= entry_type %>_entries" class="table table-condensed table-bordered ">
 <caption><%= entry_type.capitalize %> Entries</caption>

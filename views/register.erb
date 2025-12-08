@@ -9,7 +9,7 @@
 <tbody>
 <tr id="new_entry"><%== render("_#{@entry ? 'blank' : 'new'}_register_entry") %></tr>
 <% @account.entries_dataset.limit(@show_num_entries).all{|x| x.main_account = @account}.each do |entry| %>
-  <tr id="entry_<%= entry.id %>"><%== render("_#{'modify_' if @entry && entry.id == @entry.id}register_entry", :locals=>{:entry=>entry}) %></tr>
+  <tr id="entry_<%= entry.id %>"><%== @entry && entry.id == @entry.id ? render("_modify_register_entry") : render("_register_entry", :locals=>{:entry=>entry}) %></tr>
 <% end %>
 </tbody></table>
 </form>
