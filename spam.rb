@@ -96,6 +96,7 @@ class App < Roda
   end
 
   logger = if ENV['AJAX_TESTS'] == '1'
+    require 'logger'
     Logger.new('puma.test.log')
   elsif ENV['RACK_ENV'] == "test"
     Class.new{def write(_) end}.new
