@@ -6,10 +6,14 @@ unless ENV['RACK_ENV'] == 'development'
   Tilt.finalize!
   RubyVM::YJIT.enable if defined?(RubyVM::YJIT.enable)
 
+  SPAM_CONFIG_RU_BEFORE_FREEZE.call if defined?(SPAM_CONFIG_RU_BEFORE_FREEZE)
+
   begin
     require 'refrigerator'
   rescue LoadError
   else
     Refrigerator.freeze_core
   end
+
+  SPAM_CONFIG_RU.call if defined?(SPAM_CONFIG_RU)
 end
