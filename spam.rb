@@ -127,6 +127,7 @@ class App < Roda
     accounts_table :users
     account_password_hash_column :password_hash
     title_instance_variable :@pagetitle
+    already_logged_in{redirect '/'}
     update_session do
       super()
       session['subusers'] = DB[:users].where(:id=>DB[:subusers].where(:user_id=>session['user_id']).select(:sub_user_id)).
