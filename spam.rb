@@ -375,7 +375,6 @@ class App < Roda
         @account = account
         @accounts = userAccount.for_select
         @show_num_entries = tp.pos_int('show', num_register_entries)
-        @check_number = @account.next_check_number
         :register
       end
 
