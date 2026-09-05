@@ -23,7 +23,9 @@ class App < Roda
 
   plugin :direct_call
 
-  plugin :route_csrf, :csrf_failure=>:clear_session
+  plugin :route_csrf do |r|
+    r.redirect '/'
+  end
 
   plugin :public, :gzip=>true
   plugin :not_found
